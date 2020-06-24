@@ -61,6 +61,10 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	}>
 	rundownLayout?: RundownLayoutBase
 	fullViewport?: boolean
+	shelfDisplayOptions: {
+		buckets: boolean
+		layout: boolean
+	}
 
 	onChangeExpanded: (value: boolean) => void
 	onRegisterHotkeys: (
@@ -427,6 +431,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 	render() {
 		const { t, fullViewport } = this.props
+		console.log(this.props.shelfDisplayOptions)
 		return (
 			<div
 				className={ClassNames('rundown-view__shelf dark', {
