@@ -38,31 +38,38 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	_id: PartInstanceId
 	rundownId: RundownId
 
-	isScratch?: true
+	/**
+	 * Whether this PartInstance is a scratch instance - the copy of the Part for the instance
+	 * is still being made and the piece instances are being created.
+	 */
+	readonly isScratch?: true
+
+	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
+	reset?: boolean
 
 	/** Rank of the take that this PartInstance belongs to */
 	takeCount: number
+
+	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
+	isTaken?: boolean
+
+	/** If the playlist was in rehearsal mode when the PartInstance was created */
+	rehearsal: boolean
 
 	part: DBPart
 }
 
 export class PartInstance implements DBPartInstance {
+	// Temporary properties (never stored in DB):
 	/** Whether this PartInstance is a temprorary wrapping of a Part */
 	public readonly isTemporary: boolean
 
-	/**
-	 * Whether this PartInstance is a scratch instance - the copy of the Part for the instance
-	 * is still being made and the piece instances are being created.
-	 */
+	// From DBPartInstance:
 	public readonly isScratch?: true
-
-	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	public reset?: boolean
-
 	public takeCount: number
-
-	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	public isTaken?: boolean
+	public rehearsal: boolean
 
 	// From IBlueprintPartInstance:
 	public part: Part
@@ -86,6 +93,7 @@ export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
 			rundownId: part.rundownId,
 			segmentId: part.segmentId,
 			takeCount: -1,
+			rehearsal: false,
 			part: new Part(part),
 		},
 		true

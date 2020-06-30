@@ -24,6 +24,8 @@ $segment-item-disabled-color: #c9c9c9;
 $segment-nextline-shade-width: 1.875rem;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
 
+$rundown-divider-background-color: rgba(0, 0, 0, 0.2);
+
 $liveline-timecode-color: #ffff00; //$general-live-color;
 $hold-status-color: $liveline-timecode-color;
 
@@ -2037,6 +2039,34 @@ body.no-overflow {
 			transition: $output-layer-group-collapse-animation-duration opacity 0,
 				$output-layer-group-collapse-animation-duration margin 0;
 		}
+	}
+}
+
+.rundown-divider-timeline {
+	display: grid;
+	grid-column-gap: 0;
+	grid-row-gap: 0;
+	grid-template-columns: [rundown-name] 50% [rundown-details] auto;
+	grid-template-rows: auto;
+	overflow: hidden;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+
+	width: auto;
+	margin: 1.5em;
+	// padding: 0 0 0.15em 0.15em;
+
+	background: $rundown-divider-background-color;
+	.rundown-divider-timeline__title {
+		margin: auto 0 auto 0; // center vertically
+		padding: 0.3em;
+		line-height: 1.2em;
+		letter-spacing: 0px;
+		font-weight: 400;
+		hyphens: auto;
+		-webkit-hyphens: auto;
+		-ms-hyphens: auto;
 	}
 }
 

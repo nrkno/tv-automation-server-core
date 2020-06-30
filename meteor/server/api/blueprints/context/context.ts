@@ -37,6 +37,7 @@ import {
 	IBlueprintRundownDB,
 	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
+	ExtendedIngestRundown,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig, findMissingConfigs } from '../config'
@@ -62,6 +63,7 @@ import {
 } from '../../../../lib/collections/PartInstances'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
+import { extendIngestRundownCore } from '../../ingest/lib'
 
 /** Common */
 
@@ -451,9 +453,10 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		return this.getIngestDataForPart(partInstance.part)
 	}
 	/** Get the mos story related to the rundown */
-	getIngestDataForRundown(): IngestRundown | undefined {
+	getIngestDataForRundown(): ExtendedIngestRundown | undefined {
 		try {
-			return loadCachedRundownData(this._rundown._id, this.rundown.externalId)
+			const ingestRundown = loadCachedRundownData(this._rundown._id, this.rundown.externalId)
+			return extendIngestRundownCore(ingestRundown, this._rundown)
 		} catch (e) {
 			return undefined
 		}

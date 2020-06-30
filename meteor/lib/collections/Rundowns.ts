@@ -69,7 +69,6 @@ export interface DBRundown
 	importVersions: RundownImportVersions
 
 	status?: string
-	airStatus?: string
 	// There should be something like a Owner user here somewhere?
 
 	/** Actual time of playback starting */

@@ -27,6 +27,9 @@ export interface IStudioSettings {
 	supportedMediaFormats?: string // (former mediaResolutions in config)
 	/** Audio Stream Formats supported by the studio for media playback */
 	supportedAudioStreams?: string // (former audioStreams in config)
+
+	/** Should the play from anywhere feature be enabled in this studio */
+	enablePlayFromAnywhere?: boolean
 }
 /** A string, identifying a Studio */
 export type StudioId = ProtectedString<'StudioId'>

@@ -392,6 +392,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			rundownId: currentPartInstance.rundownId,
 			segmentId: currentPartInstance.segmentId,
 			takeCount: -1, // Filled in later
+			rehearsal: currentPartInstance.rehearsal,
 			part: new Part({
 				...rawPart,
 				_id: getRandomId(),

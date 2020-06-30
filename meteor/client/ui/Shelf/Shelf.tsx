@@ -8,34 +8,18 @@ import * as mousetrap from 'mousetrap'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { AdLibPanel, AdLibPieceUi } from './AdLibPanel'
-import { GlobalAdLibPanel } from './GlobalAdLibPanel'
+import { AdLibPieceUi } from './AdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
-import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import {
-	RundownLayout,
-	RundownLayoutBase,
-	RundownLayoutType,
-	DashboardLayout,
-	DashboardLayoutFilter,
-	DashboardLayoutActionButton,
-	RundownLayoutFilter,
-} from '../../../lib/collections/RundownLayouts'
-import { OverflowingContainer } from './OverflowingContainer'
+import { RundownLayoutBase, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { DashboardPanel } from './DashboardPanel'
-import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
-import { ExternalFramePanel } from './ExternalFramePanel'
-import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'

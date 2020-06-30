@@ -496,8 +496,8 @@ export const SegmentTimelinePart = withTranslation()(
 			}
 
 			shouldComponentUpdate(nextProps: WithTiming<IProps>, nextState: IState) {
-				if (this.delayedInstanceUpdate) clearTimeout(this.delayedInstanceUpdate)
 				if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
+					if (this.delayedInstanceUpdate) clearTimeout(this.delayedInstanceUpdate)
 					if (
 						this.props.part.instance.isTemporary === true &&
 						nextProps.part.instance.isTemporary === false &&

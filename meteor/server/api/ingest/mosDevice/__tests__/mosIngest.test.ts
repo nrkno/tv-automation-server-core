@@ -55,11 +55,11 @@ describe('Test recieved mos ingest payloads', () => {
 		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, roData))
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		const rundown = Rundowns.findOne() as Rundown
 		expect(rundownPlaylist).toMatchObject({
-			externalId: roData.ID.toString(),
+			externalId: rundown._id,
 		})
 
-		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: roData.ID.toString(),
 			playlistId: rundownPlaylist._id,
@@ -88,11 +88,11 @@ describe('Test recieved mos ingest payloads', () => {
 		waitForPromise(MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, roData))
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		const rundown = Rundowns.findOne() as Rundown
 		expect(rundownPlaylist).toMatchObject({
-			externalId: roData.ID.toString(),
+			externalId: rundown._id,
 		})
 
-		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: roData.ID.toString(),
 			playlistId: rundownPlaylist._id,

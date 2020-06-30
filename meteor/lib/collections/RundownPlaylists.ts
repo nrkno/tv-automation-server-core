@@ -203,6 +203,42 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			return studio
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
+	/** Returns all segments joined with their rundowns in their correct oreder for this RundownPlaylist */
+	getRundownsAndSegments(
+		selector?: MongoQuery<DBSegment>,
+		options?: FindOptions<DBSegment>
+	): Array<{
+		rundown: Rundown
+		segments: Segment[]
+	}> {
+		const rundowns = this.getRundowns(undefined, {
+			fields: {
+				name: 1,
+				_rank: 1,
+				playlistId: 1,
+			},
+		})
+		const segments = Segments.find(
+			_.extend(
+				{
+					rundownId: {
+						$in: rundowns.map((i) => i._id),
+					},
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: {
+						rundownId: 1,
+						_rank: 1,
+					},
+				},
+				options
+			)
+		).fetch()
+		return RundownPlaylist._matchSegmentsAndRundowns(segments, rundowns)
+	}
 	/** Returns all segments in their correct order for this RundownPlaylist */
 	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
 		const rundowns = this.getRundowns(undefined, {
@@ -413,7 +449,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const instances = this.getActivePartInstances(selector, options)
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
-
 	static _sortSegments(segments: Segment[], rundowns: DBRundown[]) {
 		const rundownsMap = normalizeArray(rundowns, '_id')
 		return segments.sort((a, b) => {
@@ -425,6 +460,25 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				return rdA._rank - rdB._rank
 			}
 		})
+	}
+	static _matchSegmentsAndRundowns<T extends DBRundown, E extends DBSegment>(segments: E[], rundowns: T[]) {
+		const rundownsMap = new Map<
+			RundownId,
+			{
+				rundown: T
+				segments: E[]
+			}
+		>()
+		rundowns.forEach((rundown) => {
+			rundownsMap.set(rundown._id, {
+				rundown,
+				segments: [],
+			})
+		})
+		segments.forEach((segment) => {
+			rundownsMap.get(segment.rundownId)?.segments.push(segment)
+		})
+		return Array.from(rundownsMap.values())
 	}
 	static _sortParts(parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
 		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))

@@ -41,7 +41,11 @@ export function registerClassToMeteorMethods(
 	const methods: MethodsInner = {}
 	_.each(getAllClassMethods(orgClass), (classMethodName) => {
 		const enumValue = methodEnum[classMethodName]
-		if (!enumValue) throw new Meteor.Error(500, `registerClassToMeteorMethods: Unknown method "${classMethodName}"`)
+		if (!enumValue)
+			throw new Meteor.Error(
+				500,
+				`registerClassToMeteorMethods: The method "${classMethodName}" is not set in the enum containing methods.`
+			)
 		if (wrapper) {
 			methods[enumValue] = {
 				wrapped: function(...args: any[]) {

@@ -4,7 +4,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate 1`] = `
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -281,7 +281,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 1`] = `
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -558,7 +558,7 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 1`] = `
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -848,10 +848,10 @@ exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 1`] = `
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
-  "peripheralDeviceId": "mockDevice5",
+  "peripheralDeviceId": "",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -862,7 +862,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "dataSource": "mosCreate",
+  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
@@ -1127,7 +1127,7 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 1`] = `
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -1405,7 +1405,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 1`] 
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -1651,10 +1651,10 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 1`] = 
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
-  "peripheralDeviceId": "mockDevice5",
+  "peripheralDeviceId": "",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -1665,7 +1665,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "dataSource": "mosCreate",
+  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
@@ -1942,10 +1942,10 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 1`] = `
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
-  "peripheralDeviceId": "mockDevice5",
+  "peripheralDeviceId": "",
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
 }
@@ -1956,7 +1956,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "dataSource": "mosCreate",
+  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
@@ -2241,7 +2241,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -2522,7 +2522,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 1`] = 
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -2803,7 +2803,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 1`] =
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -3085,7 +3085,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
-  "dataSource": "mosCreate",
+  "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
     "blueprint": "0.0.0",
@@ -3353,7 +3353,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -3626,7 +3626,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -3931,7 +3931,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",
@@ -4213,7 +4213,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 1
 Object {
   "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
   "currentPartInstanceId": null,
-  "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+  "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
   "nextPartInstanceId": null,
   "peripheralDeviceId": "mockDevice5",

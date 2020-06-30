@@ -421,7 +421,7 @@ export const ExternalFramePanel = withTranslation()(
 					this.actMOSMessage(e, e.dataTransfer.getData('Text'))
 				} else if (
 					e.dataTransfer.items.length > 0 &&
-					e.dataTransfer.types.indexOf('text/plain') > 0 &&
+					e.dataTransfer.types.indexOf('text/plain') >= 0 &&
 					e.dataTransfer.files.length === 0
 				) {
 					const idx = e.dataTransfer.types.indexOf('text/plain')

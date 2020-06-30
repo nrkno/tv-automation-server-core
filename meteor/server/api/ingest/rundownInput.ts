@@ -41,7 +41,7 @@ import {
 	BlueprintResultSegment,
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio } from '../../../lib/collections/Studios'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import {
 	selectShowStyleVariant,
 	afterRemoveSegments,
@@ -95,6 +95,8 @@ import {
 	canBeUpdated,
 	getRundownPlaylist,
 	getSegment,
+	extendIngestRundownCore,
+	modifyPlaylistExternalId,
 } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
@@ -135,6 +137,8 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
+import { removeEmptyPlaylists } from '../rundownPlaylist'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -421,6 +425,20 @@ export function updateRundownAndSaveCache(
 
 	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
+export function regenerateRundown(rundownId: RundownId) {
+	logger.info(`Regenerating rundown ${rundownId}`)
+	const existingDbRundown = Rundowns.findOne(rundownId)
+	if (!existingDbRundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
+
+	const studio = Studios.findOne(existingDbRundown.studioId)
+	if (!studio) throw new Meteor.Error(404, `Studio "${existingDbRundown.studioId}" not found`)
+
+	const ingestRundown = loadCachedRundownData(rundownId, existingDbRundown.externalId)
+
+	const dataSource = 'regenerate'
+
+	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, undefined)
+}
 function updateRundownFromIngestData(
 	studio: Studio,
 	existingDbRundown: Rundown | undefined,
@@ -428,9 +446,10 @@ function updateRundownFromIngestData(
 	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
 ): boolean {
+	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, existingDbRundown)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
-	const showStyle = selectShowStyleVariant(studio, ingestRundown)
+	const showStyle = selectShowStyleVariant(studio, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
@@ -443,7 +462,7 @@ function updateRundownFromIngestData(
 		true
 	)
 	const blueprintContext = new ShowStyleContext(studio, showStyle.base._id, showStyle.variant._id, notesContext)
-	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, ingestRundown)
+	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, extendedIngestRundown)
 
 	// Ensure the ids in the notes are clean
 	const rundownNotes = _.map(notesContext.getNotes(), (note) =>
@@ -455,11 +474,15 @@ function updateRundownFromIngestData(
 			},
 		})
 	)
+	rundownRes.rundown.playlistExternalId = modifyPlaylistExternalId(
+		rundownRes.rundown.playlistExternalId,
+		showStyle.base
+	)
 
 	const showStyleBlueprintDb = (Blueprints.findOne(showStyle.base.blueprintId) as Blueprint) || {}
 
 	const dbRundownData: DBRundown = _.extend(
-		existingDbRundown || {},
+		_.clone(existingDbRundown) || {},
 		_.omit(
 			literal<DBRundown>({
 				...rundownRes.rundown,
@@ -480,25 +503,53 @@ function updateRundownFromIngestData(
 				},
 
 				// omit the below fields:
-				created: 0,
-				modified: 0,
-
-				peripheralDeviceId: protectString<PeripheralDeviceId>(''), // added later
-				dataSource: '', // added later
-
-				playlistId: protectString<RundownPlaylistId>(''), // added later
-				_rank: 0, // added later
+				created: 0, // omitted, set later, below
+				modified: 0, // omitted, set later, below
+				peripheralDeviceId: protectString(''), // omitted, set later, below
+				dataSource: '', // omitted, set later, below
+				playlistId: protectString<RundownPlaylistId>(''), // omitted, set later, in produceRundownPlaylistInfo
+				_rank: 0, // omitted, set later, in produceRundownPlaylistInfo
 			}),
 			['created', 'modified', 'peripheralDeviceId', 'dataSource', 'playlistId', '_rank']
 		)
 	)
 	if (peripheralDevice) {
 		dbRundownData.peripheralDeviceId = peripheralDevice._id
-	} else {
-		// TODO - this needs to set something..
 	}
 	if (dataSource) {
 		dbRundownData.dataSource = dataSource
+	}
+	// Do a check if we're allowed to move out of currently playing playlist:
+	if (existingDbRundown && existingDbRundown.playlistExternalId !== dbRundownData.playlistExternalId) {
+		// The rundown is going to change playlist
+		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
+		if (existingPlaylist) {
+			const { currentPartInstance } = existingPlaylist.getSelectedPartInstances()
+
+			if (
+				existingPlaylist.active &&
+				currentPartInstance &&
+				currentPartInstance.rundownId === existingDbRundown._id
+			) {
+				// The rundown contains a PartInstance that is currently on air.
+				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
+				// and will just revert the playlist change:
+
+				dbRundownData.playlistExternalId = existingDbRundown.playlistExternalId
+				dbRundownData.playlistId = existingDbRundown.playlistId
+
+				if (!dbRundownData.notes) dbRundownData.notes = []
+				dbRundownData.notes.push({
+					type: NoteType.WARNING,
+					message: `The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.`,
+					origin: {
+						name: 'Data update',
+					},
+				})
+			}
+		} else {
+			logger.warn(`Existing playlist "${existingDbRundown.playlistId}" not found`)
+		}
 	}
 
 	// Save rundown into database:
@@ -549,6 +600,7 @@ function updateRundownFromIngestData(
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 
 	handleUpdatedRundownPlaylist(dbRundown, rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order)
+	removeEmptyPlaylists(studio)
 
 	const dbPlaylist = dbRundown.getRundownPlaylist()
 	if (!dbPlaylist) throw new Meteor.Error(500, 'RundownPlaylist not found (it should have been)')
@@ -951,6 +1003,7 @@ function syncChangesToSelectedPartInstances(
 	})
 }
 
+/** Set order and playlistID of rundowns in a playlist */
 function handleUpdatedRundownPlaylist(
 	currentRundown: DBRundown,
 	playlist: DBRundownPlaylist,

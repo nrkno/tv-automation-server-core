@@ -18,6 +18,7 @@ interface IProps {
 	playlist?: RundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
+	enablePlayFromAnywhere: boolean
 }
 interface IState {}
 
@@ -49,7 +50,7 @@ export const SegmentContextMenu = withTranslation()(
 										{RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
 									</MenuItem>
 								)}
-								{startsAt !== null && part ? (
+								{startsAt !== null && part && this.props.enablePlayFromAnywhere ? (
 									<React.Fragment>
 										<MenuItem onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)} disabled={isCurrentPart}>
 											<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> (

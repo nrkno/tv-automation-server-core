@@ -125,7 +125,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 				<HotkeyHelpPanel
 					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS}
 					showStyleBase={props.showStyleBase}
-					hotkeys={[]}></HotkeyHelpPanel>
+					hotkeys={props.hotkeys}></HotkeyHelpPanel>
 			</div>
 		</React.Fragment>
 	)
