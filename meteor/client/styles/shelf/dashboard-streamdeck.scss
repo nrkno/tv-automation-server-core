@@ -54,37 +54,69 @@
 		> .container-fluid
 		> .rundown-view__shelf.dark.full-viewport
 		> .rundown-view__shelf__contents
-		> .rundown-view__shelf__contents__pane
-		> .dashboard {
-		top: 0;
-		left: 0;
-		bottom: 0;
-		right: 0;
-		overflow: hidden;
+		> .rundown-view__shelf__contents__pane {
+		margin-left: 0;
 
-		.dashboard-panel {
-			padding: 0;
-			margin: 0;
-			background: #252627;
+		&.shelf-inspector {
+			display: none;
+		}
 
-			.dashboard-panel__header {
-				display: none;
+		&:last-child {
+			flex-grow: 1;
+		}
+
+		&.fill ~ :last-child {
+			flex-grow: 0;
+		}
+
+		> .rundown-view__shelf__contents__pane__divider {
+			opacity: 0;
+			left: -5px;
+			z-index: 2;
+
+			&:hover {
+				opacity: 1;
 			}
+		}
 
-			.adlib-panel__list-view__toolbar {
-				display: none;
-			}
+		> .dashboard,
+		> .buckets {
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			overflow: hidden;
 
-			.dashboard-panel__panel {
-				margin: 0 -2px 0 0;
-				max-height: 100%;
-				overflow: hidden;
+			.dashboard-panel {
+				padding: 0;
+				margin: 0;
+				background: #070707;
 
-				> .dashboard-panel__panel__button {
-					> .dashboard-panel__panel__button__label {
-						top: 4px;
+				.dashboard-panel__header {
+					display: none;
+				}
+
+				.adlib-panel__list-view__toolbar {
+					display: none;
+				}
+
+				.dashboard-panel__panel {
+					margin: 0 -2px 0 0;
+					max-height: 100%;
+					overflow: hidden;
+
+					> .dashboard-panel__panel__button,
+					> span > .dashboard-panel__panel__button {
+						> .dashboard-panel__panel__button__label {
+							top: 4px;
+						}
 					}
 				}
+			}
+		}
+
+		> .buckets {
+			> .dashboard-panel__panel--bucket {
 			}
 		}
 	}
@@ -96,18 +128,21 @@
 		> .container-fluid
 		> .rundown-view__shelf.dark.full-viewport
 		> .rundown-view__shelf__contents
-		> .rundown-view__shelf__contents__pane
-		> .dashboard {
-		--dashboard-button-grid-width: 1.5em;
-		--dashboard-button-grid-height: 1.5em;
-		--dashboard-panel-margin-width: 0em;
-		--dashboard-panel-margin-height: 0em;
+		> .rundown-view__shelf__contents__pane {
+		> .dashboard,
+		> .buckets {
+			--dashboard-button-grid-width: 1.5em;
+			--dashboard-button-grid-height: 1.5em;
+			--dashboard-panel-margin-width: 0em;
+			--dashboard-panel-margin-height: 0em;
 
-		.dashboard-panel > .dashboard-panel__panel > .dashboard-panel__panel__button {
-			width: 71px;
-			height: 71px;
-			margin: 0px 1px 1px 0px;
-			font-size: 13px;
+			.dashboard-panel > .dashboard-panel__panel > .dashboard-panel__panel__button,
+			.dashboard-panel > .dashboard-panel__panel > span > .dashboard-panel__panel__button {
+				width: 71px;
+				height: 71px;
+				margin: 0px 1px 1px 0px;
+				font-size: 13px;
+			}
 		}
 	}
 }
@@ -118,18 +153,21 @@
 		> .container-fluid
 		> .rundown-view__shelf.dark.full-viewport
 		> .rundown-view__shelf__contents
-		> .rundown-view__shelf__contents__pane
-		> .dashboard {
-		--dashboard-button-grid-width: 2.007em;
-		--dashboard-button-grid-height: 2.007em;
-		--dashboard-panel-margin-width: 0em;
-		--dashboard-panel-margin-height: 0em;
+		> .rundown-view__shelf__contents__pane {
+		> .dashboard,
+		> .buckets {
+			--dashboard-button-grid-width: 2.007em;
+			--dashboard-button-grid-height: 2.007em;
+			--dashboard-panel-margin-width: 0em;
+			--dashboard-panel-margin-height: 0em;
 
-		.dashboard-panel > .dashboard-panel__panel > .dashboard-panel__panel__button {
-			width: 95px;
-			height: 95px;
-			margin: 0px 1px 1px 0px;
-			font-size: 15px;
+			.dashboard-panel > .dashboard-panel__panel > .dashboard-panel__panel__button,
+			.dashboard-panel > .dashboard-panel__panel > span > .dashboard-panel__panel__button {
+				width: 95px;
+				height: 95px;
+				margin: 0px 1px 1px 0px;
+				font-size: 15px;
+			}
 		}
 	}
 }
@@ -140,18 +178,21 @@
 		> .container-fluid
 		> .rundown-view__shelf.dark.full-viewport
 		> .rundown-view__shelf__contents
-		> .rundown-view__shelf__contents__pane
-		> .dashboard {
-		--dashboard-button-grid-width: 1.669em;
-		--dashboard-button-grid-height: 1.669em;
-		--dashboard-panel-margin-width: 0em;
-		--dashboard-panel-margin-height: 0em;
+		> .rundown-view__shelf__contents__pane {
+		> .dashboard,
+		> .buckets {
+			--dashboard-button-grid-width: 1.669em;
+			--dashboard-button-grid-height: 1.669em;
+			--dashboard-panel-margin-width: 0em;
+			--dashboard-panel-margin-height: 0em;
 
-		.dashboard-panel > .dashboard-panel__panel > .dashboard-panel__panel__button {
-			width: 79px;
-			height: 79px;
-			margin: 0px 1px 1px 0px;
-			font-size: 13px;
+			.dashboard-panel > .dashboard-panel__panel > .dashboard-panel__panel__button,
+			.dashboard-panel > .dashboard-panel__panel > span > .dashboard-panel__panel__button {
+				width: 79px;
+				height: 79px;
+				margin: 0px 1px 1px 0px;
+				font-size: 13px;
+			}
 		}
 	}
 }

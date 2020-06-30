@@ -158,7 +158,10 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
 		const hasMediaInfo =
-			this.props.layer.type === SourceLayerType.VT && this.props.metadata && this.props.metadata.mediainfo
+			this.props.layer &&
+			this.props.layer.type === SourceLayerType.VT &&
+			this.props.metadata &&
+			this.props.metadata.mediainfo
 		return (
 			<div
 				className={ClassNames(

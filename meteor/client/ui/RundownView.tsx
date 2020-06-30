@@ -1295,7 +1295,9 @@ interface ITrackedProps {
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
+		inspector: boolean
 	}
+	bucketDisplayFilter: number[] | undefined
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let playlistId
@@ -1315,7 +1317,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const params = queryStringParse(location.search)
 
-	const displayOptions = ((params['display'] as string) || 'buckets,layout').split(',')
+	const displayOptions = ((params['display'] as string) || 'buckets,layout,inspector').split(',')
+	const bucketDisplayFilter = !(params['buckets'] as string)
+		? undefined
+		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
@@ -1364,7 +1369,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout'),
+			inspector: displayOptions.includes('inspector'),
 		},
+		bucketDisplayFilter,
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -2409,6 +2416,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onRegisterHotkeys={this.onRegisterHotkeys}
 										rundownLayout={this.state.rundownLayout}
 										shelfDisplayOptions={this.props.shelfDisplayOptions}
+										bucketDisplayFilter={this.props.bucketDisplayFilter}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2452,6 +2460,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								rundownLayout={this.state.rundownLayout}
 								fullViewport={true}
 								shelfDisplayOptions={this.props.shelfDisplayOptions}
+								bucketDisplayFilter={this.props.bucketDisplayFilter}
 							/>
 						</ErrorBoundary>
 					)
