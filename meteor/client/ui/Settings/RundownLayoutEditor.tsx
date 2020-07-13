@@ -1189,17 +1189,20 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									</div>
 								</div>
 								<div>
-									{item.type === RundownLayoutType.RUNDOWN_LAYOUT
-										? this.renderElements(item)
-										: item.type === RundownLayoutType.DASHBOARD_LAYOUT
-										? this.renderElements(item)
-										: null}
+									{RundownLayoutsAPI.isRundownLayout(item) ? (
+										this.renderElements(item)
+									) : RundownLayoutsAPI.isDashboardLayout(item) ? (
+										<>
+											{this.renderElements(item)}
+											{this.renderActionButtons(item)}
+										</>
+									) : null}
 								</div>
 								<div className="mod mls">
 									<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
-									<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
+									<button className="btn btn-secondary mrs" onClick={(e) => this.onAddElement(item)}>
 										<FontAwesomeIcon icon={faPlus} />
 										&nbsp;
 										{item.type === RundownLayoutType.RUNDOWN_LAYOUT
@@ -1208,6 +1211,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											? t('Add panel')
 											: null}
 									</button>
+									{RundownLayoutsAPI.isDashboardLayout(item) ? (
+										<button className="btn btn-secondary" onClick={(e) => this.onAddButton(item)}>
+											<FontAwesomeIcon icon={faPlus} />
+											&nbsp;
+											{t('Add button')}
+										</button>
+									) : null}
 								</div>
 							</td>
 						</tr>
