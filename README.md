@@ -60,6 +60,7 @@ For the purpose of running the system in a studio environment, there are additio
 | `/countdowns/:studioId/presenter` | Countdown clocks for a given studio, to be shown to the studio presenter |
 | `/activeRundown/:studioId`        | Redirects to the rundown currently active in a given studio              |
 | `/activeRundown/:studioId/shelf`  | Shows a Detached Shelf for the current active rundown in a studio        |
+| `/rundown/:rundownId/shelf`       | Shows a Detached Shelf for the rundown                                   |
 | `/prompter/:studioId`             | A simple prompter for the studio presenter                               |
 
 ## Studio mode
@@ -103,6 +104,20 @@ To use a specific layout in these views, you can use the `?layout=...` query str
 ```http://localhost:3000/activeRundown/studio0/shelf?layout=Stream```
 
 The Detached Shelf view with a custom DASHBOARD_LAYOUT allows displaying the Shelf on an auxiliary touch screen, tablet or a Stream Deck device. A specialized Stream Deck view will be used if the view is opened on a device with hardware characteristics matching a Stream Deck device.
+
+The shelf also contains additional elements, not controlled by the Rundown View Layout. These include Buckets and the Inspector. If needed, these
+components can be displayed or hidden using additional url arguments:
+
+| Query parameter                     | Description                                                             |
+| ----------------------------------- | ----------------------------------------------------------------------- |
+| Default                             | Display the rundown layout (as selected), all buckets and the inspector |
+| `?display=layout,buckets,inspector` | A comma-separated list of features to be displayed in the shelf         |
+| `?buckets=0,1,...`                  | A comma-separated list of buckets to be displayed                       |
+
+* `display`: Available values are: `layout` (for displaying the Rundown Layout), `buckets` (for displaying the Buckets) and `inspector` (for displaying the Inspector).
+* `buckets`: The buckets can be specified as base-0 indices of the buckets as seen by the user. This means that `?buckets=1` will display the second bucket as seen by the user when not filtering the buckets. This allows the user to decide which bucket is displayed on a secondary attached screen simply by reordering the buckets on their main view.
+
+*Note: the Inspector is limited in scope to a particular browser window/screen, so do not expect the contents of the inspector to sync across multiple screens.*
 
 ## Operating the prompter screen
 

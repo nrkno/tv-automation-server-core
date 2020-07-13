@@ -1301,6 +1301,12 @@ interface ITrackedProps {
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
+	shelfDisplayOptions: {
+		buckets: boolean
+		layout: boolean
+		inspector: boolean
+	}
+	bucketDisplayFilter: number[] | undefined
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let playlistId
@@ -1319,6 +1325,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 
 	const params = queryStringParse(location.search)
+
+	const displayOptions = ((params['display'] as string) || 'buckets,layout,inspector').split(',')
+	const bucketDisplayFilter = !(params['buckets'] as string)
+		? undefined
+		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
@@ -1364,6 +1375,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch()) ||
 			undefined,
 		rundownLayoutId: protectString((params['layout'] as string) || ''),
+		shelfDisplayOptions: {
+			buckets: displayOptions.includes('buckets'),
+			layout: displayOptions.includes('layout'),
+			inspector: displayOptions.includes('inspector'),
+		},
+		bucketDisplayFilter,
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1383,7 +1400,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			label: string
 			global?: boolean
 		}> = []
-		private _inspectorShelf: WrappedShelf | null
 		private _segmentZoomOn: boolean = false
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
@@ -2245,10 +2261,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
-		setInspectorShelf = (isp: WrappedShelf | null) => {
-			this._inspectorShelf = isp
-		}
-
 		onTake = (e: any) => {
 			const { t } = this.props
 			if (this.state.studioMode && this.props.playlist) {
@@ -2416,7 +2428,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								</ErrorBoundary>
 								<ErrorBoundary>
 									<Shelf
-										ref={this.setInspectorShelf}
 										buckets={this.props.buckets}
 										isExpanded={this.state.isInspectorShelfExpanded}
 										onChangeExpanded={this.onShelfChangeExpanded}
@@ -2427,6 +2438,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onChangeBottomMargin={this.onChangeBottomMargin}
 										onRegisterHotkeys={this.onRegisterHotkeys}
 										rundownLayout={this.state.rundownLayout}
+										shelfDisplayOptions={this.props.shelfDisplayOptions}
+										bucketDisplayFilter={this.props.bucketDisplayFilter}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2458,7 +2471,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					return (
 						<ErrorBoundary>
 							<Shelf
-								ref={this.setInspectorShelf}
 								buckets={this.props.buckets}
 								isExpanded={this.state.isInspectorShelfExpanded}
 								onChangeExpanded={this.onShelfChangeExpanded}
@@ -2470,6 +2482,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								onRegisterHotkeys={this.onRegisterHotkeys}
 								rundownLayout={this.state.rundownLayout}
 								fullViewport={true}
+								shelfDisplayOptions={this.props.shelfDisplayOptions}
+								bucketDisplayFilter={this.props.bucketDisplayFilter}
 							/>
 						</ErrorBoundary>
 					)

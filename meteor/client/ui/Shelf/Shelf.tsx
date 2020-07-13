@@ -45,6 +45,12 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	}>
 	rundownLayout?: RundownLayoutBase
 	fullViewport?: boolean
+	shelfDisplayOptions: {
+		buckets: boolean
+		layout: boolean
+		inspector: boolean
+	}
+	bucketDisplayFilter: number[] | undefined
 
 	onChangeExpanded: (value: boolean) => void
 	onRegisterHotkeys: (
@@ -428,72 +434,75 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					</div>
 				)}
 				<div className="rundown-view__shelf__contents">
-					<ContextMenuTrigger
-						id="bucket-context-menu"
-						attributes={{
-							className: 'rundown-view__shelf__contents__pane fill',
-						}}
-						holdToDisplay={contextMenuHoldToDisplayTime()}>
+					{!this.props.fullViewport || this.props.shelfDisplayOptions.layout ? (
+						<ContextMenuTrigger
+							id="bucket-context-menu"
+							attributes={{
+								className: 'rundown-view__shelf__contents__pane fill',
+							}}
+							holdToDisplay={contextMenuHoldToDisplayTime()}>
+							<ErrorBoundary>
+								{this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout) ? (
+									<ShelfRundownLayout
+										playlist={this.props.playlist}
+										showStyleBase={this.props.showStyleBase}
+										studioMode={this.props.studioMode}
+										hotkeys={this.props.hotkeys}
+										rundownLayout={this.props.rundownLayout}
+										selectedTab={this.state.selectedTab}
+										selectedPiece={this.state.selectedPiece}
+										onSelectPiece={this.selectPiece}
+										onSwitchTab={this.switchTab}
+									/>
+								) : this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout) ? (
+									<ShelfDashboardLayout
+										playlist={this.props.playlist}
+										showStyleBase={this.props.showStyleBase}
+										buckets={this.props.buckets}
+										studioMode={this.props.studioMode}
+										rundownLayout={this.props.rundownLayout}
+										shouldQueue={this.state.shouldQueue}
+										onChangeQueueAdLib={this.changeQueueAdLib}
+									/>
+								) : (
+									// ultimate fallback if not found
+									<ShelfRundownLayout
+										playlist={this.props.playlist}
+										showStyleBase={this.props.showStyleBase}
+										studioMode={this.props.studioMode}
+										hotkeys={this.props.hotkeys}
+										rundownLayout={undefined}
+										selectedTab={this.state.selectedTab}
+										selectedPiece={this.state.selectedPiece}
+										onSelectPiece={this.selectPiece}
+										onSwitchTab={this.switchTab}
+									/>
+								)}
+							</ErrorBoundary>
+						</ContextMenuTrigger>
+					) : null}
+					{!this.props.fullViewport || this.props.shelfDisplayOptions.buckets ? (
 						<ErrorBoundary>
-							{this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout) ? (
-								<ShelfRundownLayout
-									playlist={this.props.playlist}
-									showStyleBase={this.props.showStyleBase}
-									studioMode={this.props.studioMode}
-									hotkeys={this.props.hotkeys}
-									rundownLayout={this.props.rundownLayout}
-									selectedTab={this.state.selectedTab}
-									selectedPiece={this.state.selectedPiece}
-									onSelectPiece={this.selectPiece}
-									onSwitchTab={this.switchTab}
-								/>
-							) : this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout) ? (
-								<ShelfDashboardLayout
-									playlist={this.props.playlist}
-									showStyleBase={this.props.showStyleBase}
-									buckets={this.props.buckets}
-									studioMode={this.props.studioMode}
-									rundownLayout={this.props.rundownLayout}
-									shouldQueue={this.state.shouldQueue}
-									onChangeQueueAdLib={this.changeQueueAdLib}
-								/>
-							) : this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout) ? (
-								<ShelfDashboardLayout
-									playlist={this.props.playlist}
-									showStyleBase={this.props.showStyleBase}
-									buckets={this.props.buckets}
-									studioMode={this.props.studioMode}
-									rundownLayout={this.props.rundownLayout}
-									shouldQueue={this.state.shouldQueue}
-									onChangeQueueAdLib={this.changeQueueAdLib}
-								/>
-							) : (
-								// ultimate fallback if not found
-								<ShelfRundownLayout
-									playlist={this.props.playlist}
-									showStyleBase={this.props.showStyleBase}
-									studioMode={this.props.studioMode}
-									hotkeys={this.props.hotkeys}
-									rundownLayout={undefined}
-									selectedTab={this.state.selectedTab}
-									selectedPiece={this.state.selectedPiece}
-									onSelectPiece={this.selectPiece}
-									onSwitchTab={this.switchTab}
-								/>
-							)}
+							<RundownViewBuckets
+								buckets={this.props.buckets}
+								playlist={this.props.playlist}
+								shouldQueue={this.state.shouldQueue}
+								showStyleBase={this.props.showStyleBase}
+								fullViewport={
+									!!this.props.fullViewport &&
+									this.props.shelfDisplayOptions.buckets === true &&
+									this.props.shelfDisplayOptions.inspector === false &&
+									this.props.shelfDisplayOptions.layout === false
+								}
+								displayBuckets={this.props.bucketDisplayFilter}
+							/>
 						</ErrorBoundary>
-					</ContextMenuTrigger>
-					<ErrorBoundary>
-						<RundownViewBuckets
-							buckets={this.props.buckets}
-							playlist={this.props.playlist}
-							shouldQueue={this.state.shouldQueue}
-							showStyleBase={this.props.showStyleBase}
-						/>
-					</ErrorBoundary>
-					<ErrorBoundary>
-						<ShelfInspector selected={this.state.selectedPiece} showStyleBase={this.props.showStyleBase} />
-					</ErrorBoundary>
+					) : null}
+					{!this.props.fullViewport || this.props.shelfDisplayOptions.inspector ? (
+						<ErrorBoundary>
+							<ShelfInspector selected={this.state.selectedPiece} showStyleBase={this.props.showStyleBase} />
+						</ErrorBoundary>
+					) : null}
 				</div>
 			</div>
 		)

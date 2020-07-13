@@ -30,6 +30,8 @@ interface IBucketsProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
+	fullViewport: boolean
+	displayBuckets?: number[]
 }
 
 interface IState {
@@ -406,6 +408,12 @@ export const RundownViewBuckets = withTranslation()(
 			)
 		}
 
+		private bucketPanelStyle = (index: number): React.CSSProperties => {
+			return {
+				minWidth: this.state.panelWidths[index] * 100 + 'vw',
+			}
+		}
+
 		render() {
 			const { playlist, showStyleBase, shouldQueue, t } = this.props
 			const { localBuckets: buckets } = this.state
@@ -448,52 +456,57 @@ export const RundownViewBuckets = withTranslation()(
 						</ContextMenu>
 					</Escape>
 					{buckets &&
-						buckets.map((bucket, index) => (
-							<div
-								className="rundown-view__shelf__contents__pane"
-								key={unprotectString(bucket._id)}
-								style={{
-									minWidth: this.state.panelWidths[index] * 100 + 'vw',
-								}}>
+						buckets.map((bucket, index) =>
+							!this.props.displayBuckets || this.props.displayBuckets.includes(index) ? (
 								<div
-									className="rundown-view__shelf__contents__pane__divider"
-									onMouseDown={(e) => this.grabHandle(e, bucket)}
-									onTouchStart={(e) => this.touchOnHandle(e, bucket)}>
-									<div className="rundown-view__shelf__contents__pane__handle">
-										<FontAwesomeIcon icon={faBars} />
-									</div>
+									className="rundown-view__shelf__contents__pane"
+									key={unprotectString(bucket._id)}
+									style={this.bucketPanelStyle(index)}>
+									{!this.props.fullViewport || index > 0 ? (
+										<div
+											className="rundown-view__shelf__contents__pane__divider"
+											onMouseDown={(e) => this.grabHandle(e, bucket)}
+											onTouchStart={(e) => this.touchOnHandle(e, bucket)}>
+											<div className="rundown-view__shelf__contents__pane__handle">
+												<FontAwesomeIcon icon={faBars} />
+											</div>
+										</div>
+									) : null}
+									<ContextMenuTrigger
+										id="bucket-context-menu"
+										attributes={{
+											className: 'buckets',
+										}}
+										collect={() =>
+											new Promise((resolve) => {
+												this.setState(
+													{
+														contextBucket: bucket,
+														contextBucketAdLib: undefined,
+													},
+													resolve
+												)
+											})
+										}
+										holdToDisplay={contextMenuHoldToDisplayTime()}>
+										{this.state.panelWidths[index] > 0 && (
+											<BucketPanel
+												playlist={playlist}
+												showStyleBase={showStyleBase}
+												shouldQueue={shouldQueue}
+												bucket={bucket}
+												editableName={this.state.editedNameId === bucket._id}
+												onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
+												moveBucket={this.moveBucket}
+												findBucket={this.findBucket}
+												onBucketReorder={this.onBucketReorder}
+												onAdLibContext={this.onAdLibContext}
+											/>
+										)}
+									</ContextMenuTrigger>
 								</div>
-								<ContextMenuTrigger
-									id="bucket-context-menu"
-									collect={() =>
-										new Promise((resolve) => {
-											this.setState(
-												{
-													contextBucket: bucket,
-													contextBucketAdLib: undefined,
-												},
-												resolve
-											)
-										})
-									}
-									holdToDisplay={contextMenuHoldToDisplayTime()}>
-									{this.state.panelWidths[index] > 0 && (
-										<BucketPanel
-											playlist={playlist}
-											showStyleBase={showStyleBase}
-											shouldQueue={shouldQueue}
-											bucket={bucket}
-											editableName={this.state.editedNameId === bucket._id}
-											onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
-											moveBucket={this.moveBucket}
-											findBucket={this.findBucket}
-											onBucketReorder={this.onBucketReorder}
-											onAdLibContext={this.onAdLibContext}
-										/>
-									)}
-								</ContextMenuTrigger>
-							</div>
-						))}
+							) : null
+						)}
 				</>
 			)
 		}

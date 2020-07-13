@@ -618,8 +618,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 																: ''
 														}
-														widthScale={1}
-														heightScale={1}
 														disabled={adlib.showStyleVariantId !== this.props.showStyleVariantId}
 														findAdLib={this.findAdLib}
 														moveAdLib={this.moveAdLib}
