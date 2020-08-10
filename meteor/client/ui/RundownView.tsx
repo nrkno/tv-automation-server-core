@@ -2427,6 +2427,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onChangeBottomMargin={this.onChangeBottomMargin}
 										onRegisterHotkeys={this.onRegisterHotkeys}
 										rundownLayout={this.state.rundownLayout}
+										showBuckets={this.state.rundownLayout && this.state.rundownLayout.showBuckets}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2470,6 +2471,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								onRegisterHotkeys={this.onRegisterHotkeys}
 								rundownLayout={this.state.rundownLayout}
 								fullViewport={true}
+								showBuckets={this.state.rundownLayout && this.state.rundownLayout.showBuckets}
 							/>
 						</ErrorBoundary>
 					)

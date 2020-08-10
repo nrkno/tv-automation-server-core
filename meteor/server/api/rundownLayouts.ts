@@ -22,7 +22,8 @@ export function createRundownLayout(
 	type: RundownLayoutType,
 	showStyleBaseId: ShowStyleBaseId,
 	blueprintId: BlueprintId | undefined,
-	userId?: string | undefined
+	userId?: string | undefined,
+	showBuckets?: boolean
 ) {
 	const id: RundownLayoutId = getRandomId()
 	RundownLayouts.insert(
@@ -34,6 +35,7 @@ export function createRundownLayout(
 			filters: [],
 			type,
 			userId,
+			showBuckets: showBuckets === undefined ? true : showBuckets,
 		})
 	)
 	return id

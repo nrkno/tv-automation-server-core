@@ -1080,6 +1080,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			return (
 				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show Buckets')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'showBuckets'}
+								obj={item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
 					<h4 className="mod mhs">{isRundownLayout ? t('Tabs') : isDashboardLayout ? t('Panels') : null}</h4>
 					{item.filters.map((tab, index) => (
 						<div className="rundown-layout-editor-filter mod pan mas" key={tab._id}>

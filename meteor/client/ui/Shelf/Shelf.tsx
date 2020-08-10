@@ -45,6 +45,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	}>
 	rundownLayout?: RundownLayoutBase
 	fullViewport?: boolean
+	showBuckets: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onRegisterHotkeys: (
@@ -483,14 +484,16 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							)}
 						</ErrorBoundary>
 					</ContextMenuTrigger>
-					<ErrorBoundary>
-						<RundownViewBuckets
-							buckets={this.props.buckets}
-							playlist={this.props.playlist}
-							shouldQueue={this.state.shouldQueue}
-							showStyleBase={this.props.showStyleBase}
-						/>
-					</ErrorBoundary>
+					{this.props.showBuckets && (
+						<ErrorBoundary>
+							<RundownViewBuckets
+								buckets={this.props.buckets}
+								playlist={this.props.playlist}
+								shouldQueue={this.state.shouldQueue}
+								showStyleBase={this.props.showStyleBase}
+							/>
+						</ErrorBoundary>
+					)}
 					<ErrorBoundary>
 						<ShelfInspector selected={this.state.selectedPiece} showStyleBase={this.props.showStyleBase} />
 					</ErrorBoundary>
