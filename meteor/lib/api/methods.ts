@@ -16,6 +16,7 @@ import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
+import { SystemAPI, SystemAPIMethods } from './system'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -35,6 +36,7 @@ interface IMeteorCall {
 	showstyles: NewShowStylesAPI
 	studio: NewStudiosAPI
 	systemStatus: NewSystemStatusAPI
+	system: SystemAPI
 	testTools: NewTestToolsAPI
 	userAction: NewUserActionAPI
 	rundownNotifications: RundownNotificationsAPI
@@ -53,6 +55,7 @@ export const MeteorCall: IMeteorCall = {
 	showstyles: makeMethods(ShowStylesAPIMethods),
 	studio: makeMethods(StudiosAPIMethods),
 	systemStatus: makeMethods(SystemStatusAPIMethods),
+	system: makeMethods(SystemAPIMethods),
 	testTools: makeMethods(TestToolsAPIMethods),
 	userAction: makeMethods(UserActionAPIMethods),
 	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
