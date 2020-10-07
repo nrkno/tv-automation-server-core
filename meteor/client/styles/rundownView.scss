@@ -17,7 +17,8 @@ $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
 $segment-title-background-color-guest: $general-live-guest-color;
 $segment-title-background-color-has-played: #2c2c2c;
-$part-start-color: #a5a5a5;
+$part-start-color: #ffffff;
+$zoom-part-start-color: #a5a5a5;
 $segment-item-disabled-background: #898989;
 $segment-item-disabled-color: #c9c9c9;
 
@@ -804,7 +805,7 @@ body.no-overflow {
 				z-index: inherit;
 
 				.segment-timeline__part__nextline {
-					border-left-width: 1px;
+					border-left-width: 1px !important;
 
 					&::before,
 					&::after {
@@ -820,8 +821,15 @@ body.no-overflow {
 					}
 				}
 
+				&:not(.next) {
+					.segment-timeline__part__nextline {
+						border-left-color: $zoom-part-start-color;
+					}
+				}
+
 				&.next {
 					.segment-timeline__part__nextline {
+						border-left-width: 2px !important;
 						&::before,
 						&::after {
 							display: none;
@@ -1100,6 +1108,7 @@ body.no-overflow {
 			white-space: nowrap;
 			word-wrap: none;
 			opacity: 1;
+			background: $segment-background-color;
 
 			transition: $output-layer-group-collapse-animation-duration opacity ease-in-out
 				$output-layer-group-collapse-animation-duration;
@@ -1180,7 +1189,7 @@ body.no-overflow {
 				left: 0;
 				bottom: -1.3em;
 				flex: 0;
-				border-left: 2px solid $part-start-color;
+				border-left: 3px solid $part-start-color;
 				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
 				transform: translate3d(0, 0, 50px);
 
@@ -1320,7 +1329,7 @@ body.no-overflow {
 			&:not(.live) {
 				.segment-timeline__part__nextline.auto-next:not(.segment-timeline__part__nextline--endline),
 				.segment-timeline__part__nextline.invalid:not(.segment-timeline__part__nextline--endline) {
-					border-left-width: 1px;
+					border-left-width: 3px;
 
 					&::before,
 					&::after {
@@ -1344,7 +1353,7 @@ body.no-overflow {
 			}
 
 			.segment-timeline__part__nextline.auto-next.segment-timeline__part__nextline--endline {
-				border-left-width: 1px;
+				border-left-width: 3px;
 
 				&::before,
 				&::after {
@@ -1397,6 +1406,7 @@ body.no-overflow {
 				}
 
 				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline):not(.offset) {
+					border-left-width: 3px;
 					border-left-color: $general-next-color;
 					color: $general-next-color;
 
