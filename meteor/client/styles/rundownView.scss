@@ -35,6 +35,7 @@ $previewline-color: rgb(38, 137, 186);
 	functional part of the timeline starts at the same level as the segment title
 */
 $segment-timeline-padding: $segment-header-height 0 2.5em;
+$segment-border-radius: 11px;
 
 $segment-layer-height: 1.5em;
 $segment-layer-separator-color: transparentize(#000, 0.5);
@@ -489,6 +490,8 @@ body.no-overflow {
 	-moz-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
 	box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
 
+	border-radius: $segment-border-radius;
+
 	// padding has to be the same on both of these elements so that the layers and their controls line up
 	.segment-timeline__output-layers,
 	.segment-timeline__timeline {
@@ -698,7 +701,7 @@ body.no-overflow {
 		font-size: 1em;
 		line-height: 2.45em;
 		padding-left: 25px;
-		margin-left: 0.3em;
+		margin-left: 0.4em;
 		letter-spacing: 1px;
 
 		@include collapse-triangle();
