@@ -54,6 +54,7 @@ export namespace MOSDeviceActions {
 						// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
 						cb(null, TriggerReloadDataResponse.WORKING)
 					} catch (e) {
+						logger.error('Error in MOSDeviceActions.reloadRundown:handleMosRundownData', e)
 						cb(e)
 					}
 				}
