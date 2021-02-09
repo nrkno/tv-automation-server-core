@@ -197,3 +197,11 @@ registerIndex(Parts, {
 	rundownId: 1,
 	_rank: 1,
 })
+
+export const q1: MongoQuery<Part> = {
+	_rank: 9,
+}
+
+export const q2: MongoQuery<DBPart> = {
+	_rank: 9,
+}
