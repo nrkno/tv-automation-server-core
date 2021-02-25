@@ -574,8 +574,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	timelineStyle() {
 		return {
-			transform:
-				'translate3d(-' + Math.floor(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
+			transform: 'translate(-' + Math.floor(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0)',
 			willChange: 'transform',
 		}
 	}

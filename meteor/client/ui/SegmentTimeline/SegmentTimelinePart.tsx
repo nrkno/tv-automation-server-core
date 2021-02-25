@@ -625,12 +625,15 @@ export const SegmentTimelinePart = withTranslation()(
 					}
 				} else {
 					return {
-						minWidth:
+						transform: `translate(${Math.floor(
+							SegmentTimelinePart0.getPartStartsAt(this.props) * this.props.timeScale
+						).toString()}px, 0)`,
+						width:
 							Math.floor(
 								SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration) * this.props.timeScale
 							).toString() + 'px',
 						// minWidth: (Math.max(this.state.liveDuration, this.props.part.duration || this.props.part.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
-						willChange: this.state.isLive ? 'minWidth' : undefined,
+						willChange: this.state.isLive ? 'width' : undefined,
 					}
 				}
 			}
@@ -909,17 +912,7 @@ export const SegmentTimelinePart = withTranslation()(
 					)
 				} else {
 					// render placeholders
-					return (
-						<div
-							className={ClassNames('segment-timeline__part', {
-								live: this.state.isLive,
-								next: this.state.isNext,
-							})}
-							data-obj-id={this.props.part.instance._id}
-							style={this.getLayerStyle()}>
-							{/* render it empty, just to take up space */}
-						</div>
-					)
+					return null
 				}
 			}
 		}

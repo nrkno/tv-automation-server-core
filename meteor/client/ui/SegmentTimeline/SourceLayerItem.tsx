@@ -151,7 +151,7 @@ export const SourceLayerItem = withTranslation()(
 										? '100%'
 										: 'none',
 								transform:
-									'translate3d(' +
+									'translate(' +
 									Math.floor(
 										widthConstrictedMode
 											? targetPos
@@ -160,11 +160,11 @@ export const SourceLayerItem = withTranslation()(
 													this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10
 											  )
 									).toString() +
-									'px, 0, 0) ' +
-									'translate3d(' +
+									'px, 0) ' +
+									'translate(' +
 									Math.floor(liveLineHistoryWithMargin).toString() +
-									'px, 0, 0) ' +
-									'translate3d(-100%, 0, 5px)',
+									'px, 0) ' +
+									'translate(-100%, 0)',
 								willChange: 'transform',
 							}
 
@@ -189,18 +189,18 @@ export const SourceLayerItem = withTranslation()(
 										? '100%'
 										: 'none',
 								transform:
-									'translate3d(' +
+									'translate(' +
 									Math.floor(
 										Math.min(
 											targetPos,
 											this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10
 										)
 									).toString() +
-									'px, 0, 0) ' +
-									'translate3d(' +
+									'px, 0) ' +
+									'translate(' +
 									Math.floor(liveLineHistoryWithMargin).toString() +
-									'px, 0, 0) ' +
-									'translate3d(-100%, 0, 5px)',
+									'px, 0) ' +
+									'translate(-100%, 0)',
 								willChange: 'transform',
 							}
 
@@ -225,7 +225,7 @@ export const SourceLayerItem = withTranslation()(
 										? '100%'
 										: 'none',
 								transform:
-									'translate3d(' +
+									'translate(' +
 									Math.floor(
 										widthConstrictedMode || this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0
 											? targetPos
@@ -234,7 +234,7 @@ export const SourceLayerItem = withTranslation()(
 													this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth
 											  )
 									).toString() +
-									'px,  0, 5px)',
+									'px,  0)',
 								willChange: 'transform',
 							}
 
@@ -303,7 +303,7 @@ export const SourceLayerItem = withTranslation()(
 						)
 
 						return {
-							transform: 'translate3d(' + Math.floor(targetPos).toString() + 'px,  0, 15px)',
+							transform: 'translate(' + Math.floor(targetPos).toString() + 'px,  0)',
 							willChange: 'transform',
 						}
 					}
