@@ -1174,7 +1174,6 @@ svg.icon {
 
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
-			position: absolute;
 			z-index: 1;
 			transform-style: preserve-3d;
 

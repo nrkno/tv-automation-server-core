@@ -625,10 +625,7 @@ export const SegmentTimelinePart = withTranslation()(
 					}
 				} else {
 					return {
-						transform: `translate(${Math.floor(
-							SegmentTimelinePart0.getPartStartsAt(this.props) * this.props.timeScale
-						).toString()}px, 0)`,
-						width:
+						minWidth:
 							Math.floor(
 								SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration) * this.props.timeScale
 							).toString() + 'px',
@@ -912,7 +909,17 @@ export const SegmentTimelinePart = withTranslation()(
 					)
 				} else {
 					// render placeholders
-					return null
+					return (
+						<div
+							className={ClassNames('segment-timeline__part', {
+								live: this.state.isLive,
+								next: this.state.isNext,
+							})}
+							data-obj-id={this.props.part.instance._id}
+							style={this.getLayerStyle()}>
+							{/* render it empty, just to take up space */}
+						</div>
+					)
 				}
 			}
 		}
