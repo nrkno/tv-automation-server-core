@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { ensureCollectionProperty, setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 /*
  * **************************************************************************************

@@ -13,7 +13,7 @@ import { Timeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 

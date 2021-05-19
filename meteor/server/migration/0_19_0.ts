@@ -10,7 +10,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Random } from 'meteor/random'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { getRandomId, protectString } from '../../lib/lib'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
 

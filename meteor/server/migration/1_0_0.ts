@@ -2,7 +2,7 @@ import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { Studios } from '../../lib/collections/Studios'
 import { ensureCollectionProperty, ensureCollectionPropertyManual, setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
 
 // 1.0.0 (Release 12)

@@ -1,6 +1,6 @@
 
 import { CoreConnection } from '../src/index'
-import { PeripheralDeviceAPI as P } from '../src/lib/corePeripherals'
+import { PeripheralDeviceAPI } from '../src/lib/corePeripherals'
 
 let core = new CoreConnection({
 	deviceId: 'ExampleDevice',

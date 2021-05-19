@@ -3,7 +3,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import Moment from 'react-moment'
 import { getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'

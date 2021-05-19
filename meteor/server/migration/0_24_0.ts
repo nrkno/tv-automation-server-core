@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 // 0.24.0 (Release 9)
 export const addSteps = addMigrationSteps('0.24.0', [

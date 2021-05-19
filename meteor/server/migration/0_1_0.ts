@@ -4,7 +4,7 @@ import { logger } from '../logging'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { ensureCollectionProperty, ensureCollectionPropertyManual } from './lib'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { protectString } from '../../lib/lib'
 
 /**

@@ -1,7 +1,7 @@
 
 jest.dontMock('ddp')
 import { CoreConnection } from '../index'
-import { PeripheralDeviceAPI as P, PeripheralDeviceAPI } from '../lib/corePeripherals'
+import { PeripheralDeviceAPI } from '../lib/corePeripherals'
 
 process.on('unhandledRejection', (reason) => {
 	console.log('Unhandled Promise rejection!', reason)
@@ -24,8 +24,8 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	let core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -58,20 +58,20 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	// Set some statuses:
 
 	let statusResponse = await core.setStatus({
-		statusCode: P.StatusCode.WARNING_MAJOR,
+		statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
 		messages: ['testing testing']
 	})
 
 	expect(statusResponse).toMatchObject({
-		statusCode: P.StatusCode.WARNING_MAJOR
+		statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MAJOR
 	})
 
 	statusResponse = await core.setStatus({
-		statusCode: P.StatusCode.GOOD
+		statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 	})
 
 	expect(statusResponse).toMatchObject({
-		statusCode: P.StatusCode.GOOD
+		statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 	})
 
 	// Observe data:
@@ -120,7 +120,7 @@ test('Integration: Test connection and basic Core functionality', async () => {
 
 	// Set the status now (should cause an error)
 	await expect(core.setStatus({
-		statusCode: P.StatusCode.GOOD
+		statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 	})).rejects.toMatchObject({
 		error: 404
 	})
@@ -144,8 +144,8 @@ test('Integration: Connection timeout', async () => {
 	let core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -185,8 +185,8 @@ test('Integration: Connection recover from close', async () => {
 	let core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -211,7 +211,7 @@ test('Integration: Connection recover from close', async () => {
 	expect(core.connected).toEqual(true)
 
 	// Force-close the socket:
-	core.ddp.ddpClient!.socket.close()
+	core.ddPeripheralDeviceAPI.ddpClient!.socket.close()
 
 	await wait(10)
 	expect(core.connected).toEqual(false)
@@ -230,8 +230,8 @@ test('Integration: autoSubscription', async () => {
 	let core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -275,7 +275,7 @@ test('Integration: autoSubscription', async () => {
 	expect(observerChanged).toHaveBeenCalledTimes(1)
 
 	// Force-close the socket:
-	core.ddp.ddpClient!.socket.close()
+	core.ddPeripheralDeviceAPI.ddpClient!.socket.close()
 
 	await wait(10)
 	expect(core.connected).toEqual(false)
@@ -301,8 +301,8 @@ test('Integration: Connection recover from a close that lasts some time', async 
 	let core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -329,9 +329,9 @@ test('Integration: Connection recover from a close that lasts some time', async 
 	expect(core.connected).toEqual(true)
 
 	// temporary scramble the ddp host:
-	;(core.ddp.ddpClient as any).host = '127.0.0.9'
+	;(core.ddPeripheralDeviceAPI.ddpClient as any).host = '127.0.0.9'
 	// Force-close the socket:
-	core.ddp.ddpClient!.socket.close()
+	core.ddPeripheralDeviceAPI.ddpClient!.socket.close()
 
 	await wait(10)
 	expect(core.connected).toEqual(false)
@@ -339,7 +339,7 @@ test('Integration: Connection recover from a close that lasts some time', async 
 	await wait(1000) // allow for some reconnections
 
 	// restore ddp host:
-	;(core.ddp.ddpClient as any).host = '127.0.0.1'
+	;(core.ddPeripheralDeviceAPI.ddpClient as any).host = '127.0.0.1'
 	await wait(1000)
 	// should have reconnected by now
 
@@ -353,8 +353,8 @@ test('Integration: Parent connections', async () => {
 	let coreParent = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 	let onError = jest.fn()
@@ -373,8 +373,8 @@ test('Integration: Parent connections', async () => {
 	let coreChild = new CoreConnection({
 		deviceId: 'JestTestChild',
 		deviceToken: 'abcd2',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework child'
 	})
 
@@ -399,20 +399,20 @@ test('Integration: Parent connections', async () => {
 
 	// Set some statuses:
 	let statusResponse = await coreChild.setStatus({
-		statusCode: P.StatusCode.WARNING_MAJOR,
+		statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
 		messages: ['testing testing']
 	})
 
 	expect(statusResponse).toMatchObject({
-		statusCode: P.StatusCode.WARNING_MAJOR
+		statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MAJOR
 	})
 
 	statusResponse = await coreChild.setStatus({
-		statusCode: P.StatusCode.GOOD
+		statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 	})
 
 	expect(statusResponse).toMatchObject({
-		statusCode: P.StatusCode.GOOD
+		statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 	})
 
 	// Uninitialize:
@@ -423,7 +423,7 @@ test('Integration: Parent connections', async () => {
 
 	// Set the status now (should cause an error)
 	await expect(coreChild.setStatus({
-		statusCode: P.StatusCode.GOOD
+		statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 	})).rejects.toMatchObject({
 		error: 404
 	})
@@ -441,8 +441,8 @@ test('Integration: Parent destroy', async () => {
 	let coreParent = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 	let onParentError = jest.fn()
@@ -456,8 +456,8 @@ test('Integration: Parent destroy', async () => {
 	let coreChild = new CoreConnection({
 		deviceId: 'JestTestChild',
 		deviceToken: 'abcd2',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework child'
 	})
 	let onChildConnectionChanged = jest.fn()
@@ -518,8 +518,8 @@ test('Integration: Child destroy', async () => {
 	let coreParent = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 	let onParentError = jest.fn()
@@ -532,8 +532,8 @@ test('Integration: Child destroy', async () => {
 	let coreChild = new CoreConnection({
 		deviceId: 'JestTestChild',
 		deviceToken: 'abcd2',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework child'
 	})
 	let onChildConnectionChanged = jest.fn()
@@ -571,8 +571,8 @@ test('Integration: Test callMethodLowPrio', async () => {
 	let core = new CoreConnection({
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
-		deviceType: P.DeviceType.PLAYOUT,
-		deviceCategory: P.DeviceCategory.PLAYOUT,
+		deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 

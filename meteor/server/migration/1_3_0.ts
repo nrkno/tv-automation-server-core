@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 // 1.3.0 (Release 15)
 export const addSteps = addMigrationSteps('1.3.0', [

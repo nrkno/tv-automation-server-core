@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { StatusCode } from '../../server/systemStatus/systemStatus'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {

@@ -1,9 +1,8 @@
 import {
 	CoreConnection,
 	CoreOptions,
-	PeripheralDeviceAPI as P,
-	DDPConnectorOptions,
 	PeripheralDeviceAPI,
+	DDPConnectorOptions
 } from '@sofie-automation/server-core-integration'
 
 import {
@@ -88,7 +87,7 @@ export class CoreHandler {
 		this._process = process
 
 		this.core = new CoreConnection(
-			this.getCoreConnectionOptions('Playout gateway', 'PlayoutCoreParent', P.SUBTYPE_PROCESS)
+			this.getCoreConnectionOptions('Playout gateway', 'PlayoutCoreParent', PeripheralDeviceAPI.SUBTYPE_PROCESS)
 		)
 
 		this.core.onConnected(() => {
@@ -162,7 +161,7 @@ export class CoreHandler {
 	getCoreConnectionOptions(
 		name: string,
 		subDeviceId: string,
-		subDeviceType: DeviceType | P.SUBTYPE_PROCESS
+		subDeviceType: DeviceType | PeripheralDeviceAPI.SUBTYPE_PROCESS
 	): CoreOptions {
 		let credentials: {
 			deviceId: string
@@ -186,8 +185,8 @@ export class CoreHandler {
 		const options: CoreOptions = {
 			...credentials,
 
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			deviceSubType: subDeviceType,
 
 			deviceName: name,
@@ -195,7 +194,7 @@ export class CoreHandler {
 
 			configManifest: PLAYOUT_DEVICE_CONFIG,
 		}
-		if (subDeviceType === P.SUBTYPE_PROCESS) options.versions = this._getVersions()
+		if (subDeviceType === PeripheralDeviceAPI.SUBTYPE_PROCESS) options.versions = this._getVersions()
 		return options
 	}
 	onConnected(fcn: () => any): void {
@@ -299,7 +298,7 @@ export class CoreHandler {
 					this.logger.error('executeFunction error', err, err.stack)
 				}
 				fcnObject.core
-					.callMethod(P.methods.functionReply, [cmd._id, err, res])
+					.callMethod(PeripheralDeviceAPI.methods.functionReply, [cmd._id, err, res])
 					.then(() => {
 						// console.log('cb done')
 					})
@@ -467,15 +466,15 @@ export class CoreHandler {
 		await device.formatDisks()
 	}
 	updateCoreStatus(): Promise<any> {
-		let statusCode = P.StatusCode.GOOD
+		let statusCode = PeripheralDeviceAPI.StatusCode.GOOD
 		const messages: Array<string> = []
 
 		if (!this._statusInitialized) {
-			statusCode = P.StatusCode.BAD
+			statusCode = PeripheralDeviceAPI.StatusCode.BAD
 			messages.push('Starting up...')
 		}
 		if (this._statusDestroyed) {
-			statusCode = P.StatusCode.BAD
+			statusCode = PeripheralDeviceAPI.StatusCode.BAD
 			messages.push('Shut down')
 		}
 
@@ -528,8 +527,8 @@ export class CoreTSRDeviceHandler {
 	private _tsrHandler: TSRHandler
 	private _subscriptions: Array<string> = []
 	private _hasGottenStatusChange = false
-	private _deviceStatus: P.StatusObject = {
-		statusCode: P.StatusCode.BAD,
+	private _deviceStatus: PeripheralDeviceAPI.StatusObject = {
+		statusCode: PeripheralDeviceAPI.StatusCode.BAD,
 		messages: ['Starting up...'],
 	}
 
@@ -574,9 +573,9 @@ export class CoreTSRDeviceHandler {
 			this._deviceStatus = {
 				statusCode: (await this._device.device.canConnect)
 					? (await this._device.device.connected)
-						? P.StatusCode.GOOD
-						: P.StatusCode.BAD
-					: P.StatusCode.GOOD,
+						? PeripheralDeviceAPI.StatusCode.GOOD
+						: PeripheralDeviceAPI.StatusCode.BAD
+					: PeripheralDeviceAPI.StatusCode.GOOD,
 			}
 			this.sendStatus()
 		}
@@ -610,7 +609,7 @@ export class CoreTSRDeviceHandler {
 		// setup observers
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
-	statusChanged(deviceStatus: P.StatusObject): void {
+	statusChanged(deviceStatus: PeripheralDeviceAPI.StatusObject): void {
 		this._hasGottenStatusChange = true
 
 		this._deviceStatus = deviceStatus
@@ -624,20 +623,21 @@ export class CoreTSRDeviceHandler {
 			.setStatus(this._deviceStatus)
 			.catch((e) => this._coreParentHandler.logger.error('Error when setting status: ', e, e.stack))
 	}
-	onCommandError(
-		errorMessage: string,
-		ref: {
-			rundownId?: string
-			partId?: string
-			pieceId?: string
-			context: string
-			timelineObjId: string
-		}
-	): void {
-		this.core
-			.callMethodLowPrio(PeripheralDeviceAPI.methods.reportCommandError, [errorMessage, ref])
-			.catch((e) => this._coreParentHandler.logger.error('Error when callMethodLowPrio: ', e, e.stack))
-	}
+	// Not implemented:
+	// onCommandError(
+	// 	errorMessage: string,
+	// 	ref: {
+	// 		rundownId?: string
+	// 		partId?: string
+	// 		pieceId?: string
+	// 		context: string
+	// 		timelineObjId: string
+	// 	}
+	// ): void {
+	// 	this.core
+	// 		.callMethodLowPrio(PeripheralDeviceAPI.methods.reportCommandError, [errorMessage, ref])
+	// 		.catch((e) => this._coreParentHandler.logger.error('Error when callMethodLowPrio: ', e, e.stack))
+	// }
 	onUpdateMediaObject(collectionId: string, docId: string, doc: MediaObject | null): void {
 		this.core
 			.callMethodLowPrio(PeripheralDeviceAPI.methods.updateMediaObject, [collectionId, docId, doc])
@@ -658,7 +658,7 @@ export class CoreTSRDeviceHandler {
 
 		await this._tsrHandler.tsr.removeDevice(this._deviceId)
 		await this.core.setStatus({
-			statusCode: P.StatusCode.BAD,
+			statusCode: PeripheralDeviceAPI.StatusCode.BAD,
 			messages: ['Uninitialized'],
 		})
 	}

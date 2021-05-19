@@ -13,7 +13,7 @@ import {
 	MigrationContextStudio,
 	MigrationContextShowStyle,
 } from '@sofie-automation/blueprints-integration'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'

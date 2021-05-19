@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import {
 	PeripheralDevice,
 	PeripheralDevices,

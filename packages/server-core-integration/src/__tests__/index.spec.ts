@@ -1,5 +1,5 @@
 import { CoreConnection } from '../index'
-import { PeripheralDeviceAPI as P, PeripheralDeviceAPI } from '../lib/corePeripherals'
+import { PeripheralDeviceAPI } from '../lib/corePeripherals'
 import * as _ from 'underscore'
 import { DDPConnectorOptions } from '../lib/ddpClient'
 jest.mock('faye-websocket')
@@ -29,9 +29,9 @@ describe('coreConnection', () => {
 		let core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 
@@ -50,9 +50,9 @@ describe('coreConnection', () => {
 		let core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 
@@ -85,20 +85,20 @@ describe('coreConnection', () => {
 		// Set some statuses:
 
 		let statusResponse = await core.setStatus({
-			statusCode: P.StatusCode.WARNING_MAJOR,
+			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
 			messages: ['testing testing']
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.WARNING_MAJOR
+			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MAJOR
 		})
 
 		statusResponse = await core.setStatus({
-			statusCode: P.StatusCode.GOOD
+			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.GOOD
+			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 		})
 
 		// Observe data:
@@ -147,7 +147,7 @@ describe('coreConnection', () => {
 
 		// Set the status now (should cause an error)
 		await expect(core.setStatus({
-			statusCode: P.StatusCode.GOOD
+			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 		})).rejects.toMatchObject({
 			error: 404
 		})
@@ -170,9 +170,9 @@ describe('coreConnection', () => {
 		let core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 
@@ -211,9 +211,9 @@ describe('coreConnection', () => {
 		let core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 
@@ -238,7 +238,7 @@ describe('coreConnection', () => {
 		expect(core.connected).toEqual(true)
 
 		// Force-close the socket:
-		core.ddp.ddpClient && core.ddp.ddpClient.socket.close()
+		core.ddPeripheralDeviceAPI.ddpClient && core.ddPeripheralDeviceAPI.ddpClient.socket.close()
 
 		await wait(10)
 		expect(core.connected).toEqual(false)
@@ -256,9 +256,9 @@ describe('coreConnection', () => {
 		let core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 
@@ -302,7 +302,7 @@ describe('coreConnection', () => {
 		expect(observerChanged).toHaveBeenCalledTimes(1)
 
 		// Force-close the socket:
-		core.ddp.ddpClient && core.ddp.ddpClient.socket.close()
+		core.ddPeripheralDeviceAPI.ddpClient && core.ddPeripheralDeviceAPI.ddpClient.socket.close()
 
 		await wait(10)
 		expect(core.connected).toEqual(false)
@@ -327,9 +327,9 @@ describe('coreConnection', () => {
 		let core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 
@@ -358,9 +358,9 @@ describe('coreConnection', () => {
 
 		// temporary scramble the ddp host:
 		options.host = '127.0.0.9'
-		core.ddp.ddpClient && core.ddp.ddpClient.resetOptions(options)
+		core.ddPeripheralDeviceAPI.ddpClient && core.ddPeripheralDeviceAPI.ddpClient.resetOptions(options)
 		// Force-close the socket:
-		core.ddp.ddpClient && core.ddp.ddpClient.socket.close()
+		core.ddPeripheralDeviceAPI.ddpClient && core.ddPeripheralDeviceAPI.ddpClient.socket.close()
 
 		await wait(10)
 		expect(core.connected).toEqual(false)
@@ -369,7 +369,7 @@ describe('coreConnection', () => {
 
 		// restore ddp host:
 		options.host = '127.0.0.1'
-		core.ddp.ddpClient && core.ddp.ddpClient.resetOptions(options)
+		core.ddPeripheralDeviceAPI.ddpClient && core.ddPeripheralDeviceAPI.ddpClient.resetOptions(options)
 		await wait(1000)
 		// should have reconnected by now
 
@@ -382,9 +382,9 @@ describe('coreConnection', () => {
 		let coreParent = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 		let onError = jest.fn()
@@ -403,9 +403,9 @@ describe('coreConnection', () => {
 		let coreChild = new CoreConnection({
 			deviceId: 'JestTestChild',
 			deviceToken: 'abcd2',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework child'
 		})
 
@@ -430,20 +430,20 @@ describe('coreConnection', () => {
 
 		// Set some statuses:
 		let statusResponse = await coreChild.setStatus({
-			statusCode: P.StatusCode.WARNING_MAJOR,
+			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
 			messages: ['testing testing']
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.WARNING_MAJOR
+			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MAJOR
 		})
 
 		statusResponse = await coreChild.setStatus({
-			statusCode: P.StatusCode.GOOD
+			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.GOOD
+			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 		})
 
 		// Uninitialize:
@@ -454,7 +454,7 @@ describe('coreConnection', () => {
 
 		// Set the status now (should cause an error)
 		await expect(coreChild.setStatus({
-			statusCode: P.StatusCode.GOOD
+			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
 		})).rejects.toMatchObject({
 			error: 404
 		})
@@ -470,9 +470,9 @@ describe('coreConnection', () => {
 		let coreParent = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 		let onParentError = jest.fn()
@@ -486,8 +486,8 @@ describe('coreConnection', () => {
 		let coreChild = new CoreConnection({
 			deviceId: 'JestTestChild',
 			deviceToken: 'abcd2',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			deviceSubType: 'mos_connection',
 			deviceName: 'Jest test framework child'
 		})
@@ -549,9 +549,9 @@ describe('coreConnection', () => {
 		let coreParent = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 		let onParentError = jest.fn()
@@ -564,8 +564,8 @@ describe('coreConnection', () => {
 		let coreChild = new CoreConnection({
 			deviceId: 'JestTestChild',
 			deviceToken: 'abcd2',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			deviceSubType: 'mos_connection',
 			deviceName: 'Jest test framework child'
 		})
@@ -603,9 +603,9 @@ describe('coreConnection', () => {
 		let core = new CoreConnection({
 			deviceId: 'JestTest',
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			deviceSubType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework'
 		})
 

@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import _ from 'underscore'
 
 // Release 23

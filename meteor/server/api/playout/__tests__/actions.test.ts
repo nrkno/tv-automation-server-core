@@ -9,7 +9,7 @@ import {
 import { Rundowns } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { activateRundownPlaylist, prepareStudioForBroadcast } from '../actions'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'

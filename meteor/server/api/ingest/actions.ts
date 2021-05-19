@@ -1,5 +1,5 @@
 import { getPeripheralDeviceFromRundown } from './lib'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'

@@ -9,7 +9,7 @@ import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline } from '../../lib/collections/Timeline'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { ensureCollectionProperty, removeCollectionProperty, setExpectedVersion } from './lib'
 
 // Release 24

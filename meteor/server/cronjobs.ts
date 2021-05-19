@@ -1,5 +1,5 @@
 import { Rundowns } from '../lib/collections/Rundowns'
-import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { getCurrentTime, makePromise, waitForPromiseAll } from '../lib/lib'
@@ -13,6 +13,7 @@ import { CASPARCG_RESTART_TIME } from '../lib/constants'
 import { Studios } from '../lib/collections/Studios'
 import { removeEmptyPlaylists } from './api/rundownPlaylist'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
+import { executePeripheralDeviceFuntionWithCustomTimeout } from '../lib/api/peripheralDeviceInternal'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -96,7 +97,7 @@ Meteor.startup(() => {
 
 							ps.push(
 								new Promise<void>((resolve, reject) => {
-									PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+									executePeripheralDeviceFuntionWithCustomTimeout(
 										subDevice._id,
 										(err) => {
 											if (err) {

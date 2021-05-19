@@ -1,14 +1,17 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { NewUserActionAPI, TriggerReloadDataResponse } from '../../../../lib/api/userActions'
+import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { WrapAsyncCallback } from '../../../../lib/lib'
 import { logger } from '../../../logging'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import * as _ from 'underscore'
 import { IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { handleRemovedSegment, handleUpdatedSegment, handleUpdatedRundown } from '../rundownInput'
 import { Segment } from '../../../../lib/collections/Segments'
+import {
+	executePeripheralDeviceFuntion,
+	executePeripheralDeviceFuntionWithCustomTimeout,
+} from '../../../../lib/api/peripheralDeviceInternal'
 
 export namespace GenericDeviceActions {
 	export const reloadRundown: (
@@ -21,7 +24,7 @@ export namespace GenericDeviceActions {
 	): void {
 		logger.info('reloadRundown ' + rundown._id)
 
-		PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+		executePeripheralDeviceFuntionWithCustomTimeout(
 			peripheralDevice._id,
 			(err: Error, ingestRundown: IngestRundown | null) => {
 				if (err) {
@@ -79,7 +82,7 @@ export namespace GenericDeviceActions {
 	): void {
 		logger.info('reloadSegment ' + segment._id)
 
-		PeripheralDeviceAPI.executeFunction(
+		executePeripheralDeviceFuntion(
 			peripheralDevice._id,
 			(err: Error, ingestSegment: IngestSegment | null) => {
 				if (err) {

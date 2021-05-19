@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { getCurrentTime, getRandomId, makePromise, waitForPromise } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownEventContext } from '../blueprints/context'
@@ -12,6 +12,7 @@ import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import { profiler } from '../profiler'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import { executePeripheralDeviceFuntion } from '../../../lib/api/peripheralDeviceInternal'
 
 export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boolean): Promise<void> {
 	logger.info('Activating rundown ' + cache.Playlist.doc._id + (rehearsal ? ' (Rehearsal)' : ''))
@@ -189,7 +190,7 @@ export async function prepareStudioForBroadcast(cache: CacheForPlayout, okToDest
 	await Promise.allSettled(
 		playoutDevices.map((device) =>
 			makePromise(() => {
-				PeripheralDeviceAPI.executeFunction(
+				executePeripheralDeviceFuntion(
 					device._id,
 					(err) => {
 						if (err) {
@@ -219,7 +220,7 @@ export async function standDownStudio(cache: CacheForPlayout, okToDestoryStuff: 
 	await Promise.allSettled(
 		playoutDevices.map((device) =>
 			makePromise(() => {
-				PeripheralDeviceAPI.executeFunction(
+				executePeripheralDeviceFuntion(
 					device._id,
 					(err) => {
 						if (err) {

@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { PackageJson } from 'type-fest'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 const PackageInfo: PackageJson = require('../../package.json')

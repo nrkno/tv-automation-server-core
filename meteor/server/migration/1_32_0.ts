@@ -4,7 +4,7 @@ import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { dropDeprecatedDatabases, getDeprecatedDatabases } from './deprecatedDatabases/1_32_0'
 import semver from 'semver'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 // Release 32
 export const addSteps = addMigrationSteps('1.32.0', [

@@ -1,4 +1,4 @@
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { addMigrationSteps } from './databaseMigration'
 import { setExpectedVersion } from './lib'
 

@@ -2,7 +2,7 @@ import { setExpectedVersion } from './lib'
 import { addMigrationSteps } from './databaseMigration'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 /**
  * This file contains system specific migration steps.

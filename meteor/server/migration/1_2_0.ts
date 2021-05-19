@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { ensureCollectionProperty, setExpectedVersion } from './lib'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 // 1.2.0 (Release 14)
 export const addSteps = addMigrationSteps('1.2.0', [

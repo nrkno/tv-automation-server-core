@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { WithTranslation, withTranslation } from 'react-i18next'
 import { unprotectString } from '../../lib/lib'
 import { doModalDialog } from '../lib/ModalDialog'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { Route, NavLink, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
 
 import { Studio, Studios } from '../../lib/collections/Studios'

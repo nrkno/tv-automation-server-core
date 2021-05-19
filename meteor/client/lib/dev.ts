@@ -1,10 +1,13 @@
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { getCurrentTime, Collections } from '../../lib/lib'
 import { Session } from 'meteor/session'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
 import { MeteorCall } from '../../lib/api/methods'
+import {
+	executePeripheralDeviceFuntion,
+	executePeripheralDeviceFuntionWithCustomTimeout,
+} from '../../lib/api/peripheralDeviceInternal'
 
 // Note: These things are convenience functions to be used during development:
 
@@ -15,8 +18,8 @@ Meteor.startup(() => {
 })
 
 window['Collections'] = Collections
-window['executeFunction'] = PeripheralDeviceAPI.executeFunction
-window['executeFunctionWithCustomTimeout'] = PeripheralDeviceAPI.executeFunctionWithCustomTimeout
+window['executePeripheralDeviceFuntion'] = executePeripheralDeviceFuntion
+window['executePeripheralDeviceFuntionWithCustomTimeout'] = executePeripheralDeviceFuntionWithCustomTimeout
 window['getCurrentTime'] = getCurrentTime
 window['Session'] = Session
 

@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 // 0.26.0 (Release 11)
 export const addSteps = addMigrationSteps('0.26.0', [

@@ -4,14 +4,11 @@ import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
 import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps, MediaWorkFlowStep, MediaWorkFlowStepId } from '../../../lib/collections/MediaWorkFlowSteps'
-import {
-	PeripheralDeviceAPI,
-	MediaWorkFlowRevision,
-	MediaWorkFlowStepRevision,
-} from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
+import { MediaWorkFlowRevision, MediaWorkFlowStepRevision } from '../../../lib/api/peripheralDevice'
 
 export namespace MediaManagerIntegration {
 	export function getMediaWorkFlowStepRevisions(

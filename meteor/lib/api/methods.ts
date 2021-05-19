@@ -1,10 +1,11 @@
 import * as _ from 'underscore'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { MeteorPromiseCall, ProtectedStringProperties } from '../lib'
 import { NewBlueprintAPI, BlueprintAPIMethods } from './blueprint'
 import { NewClientAPI, ClientAPIMethods } from './client'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from './ExternalMessageQueue'
 import { NewMigrationAPI, MigrationAPIMethods } from './migration'
-import { NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from './peripheralDevice'
+import { NewPeripheralDeviceAPI } from './peripheralDevice'
 import { NewPlayoutAPI, PlayoutAPIMethods } from './playout'
 import { NewRundownAPI, RundownAPIMethods } from './rundown'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from './rundownLayouts'
@@ -19,6 +20,7 @@ import { SystemAPIMethods, SystemAPI } from './system'
 import { UserId } from '../typings/meteor'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 import { Meteor } from 'meteor/meteor'
+import { PeripheralDeviceAPIInternal, PeripheralDeviceAPIInternalMethods } from './peripheralDeviceInternal'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -29,7 +31,7 @@ interface IMeteorCall {
 	client: NewClientAPI
 	externalMessages: NewExternalMessageQueueAPI
 	migration: NewMigrationAPI
-	peripheralDevice: NewPeripheralDeviceAPI
+	peripheralDevice: PeripheralDeviceAPIInternal
 	playout: NewPlayoutAPI
 	rundown: NewRundownAPI
 	rundownLayout: NewRundownLayoutsAPI
@@ -48,7 +50,7 @@ export const MeteorCall: IMeteorCall = {
 	client: makeMethods(ClientAPIMethods),
 	externalMessages: makeMethods(ExternalMessageQueueAPIMethods),
 	migration: makeMethods(MigrationAPIMethods),
-	peripheralDevice: makeMethods(PeripheralDeviceAPIMethods),
+	peripheralDevice: makeMethods(PeripheralDeviceAPIInternalMethods),
 	playout: makeMethods(PlayoutAPIMethods),
 	rundown: makeMethods(RundownAPIMethods),
 	rundownLayout: makeMethods(RundownLayoutsAPIMethods),
@@ -61,6 +63,15 @@ export const MeteorCall: IMeteorCall = {
 	organization: makeMethods(OrganizationAPIMethods),
 	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
 	system: makeMethods(SystemAPIMethods),
+}
+interface IMeteorCallExternal {
+	peripheralDevice: NewPeripheralDeviceAPI
+}
+/**
+ * These methods are not really intended to be called from within Sofie, but defined here for easy of use in tests.
+ */
+export const MeteorCallExternal: IMeteorCallExternal = {
+	peripheralDevice: makeMethods(PeripheralDeviceAPI.methods),
 }
 function makeMethods(methods: object): any {
 	const o = {}

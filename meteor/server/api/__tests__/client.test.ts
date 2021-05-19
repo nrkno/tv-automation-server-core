@@ -8,7 +8,7 @@ import { setLoggerLevel } from '../logger'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 require('../client') // include in order to create the Meteor methods needed
 

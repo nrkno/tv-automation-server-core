@@ -3,7 +3,6 @@ import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { MediaWorkFlows, MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { waitForPromise } from '../../lib/lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { MethodContext } from '../../lib/api/methods'
@@ -11,6 +10,7 @@ import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { executePeripheralDeviceFuntion } from '../../lib/api/peripheralDeviceInternal'
 
 export namespace MediaManagerAPI {
 	export function restartAllWorkflows(context: MethodContext, organizationId: OrganizationId | null) {
@@ -35,7 +35,7 @@ export namespace MediaManagerAPI {
 			Promise.all(
 				deviceIds.map((deviceId) => {
 					return new Promise<void>((resolve, reject) => {
-						PeripheralDeviceAPI.executeFunction(
+						executePeripheralDeviceFuntion(
 							deviceId,
 							(err, res) => {
 								if (err) reject(err)
@@ -71,7 +71,7 @@ export namespace MediaManagerAPI {
 			Promise.all(
 				deviceIds.map((deviceId) => {
 					return new Promise<void>((resolve, reject) => {
-						PeripheralDeviceAPI.executeFunction(
+						executePeripheralDeviceFuntion(
 							deviceId,
 							(err, res) => {
 								if (err) reject(err)
@@ -94,7 +94,7 @@ export namespace MediaManagerAPI {
 
 		waitForPromise(
 			new Promise<void>((resolve, reject) => {
-				PeripheralDeviceAPI.executeFunction(
+				executePeripheralDeviceFuntion(
 					workflow.deviceId,
 					(err, res) => {
 						if (err) reject(err)
@@ -115,7 +115,7 @@ export namespace MediaManagerAPI {
 
 		waitForPromise(
 			new Promise<void>((resolve, reject) => {
-				PeripheralDeviceAPI.executeFunction(
+				executePeripheralDeviceFuntion(
 					workflow.deviceId,
 					(err, res) => {
 						if (err) reject(err)
@@ -136,7 +136,7 @@ export namespace MediaManagerAPI {
 
 		waitForPromise(
 			new Promise<void>((resolve, reject) => {
-				PeripheralDeviceAPI.executeFunction(
+				executePeripheralDeviceFuntion(
 					workflow.deviceId,
 					(err, res) => {
 						if (err) reject(err)

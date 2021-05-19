@@ -24,7 +24,7 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { CoreConnection, PeripheralDeviceAPI as P } from '@sofie-automation/server-core-integration'
+import { CoreConnection, PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { LoggerInstance } from './index'
 import { disableAtemUpload } from './config'
@@ -213,13 +213,13 @@ export class TSRHandler {
 
 		this.tsr.on('setTimelineTriggerTime', (r: TimelineTriggerTimeResult) => {
 			this.logger.debug('setTimelineTriggerTime')
-			this._coreHandler.core.callMethod(P.methods.timelineTriggerTime, [r]).catch((e) => {
+			this._coreHandler.core.callMethod(PeripheralDeviceAPI.methods.timelineTriggerTime, [r]).catch((e) => {
 				this.logger.error('Error in setTimelineTriggerTime', e)
 			})
 		})
 		this.tsr.on('timelineCallback', (time, objId, callbackName, data) => {
 			// @ts-expect-error Untyped bunch of methods
-			const method = P.methods[callbackName]
+			const method = PeripheralDeviceAPI.methods[callbackName]
 			if (method) {
 				this._coreHandler.core
 					.callMethod(method, [
@@ -595,17 +595,17 @@ export class TSRHandler {
 			// Set up device status
 			const deviceType = device.deviceType
 
-			const onDeviceStatusChanged = (connectedOrStatus: boolean | P.StatusObject) => {
-				let deviceStatus: P.StatusObject
+			const onDeviceStatusChanged = (connectedOrStatus: boolean | PeripheralDeviceAPI.StatusObject) => {
+				let deviceStatus: PeripheralDeviceAPI.StatusObject
 				if (_.isBoolean(connectedOrStatus)) {
 					// for backwards compability, to be removed later
 					if (connectedOrStatus) {
 						deviceStatus = {
-							statusCode: P.StatusCode.GOOD,
+							statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
 						}
 					} else {
 						deviceStatus = {
-							statusCode: P.StatusCode.BAD,
+							statusCode: PeripheralDeviceAPI.StatusCode.BAD,
 							messages: ['Disconnected'],
 						}
 					}
@@ -615,9 +615,9 @@ export class TSRHandler {
 				coreTsrHandler.statusChanged(deviceStatus)
 				// hack to make sure atem has media after restart
 				if (
-					(deviceStatus.statusCode === P.StatusCode.GOOD ||
-						deviceStatus.statusCode === P.StatusCode.WARNING_MINOR ||
-						deviceStatus.statusCode === P.StatusCode.WARNING_MAJOR) &&
+					(deviceStatus.statusCode === PeripheralDeviceAPI.StatusCode.GOOD ||
+						deviceStatus.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR ||
+						deviceStatus.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) &&
 					deviceType === DeviceType.ATEM &&
 					!disableAtemUpload
 				) {
@@ -718,7 +718,7 @@ export class TSRHandler {
 				this.logger.warn(`Child of device ${deviceId} closed/crashed`)
 
 				onDeviceStatusChanged({
-					statusCode: P.StatusCode.BAD,
+					statusCode: PeripheralDeviceAPI.StatusCode.BAD,
 					messages: ['Child process closed'],
 				})
 

@@ -5,7 +5,7 @@ import { makePlaylistFromRundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
 import { Random } from 'meteor/random'
 import { addMigrationSteps } from './databaseMigration'
 import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 // 1.7.0 (Release 19)
 export const addSteps = addMigrationSteps('1.7.0', [

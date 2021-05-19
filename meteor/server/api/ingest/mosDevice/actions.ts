@@ -3,15 +3,17 @@ import { logger } from '../../../logging'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { parseMosString } from './lib'
-import { IngestActions } from '../actions'
 import { WrapAsyncCallback } from '../../../../lib/lib'
 import * as _ from 'underscore'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
+import {
+	executePeripheralDeviceFuntion,
+	executePeripheralDeviceFuntionWithCustomTimeout,
+} from '../../../../lib/api/peripheralDeviceInternal'
 
 export namespace MOSDeviceActions {
 	export const reloadRundown: (
@@ -24,7 +26,7 @@ export namespace MOSDeviceActions {
 	): void {
 		logger.info('reloadRundown ' + rundown._id)
 
-		PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+		executePeripheralDeviceFuntionWithCustomTimeout(
 			peripheralDevice._id,
 			(err: Error, mosRunningOrder: MOS.IMOSRunningOrder) => {
 				if (err) {
@@ -94,7 +96,7 @@ export namespace MOSDeviceActions {
 	): Promise<any> {
 		return new Promise((resolve, reject) => {
 			logger.debug('setStoryStatus', { deviceId, externalId: rundown.externalId, storyId, status })
-			PeripheralDeviceAPI.executeFunction(
+			executePeripheralDeviceFuntion(
 				deviceId,
 				(err, result) => {
 					logger.debug('reply', err, result)
@@ -146,7 +148,7 @@ export namespace MOSDeviceActions {
 			if (!peripheralDevice)
 				throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
 
-			PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+			executePeripheralDeviceFuntionWithCustomTimeout(
 				peripheralDevice._id,
 				(err: any, response: any) => {
 					// console.debug(`Received response from device: ${JSON.stringify(err)}, ${JSON.stringify(response)}`)

@@ -46,6 +46,7 @@ export function registerClassToMeteorMethods(
 	_.each(getAllClassMethods(orgClass), (classMethodName) => {
 		const enumValue = methodEnum[classMethodName]
 		if (!enumValue)
+			// The method name is not set in the enum:
 			throw new Meteor.Error(
 				500,
 				`registerClassToMeteorMethods: The method "${classMethodName}" is not set in the enum containing methods.`
@@ -62,6 +63,18 @@ export function registerClassToMeteorMethods(
 				wrapped: orgClass.prototype[classMethodName],
 				original: orgClass.prototype[classMethodName],
 			}
+		}
+	})
+
+	// Also check that all enums have a equivalent method:
+	_.each(methodEnum, (enumValue: string, enumName: string) => {
+		if (!methods[enumValue]) {
+			console.log('-------')
+			console.log(_.keys(methods))
+			throw new Meteor.Error(
+				500,
+				`registerClassToMeteorMethods: The enum "${enumName}: ${enumValue}" is missing from the methods implementations.`
+			)
 		}
 	})
 	setMeteorMethods(methods, secret)

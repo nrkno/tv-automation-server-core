@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 
 import { DDPConnector } from './ddpConnector'
 import { DDPConnectorOptions, Observer } from './ddpClient'
-import { PeripheralDeviceAPI as P, PeripheralDeviceAPI } from './corePeripherals'
+import { PeripheralDeviceAPI } from './corePeripherals'
 import { TimeSync } from './timeSync'
 import { WatchDog } from './watchDog'
 import { Queue } from './queue'
@@ -22,9 +22,9 @@ export interface CoreCredentials {
 }
 
 export interface CoreOptions extends CoreCredentials {
-	deviceCategory: P.DeviceCategory
-	deviceType?: P.DeviceType | string //  deprecated
-	deviceSubType?: P.DeviceSubType // deprecated
+	deviceCategory: PeripheralDeviceAPI.DeviceCategory
+	deviceType: PeripheralDeviceAPI.DeviceType //  deprecated
+	deviceSubType: PeripheralDeviceAPI.DeviceSubType // deprecated
 
 	deviceName: string,
 	versions?: {
@@ -32,7 +32,7 @@ export interface CoreOptions extends CoreCredentials {
 	},
 	watchDog?: boolean
 
-	configManifest?: DeviceConfigManifest
+	configManifest: DeviceConfigManifest
 }
 export interface CollectionObj {
 	_id: string
@@ -249,8 +249,8 @@ export class CoreConnection extends EventEmitter {
 	get deviceId () {
 		return this._coreOptions.deviceId
 	}
-	setStatus (status: P.StatusObject): Promise<P.StatusObject> {
-		return this.callMethod(P.methods.setStatus, [status])
+	setStatus (status: PeripheralDeviceAPI.StatusObject): Promise<PeripheralDeviceAPI.StatusObject> {
+		return this.callMethod(PeripheralDeviceAPI.methods.setStatus, [status])
 	}
 	callMethod (methodName: PeripheralDeviceAPI.methods | string, attrs?: Array<any>): Promise<any> {
 		return new Promise((resolve, reject) => {
@@ -296,13 +296,13 @@ export class CoreConnection extends EventEmitter {
 		})
 	}
 	unInitialize (): Promise<string> {
-		return this.callMethod(P.methods.unInitialize)
+		return this.callMethod(PeripheralDeviceAPI.methods.unInitialize)
 	}
 	mosManipulate (method: string, ...attrs: Array<any>) {
 		return this.callMethod(method, attrs)
 	}
 	getPeripheralDevice (): Promise<any> {
-		return this.callMethod(P.methods.getPeripheralDevice)
+		return this.callMethod(PeripheralDeviceAPI.methods.getPeripheralDevice)
 	}
 	getCollection (collectionName: string): Collection {
 		if (!this.ddp.ddpClient) {
@@ -415,7 +415,7 @@ export class CoreConnection extends EventEmitter {
 	private _sendInit (): Promise<string> {
 		if (!this.ddp || !this.ddp.connectionId) throw Error('Not connected to Core')
 
-		let options: P.InitOptions = {
+		let options: PeripheralDeviceAPI.InitOptions = {
 			category: this._coreOptions.deviceCategory,
 			type: this._coreOptions.deviceType,
 			subType: this._coreOptions.deviceSubType,
@@ -428,7 +428,7 @@ export class CoreConnection extends EventEmitter {
 			configManifest: this._coreOptions.configManifest
 		}
 		this._sentConnectionId = options.connectionId
-		return this.callMethod(P.methods.initialize, [options])
+		return this.callMethod(PeripheralDeviceAPI.methods.initialize, [options])
 	}
 	private _removeParent () {
 		if (this._parent) this._parent.removeChild(this)
@@ -451,7 +451,7 @@ export class CoreConnection extends EventEmitter {
 		this.callMethod(PeripheralDeviceAPI.methods.pingWithCommand, [message])
 		.catch(e => this._emitError('watchdogPing' + e))
 
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			let i = 0
 			let checkPingReply = () => {
 				if (this._watchDogPingResponse === message) {

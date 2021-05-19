@@ -23,7 +23,7 @@ import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselin
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { TimelineObjGeneric as TimelineObjGeneric_1_11_0 } from './deprecatedDataTypes/1_12_0'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { asyncCollectionInsertIgnore } from '../lib/database'

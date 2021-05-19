@@ -1,4 +1,4 @@
-import { PeripheralDeviceAPI } from '../api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { Time, registerCollection, ProtectedString, assertNever } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 

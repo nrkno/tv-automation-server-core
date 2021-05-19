@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
@@ -45,7 +45,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			],
 		}
 
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+		Meteor.call(PeripheralDeviceAPI.methods.dataRundownCreate, device._id, device.token, rundownData)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({

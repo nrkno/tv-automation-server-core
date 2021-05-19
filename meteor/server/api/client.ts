@@ -6,7 +6,6 @@ import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, wai
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
@@ -16,6 +15,7 @@ import { Settings } from '../../lib/Settings'
 import { resolveCredentials } from '../security/lib/credentials'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
+import { executePeripheralDeviceFuntionWithCustomTimeout } from '../../lib/api/peripheralDeviceInternal'
 
 export namespace ServerClientAPI {
 	export function clientErrorReport(
@@ -132,7 +132,7 @@ export namespace ServerClientAPI {
 				// Just run and return right away:
 				try {
 					triggerWriteAccessBecauseNoCheckNecessary()
-					PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+					executePeripheralDeviceFuntionWithCustomTimeout(
 						deviceId,
 						(err, result) => {
 							if (err) reject(err)
@@ -166,7 +166,7 @@ export namespace ServerClientAPI {
 				})
 			)
 			try {
-				PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+				executePeripheralDeviceFuntionWithCustomTimeout(
 					deviceId,
 					(err, result) => {
 						if (err) {

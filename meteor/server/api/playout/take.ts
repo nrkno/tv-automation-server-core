@@ -21,7 +21,7 @@ import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../.
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { reportPartInstanceHasStarted } from '../blueprints/events'
 import { profiler } from '../profiler'
 import { ServerPlayoutAdLibAPI } from './adlib'

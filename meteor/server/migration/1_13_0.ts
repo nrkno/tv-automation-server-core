@@ -4,7 +4,7 @@ import * as semver from 'semver'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/1_13_0'
 import * as _ from 'underscore'
 import { removeCollectionProperty, setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 /*
  * **************************************************************************************

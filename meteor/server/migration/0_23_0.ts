@@ -2,7 +2,7 @@ import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 // 0.23.0 ( Release 8 )
 export const addSteps = addMigrationSteps('0.23.0', [

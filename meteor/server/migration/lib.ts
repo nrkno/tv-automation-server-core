@@ -8,7 +8,7 @@ import {
 import { Collections, objectPathGet, DBObj, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { logger } from '../logging'
 import * as semver from 'semver'
 import { TransformedCollection } from '../../lib/typings/meteor'

@@ -1,7 +1,8 @@
 import { Meteor } from 'meteor/meteor'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
+import { NewPeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, waitForPromise, getRandomId, applyToArray } from '../../lib/lib'
@@ -32,7 +33,7 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceGroupMetadata } from '../../lib/rundown/pieces'
@@ -44,7 +45,9 @@ import { runStudioOperationWithCache, StudioLockFunctionPriority } from './studi
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLockFromStudioOperation } from './playout/lockFunction'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstanceId, PieceInstances } from '../../lib/collections/PieceInstances'
+import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { executePeripheralDeviceFuntion } from '../../lib/api/peripheralDeviceInternal'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -91,7 +94,7 @@ export namespace ServerPeripheralDeviceAPI {
 							? options.name
 							: existingDevice.name,
 					deviceName: options.name,
-					parentDeviceId: options.parentDeviceId,
+					parentDeviceId: protectString<PeripheralDeviceId>(options.parentDeviceId),
 					versions: options.versions,
 
 					configManifest: options.configManifest,
@@ -118,7 +121,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 				name: options.name,
 				deviceName: options.name,
-				parentDeviceId: options.parentDeviceId,
+				parentDeviceId: protectString<PeripheralDeviceId>(options.parentDeviceId),
 				versions: options.versions,
 				// settings: {},
 
@@ -365,7 +368,13 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStarted(context, peripheralDevice, r.rundownPlaylistId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStarted(
+			context,
+			peripheralDevice,
+			protectString<RundownPlaylistId>(r.rundownPlaylistId),
+			protectString<PartInstanceId>(r.partInstanceId),
+			r.time
+		)
 	}
 	export function partPlaybackStopped(
 		context: MethodContext,
@@ -380,7 +389,12 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownPlaylistId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStopped(
+			context,
+			protectString<RundownPlaylistId>(r.rundownPlaylistId),
+			protectString<PartInstanceId>(r.partInstanceId),
+			r.time
+		)
 	}
 	export function piecePlaybackStarted(
 		context: MethodContext,
@@ -398,8 +412,8 @@ export namespace ServerPeripheralDeviceAPI {
 
 		ServerPlayoutAPI.onPiecePlaybackStarted(
 			context,
-			r.rundownPlaylistId,
-			r.pieceInstanceId,
+			protectString<RundownPlaylistId>(r.rundownPlaylistId),
+			protectString<PieceInstanceId>(r.pieceInstanceId),
 			!!r.dynamicallyInserted,
 			r.time
 		)
@@ -420,8 +434,8 @@ export namespace ServerPeripheralDeviceAPI {
 
 		ServerPlayoutAPI.onPiecePlaybackStopped(
 			context,
-			r.rundownPlaylistId,
-			r.pieceInstanceId,
+			protectString<RundownPlaylistId>(r.rundownPlaylistId),
+			protectString<PieceInstanceId>(r.pieceInstanceId),
 			!!r.dynamicallyInserted,
 			r.time
 		)
@@ -435,7 +449,7 @@ export namespace ServerPeripheralDeviceAPI {
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		PeripheralDeviceAPI.executeFunction(
+		executePeripheralDeviceFuntion(
 			peripheralDevice._id,
 			(err, res) => {
 				if (err) {
@@ -493,7 +507,7 @@ export namespace ServerPeripheralDeviceAPI {
 	) => any = Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
 		let args0 = args.slice(0, -1)
 		let cb = args.slice(-1)[0] // the last argument in ...args
-		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
+		executePeripheralDeviceFuntion(deviceId, cb, functionName, ...args0)
 	})
 
 	export function requestUserAuthToken(
@@ -534,20 +548,6 @@ export namespace ServerPeripheralDeviceAPI {
 				'settings.secretAccessToken': true,
 			},
 		})
-	}
-	export function removePeripheralDevice(context: MethodContext, deviceId: PeripheralDeviceId, token?: string) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
-
-		logger.info(`Removing PeripheralDevice ${peripheralDevice._id}`)
-
-		PeripheralDevices.remove(peripheralDevice._id)
-		PeripheralDevices.remove({
-			parentDeviceId: peripheralDevice._id,
-		})
-		PeripheralDeviceCommands.remove({
-			deviceId: peripheralDevice._id,
-		})
-		// TODO: add others here (MediaWorkflows, etc?)
 	}
 	export function reportResolveDone(
 		context: MethodContext,
@@ -764,9 +764,6 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		return makePromise(() =>
 			ServerPeripheralDeviceAPI.testMethod(this, deviceId, deviceToken, returnValue, throwError)
 		)
-	}
-	removePeripheralDevice(deviceId: PeripheralDeviceId, token?: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId, token))
 	}
 
 	// ------ Playout Gateway --------
@@ -1197,4 +1194,4 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		)
 	}
 }
-registerClassToMeteorMethods(PeripheralDeviceAPIMethods, ServerPeripheralDeviceAPIClass, false)
+registerClassToMeteorMethods(PeripheralDeviceAPI.methods, ServerPeripheralDeviceAPIClass, false)

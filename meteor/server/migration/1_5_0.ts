@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import * as _ from 'underscore'

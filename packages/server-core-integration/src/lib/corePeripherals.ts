@@ -1,4 +1,5 @@
 import { DeviceConfigManifest } from './configManifest'
+import { TSR } from '@sofie-automation/blueprints-integration'
 
 /**
  * Note: This file contains a copy of the typings from meteor/lib/api/peripheralDevice.ts in Core
@@ -17,7 +18,7 @@ export namespace PeripheralDeviceAPI {
 		/** Not good. Operation is affected. Will be able to recover on it's own when the situation changes. */
 		BAD = 4,
 		/** Not good. Operation is affected. Will NOT be able to to recover from this, manual intervention will be required. */
-		FATAL = 5
+		FATAL = 5,
 	}
 
 	export interface StatusObject {
@@ -28,7 +29,8 @@ export namespace PeripheralDeviceAPI {
 	export enum DeviceCategory {
 		INGEST = 'ingest',
 		PLAYOUT = 'playout',
-		MEDIA_MANAGER = 'media_manager'
+		MEDIA_MANAGER = 'media_manager',
+		PACKAGE_MANAGER = 'package_manager',
 	}
 	/**
 	 * Deprecated and should not be used in new integrations.
@@ -41,78 +43,83 @@ export namespace PeripheralDeviceAPI {
 		// Playout devices:
 		PLAYOUT = 'playout',
 		// Media-manager devices:
-		MEDIA_MANAGER = 'media_manager'
+		MEDIA_MANAGER = 'media_manager',
+		// Package_manager devices:
+		PACKAGE_MANAGER = 'package_manager',
 	}
-	export type DeviceSubType =
-		| SUBTYPE_PROCESS
-		| TSR_DeviceType
-		| MOS_DeviceType
-		| Spreadsheet_DeviceType
-		| string
+	export type DeviceSubType = SUBTYPE_PROCESS | TSR.DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
 	/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
 	export type SUBTYPE_PROCESS = '_process'
 	export const SUBTYPE_PROCESS: SUBTYPE_PROCESS = '_process'
 	export type MOS_DeviceType = 'mos_connection'
 	export type Spreadsheet_DeviceType = 'spreadsheet_connection'
-	export type TSR_DeviceType = number
 
 	export interface InitOptions {
 		category: DeviceCategory
-		type?: DeviceType | string
-		subType?: DeviceSubType
+		type: DeviceType
+		subType: DeviceSubType
 
 		name: string
 		connectionId: string
-		parentDeviceId?: string
+		parentDeviceId?: string // PeripheralDeviceId
 		versions?: {
-			[libraryName: string]: string;
+			[libraryName: string]: string
 		}
-
-		configManifest?: DeviceConfigManifest
+		configManifest: DeviceConfigManifest
 	}
 	export type TimelineTriggerTimeResult = Array<{ id: string; time: number }>
 
 	export interface PartPlaybackStartedResult {
-		rundownId: string
-		partId: string
+		rundownPlaylistId: string // RundownPlaylistId
+		partInstanceId: string // PartInstanceId
 		time: number
 	}
 	export type PartPlaybackStoppedResult = PartPlaybackStartedResult
 	export interface PiecePlaybackStartedResult {
-		rundownId: string
-		pieceId: string
+		rundownPlaylistId: string // RundownPlaylistId
+		pieceInstanceId: string // PieceInstanceId
+		dynamicallyInserted?: boolean
 		time: number
 	}
 	export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
 
+	/** List of methods that are sent from a PeripheralDevice into Sofie-Core */
 	export enum methods {
-		'functionReply' = 'peripheralDevice.functionReply',
-
+		// Used in integrations tests:
+		'killProcess' = 'peripheralDevice.killProcess',
 		'testMethod' = 'peripheralDevice.testMethod',
-		'setStatus' = 'peripheralDevice.status',
+
+		// Basic functionality:
+		'functionReply' = 'peripheralDevice.functionReply',
 		'ping' = 'peripheralDevice.ping',
+
+		// Device status and lifetime:
+		'setStatus' = 'peripheralDevice.status',
 		'initialize' = 'peripheralDevice.initialize',
 		'unInitialize' = 'peripheralDevice.unInitialize',
 		'getPeripheralDevice' = 'peripheralDevice.getPeripheralDevice',
 		'pingWithCommand' = 'peripheralDevice.pingWithCommand',
-		'killProcess' = 'peripheralDevice.killProcess',
 
+		// Time-sync:
 		'determineDiffTime' = 'systemTime.determineDiffTime',
 		'getTimeDiff' = 'systemTime.getTimeDiff',
 		'getTime' = 'systemTime.getTime',
 
+		// Playout-gateway:
+		'reportResolveDone' = 'peripheralDevice.reportResolveDone',
 		'timelineTriggerTime' = 'peripheralDevice.timeline.setTimelineTriggerTime',
 		'partPlaybackStarted' = 'peripheralDevice.rundown.partPlaybackStarted',
 		'partPlaybackStopped' = 'peripheralDevice.rundown.partPlaybackStopped',
 		'piecePlaybackStarted' = 'peripheralDevice.rundown.piecePlaybackStarted',
 		'piecePlaybackStopped' = 'peripheralDevice.rundown.piecePlaybackStopped',
-		'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
+		// 'reportCommandError' = 'peripheralDevice.playout.reportCommandError', // not implemented
 
+		// Mos-gateway:
 		'mosRoCreate' = 'peripheralDevice.mos.roCreate',
 		'mosRoReplace' = 'peripheralDevice.mos.roReplace',
 		'mosRoDelete' = 'peripheralDevice.mos.roDelete',
-		'mosRoDeleteForce' = 'peripheralDevice.mos.roDeleteForce',
+		// 'mosRoDeleteForce' = 'peripheralDevice.mos.roDeleteForce', // not implemented
 		'mosRoMetadata' = 'peripheralDevice.mos.roMetadata',
 		'mosRoStatus' = 'peripheralDevice.mos.roStatus',
 		'mosRoStoryStatus' = 'peripheralDevice.mos.roStoryStatus',
@@ -144,17 +151,16 @@ export namespace PeripheralDeviceAPI {
 		'dataPartCreate' = 'peripheralDevice.rundown.partCreate',
 		'dataPartUpdate' = 'peripheralDevice.rundown.partUpdate',
 
-		'resyncRundown' = 'peripheralDevice.mos.roResync',
-
+		// Media Manager / Media-scanner:
 		'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 		'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',
 		'clearMediaObjectCollection' = 'peripheralDevice.mediaScanner.clearMediaObjectCollection',
-
 		'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
 		'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
 		'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
 		'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
 
+		// Package Manager:
 		'insertExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.insertExpectedPackageWorkStatus',
 		'updateExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.updateExpectedPackageWorkStatus',
 		'removeExpectedPackageWorkStatus' = 'peripheralDevice.packageManager.removeExpectedPackageWorkStatus',
@@ -165,25 +171,14 @@ export namespace PeripheralDeviceAPI {
 		'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
 		'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',
 
+		// Spreadsheed-gateway
 		'requestUserAuthToken' = 'peripheralDevice.spreadsheet.requestUserAuthToken',
-		'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken'
+		'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken',
 	}
 
-	export type initialize = (
-		id: string,
-		token: string,
-		options: InitOptions
-	) => Promise<string>
-	export type unInitialize = (
-		id: string,
-		token: string,
-		status: StatusObject
-	) => Promise<StatusObject>
-	export type setStatus = (
-		id: string,
-		token: string,
-		status: StatusObject
-	) => Promise<StatusObject>
+	export type initialize = (id: string, token: string, options: InitOptions) => Promise<string>
+	export type unInitialize = (id: string, token: string, status: StatusObject) => Promise<StatusObject>
+	export type setStatus = (id: string, token: string, status: StatusObject) => Promise<StatusObject>
 	export type executeFunction = (
 		deviceId: string,
 		cb: (err: any, result: any) => void,
