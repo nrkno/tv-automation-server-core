@@ -164,14 +164,6 @@ $segment-layer-background-guest: #008a92;
 				1px 1px 1px var(--segment-layer-background-guest), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
 		}
 	}
-
-	&.unknown {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-unknown),
-				-1px 1px 1px var(--segment-layer-background-unknown), -1px -1px 1px var(--segment-layer-background-unknown),
-				1px 1px 1px var(--segment-layer-background-unknown), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-	}
 }
 
 @mixin item-type-colors {
@@ -238,10 +230,6 @@ $segment-layer-background-guest: #008a92;
 	&.mic {
 		background: var(--segment-layer-background-guest);
 	}
-
-	&.unknown {
-		background: var(--segment-layer-background-unknown);
-	}
 }
 
 @mixin item-type-borders {
@@ -280,10 +268,6 @@ $segment-layer-background-guest: #008a92;
 	&.mic {
 		border-color: var(--segment-layer-background-mic);
 	}
-
-	&.unknown {
-		border-color: var(--segment-layer-background-unknown);
-	}
 }
 
 @mixin item-type-before-background {
@@ -317,10 +301,6 @@ $segment-layer-background-guest: #008a92;
 
 	&.mic::before {
 		background: var(--segment-layer-background-mic);
-	}
-
-	&.unknown::before {
-		background: var(--segment-layer-background-unknown);
 	}
 }
 
@@ -380,10 +360,6 @@ $segment-layer-background-guest: #008a92;
 	&.mic {
 		fill: var(--segment-layer-background-mic);
 	}
-
-	&.unknown {
-		fill: var(--segment-layer-background-unknown);
-	}
 }
 
 @mixin invalid-overlay {
@@ -434,7 +410,7 @@ $segment-layer-background-guest: #008a92;
 			right: 0;
 			bottom: 0;
 			z-index: 1;
-			mix-blend-mode: normal;
+			mix-blend-mode: overlay;
 			background-image: repeating-linear-gradient(
 				45deg,
 				transparent,
@@ -443,7 +419,6 @@ $segment-layer-background-guest: #008a92;
 				black 15px,
 				transparent 16px
 			);
-			opacity: 0.4;
 		}
 	}
 

@@ -2,6 +2,8 @@ import * as React from 'react'
 import { PieceGeneric } from '../../../../lib/collections/Pieces'
 import { SplitsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 
+// @todo: use colours from the scss
+// @todo: split can use any source (rather than cam + live)
 export default class SplitInputIcon extends React.Component<{
 	abbreviation?: string
 	piece?: PieceGeneric
@@ -87,7 +89,6 @@ export default class SplitInputIcon extends React.Component<{
 							textShadow: '0 2px 9px rgba(0, 0, 0, 0.5)',
 						}}
 						xmlSpace="preserve"
-						className="label"
 					>
 						<tspan
 							x="63.25"

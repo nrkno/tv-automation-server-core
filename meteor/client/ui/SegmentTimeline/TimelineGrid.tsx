@@ -240,7 +240,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				let isLabel = i % interStep === 0
 
 				if (isLabel === true) {
-					let t = Math.round(xPosition / this.pixelRatio / this.props.timeScale + this.props.scrollLeft)
+					let t = xPosition / this.pixelRatio / this.props.timeScale + this.props.scrollLeft
 
 					this.ctx.fillText(
 						RundownUtils.formatDiffToTimecode(t, false, false, true, false, true),

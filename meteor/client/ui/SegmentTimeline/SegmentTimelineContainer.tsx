@@ -7,12 +7,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
-import {
-	RundownTiming,
-	computeSegmentDuration,
-	TimingEvent,
-	computeSegmentDisplayDuration,
-} from '../RundownView/RundownTiming/RundownTiming'
+import { RundownTiming, computeSegmentDuration, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import {
@@ -48,20 +43,14 @@ import RundownViewEventBus, {
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
-import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
 const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 
 export const LIVE_LINE_TIME_PADDING = 150
-export const LIVELINE_HISTORY_SIZE = 100
-export const TIMELINE_RIGHT_PADDING =
-	// TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
-	parseInt(localStorage.getItem('EXP_timeline_right_padding')!) || LIVELINE_HISTORY_SIZE + LIVE_LINE_TIME_PADDING
-export const MINIMUM_ZOOM_FACTOR =
-	// TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
-	parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) || MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale
+const LIVELINE_HISTORY_SIZE = 100
+const TIMELINE_RIGHT_PADDING = LIVELINE_HISTORY_SIZE + LIVE_LINE_TIME_PADDING
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -414,9 +403,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}
 			})
 			window.addEventListener('resize', this.onWindowResize)
-			this.updateMaxTimeScale()
-				.then(() => this.showEntireSegment())
-				.catch(console.error)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -468,7 +454,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.stopLive()
 				if (Settings.autoRewindLeavingSegment) {
 					this.onRewindSegment()
-					this.onShowEntireSegment('componentDidUpdate')
+					this.onShowEntireSegment('', true)
 				}
 
 				if (this.props.segmentui && this.props.segmentui.orphaned) {
@@ -646,18 +632,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		/** The user has scrolled scrollLeft seconds to the left in a child component */
 		onScroll = (scrollLeft: number, event: any) => {
 			this.setState({
-				scrollLeft: Math.max(
-					0,
-					Math.min(
-						scrollLeft,
-						(computeSegmentDuration(
-							this.context.durations,
-							this.props.parts.map((i) => i.instance.part._id),
-							true
-						) || 1) -
-							LIVELINE_HISTORY_SIZE / this.state.timeScale
-					)
-				),
+				scrollLeft: scrollLeft,
 				followLiveLine: false,
 			})
 			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
@@ -689,34 +664,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onGoToPartInstance = (e: GoToPartInstanceEvent) => {
-			const timingDurations = this.context?.durations as RundownTiming.RundownTimingContext
-
 			if (this.props.segmentId === e.segmentId) {
 				for (const part of this.props.parts) {
 					if (part.instance._id === e.partInstanceId) {
-						let newScale: number | undefined
-
-						let scrollLeft =
-							((timingDurations.partDisplayStartsAt &&
-								timingDurations.partDisplayStartsAt[unprotectString(part.partId)]) ||
-								0) -
-							((timingDurations.partDisplayStartsAt &&
-								timingDurations.partDisplayStartsAt[unprotectString(this.props.parts[0].partId)]) ||
-								0)
-
-						if (e.zoomInToFit) {
-							const timelineWidth = getElementWidth(this.timelineDiv)
-							newScale =
-								(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
-								(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
-
-							scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
-						}
-
 						this.setState({
-							scrollLeft,
-							timeScale: newScale ?? this.state.timeScale,
-							showingAllSegment: newScale !== undefined ? false : this.state.showingAllSegment,
+							scrollLeft: part.startsAt,
 						})
 					}
 				}
@@ -821,35 +773,32 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		getShowAllTimeScale = () => {
 			let newScale =
 				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
-				((computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1) -
-					(this.state.isLiveSegment ? this.state.livePosition : 0))
-			newScale = Math.min(MINIMUM_ZOOM_FACTOR, newScale)
+				(computeSegmentDuration(
+					this.context.durations,
+					this.props.parts.map((i) => i.instance.part._id),
+					true
+				) || 1)
+			newScale = Math.min(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, newScale)
 			return newScale
 		}
 
 		updateMaxTimeScale = () => {
+			const maxTimeScale = this.getShowAllTimeScale()
 			return new Promise<number>((resolve) =>
 				this.setState(
-					() => {
-						const maxTimeScale = this.getShowAllTimeScale()
-						return {
-							maxTimeScale,
-						}
+					{
+						maxTimeScale,
 					},
-					() => resolve(this.state.maxTimeScale)
+					() => resolve(maxTimeScale)
 				)
 			)
 		}
 
 		showEntireSegment = () => {
-			this.updateMaxTimeScale()
-				.then(() => {
-					this.onTimeScaleChange(this.getShowAllTimeScale())
-				})
-				.catch(console.error)
+			this.onTimeScaleChange(this.getShowAllTimeScale())
 		}
 
-		onShowEntireSegment = (event: any) => {
+		onShowEntireSegment = (event: any, limitScale?: boolean) => {
 			this.setState({
 				scrollLeft: 0,
 				followLiveLine: this.state.isLiveSegment ? true : this.state.followLiveLine,

@@ -36,8 +36,6 @@ export interface ISourceLayerItemProps {
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
-	isPreview: boolean
-	isTooSmallForText: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -123,10 +121,9 @@ export const SourceLayerItem = withTranslation()(
 						: this.props.partDuration || this.props.part.renderedDuration || 0
 
 					const widthConstrictedMode =
-						this.props.isTooSmallForText ||
-						(this.state.leftAnchoredWidth > 0 &&
-							this.state.rightAnchoredWidth > 0 &&
-							this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth)
+						this.state.leftAnchoredWidth > 0 &&
+						this.state.rightAnchoredWidth > 0 &&
+						this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth
 
 					const nextIsTouching = !!piece.cropped
 

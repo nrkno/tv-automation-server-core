@@ -9,9 +9,6 @@ $segment-header-height: 2.3em;
 $segment-header-width: 12.5rem;
 $segment-background-color: #000;
 $segment-timeline-background-color: #1f1f1f;
-$segment-mini-inspector-background: #474747;
-$segment-mini-inspector-timeline-background: #151515;
-$segment-timeline-too-small-part: #0f0f0f;
 $segment-next-preview-background-color: #181818;
 $segment-title-background-color: #4b4b4b;
 $segment-title-background-color-next: $general-next-color;
@@ -854,7 +851,6 @@ svg.icon {
 	// The area controlling the zoom at the bottom of the segment
 	.segment-timeline__zoom-area {
 		position: relative;
-		min-height: 1em;
 		max-height: 4em;
 		margin: 0.2em 1em 0em 0;
 		padding: 1px 0;
@@ -960,8 +956,8 @@ svg.icon {
 			position: absolute;
 			top: 0;
 			bottom: 0;
-			left: 125px;
-			right: 125px;
+			left: 0;
+			right: 0;
 
 			.segment-timeline__zoom-area__controls__left-mask {
 				position: absolute;
@@ -983,8 +979,9 @@ svg.icon {
 				top: 0;
 				bottom: 0;
 				width: 250px;
-				margin-left: -125px;
-				cursor: grab;
+				cursor: ew-resize;
+				cursor: url(/images/zoom_area_move.png), ew-resize;
+				cursor: url(/images/zoom_area_move.png) 23 17, ew-resize;
 				background: rgba(255, 255, 255, 0.2);
 				box-shadow: 0 0 6px rgba(255, 255, 255, 1);
 
@@ -1186,93 +1183,6 @@ svg.icon {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
-		.segment-timeline__small-parts-flag {
-			margin-left: -0.3em;
-			background: $segment-background-color;
-			z-index: 1002;
-
-			&:hover {
-				background: $segment-mini-inspector-timeline-background;
-				transition: 0.2s background-color ease-out;
-			}
-
-			.segment-timeline__small-parts-flag-pointer {
-				position: relative;
-				width: 0.7em;
-				height: 0.8em;
-				top: 0.6em;
-			}
-
-			.segment-timeline__small-parts-flag__part {
-				display: flex;
-				margin-right: 0.1em;
-				cursor: pointer;
-				cursor: zoom-in;
-				cursor: url(/images/cursor_zoom_in.png), zoom-in;
-				cursor: url(/images/cursor_zoom_in.png) 8 8, zoom-in;
-
-				--invalid-reason-color-transparent: transparent;
-				--invalid-reason-color-opaque: black;
-
-				> .piece_icon {
-					width: 1.6em;
-					vertical-align: top;
-				}
-
-				&.next {
-					> .piece_icon {
-						outline: 2px solid $segment-title-background-color-next;
-					}
-				}
-
-				&.live {
-					> .piece_icon {
-						outline: 2px solid $segment-title-background-color-live;
-					}
-				}
-
-				&.invalid {
-					position: relative;
-
-					> .piece_icon {
-						.label {
-							display: none;
-						}
-					}
-
-					&::after {
-						content: ' ';
-						display: block;
-						position: absolute;
-						top: 0;
-						bottom: 0;
-						left: 2px;
-						right: 2px;
-						z-index: 3;
-						background: repeating-linear-gradient(
-								45deg,
-								var(--invalid-reason-color-opaque) 0,
-								var(--invalid-reason-color-opaque) 5px,
-								var(--invalid-reason-color-transparent) 5px,
-								var(--invalid-reason-color-transparent) 9px
-							),
-							repeating-linear-gradient(
-								-45deg,
-								var(--invalid-reason-color-opaque) 0,
-								var(--invalid-reason-color-opaque) 5px,
-								var(--invalid-reason-color-transparent) 5px,
-								var(--invalid-reason-color-transparent) 9px
-							);
-						opacity: 0.75;
-					}
-				}
-			}
-		}
-
-		.segment-timeline__small-parts-flag-hoist:hover ~ .segment-timeline__small-parts-flag-hoist {
-			z-index: -1;
-		}
-
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
 			position: relative;
@@ -1293,25 +1203,6 @@ svg.icon {
 				top: 0;
 				min-width: 200%;
 				z-index: 0;
-			}
-
-			&.segment-timeline__part--shaded {
-				&::after {
-					content: ' ';
-					display: block;
-					position: absolute;
-					top: 0;
-					left: 0;
-					bottom: 0;
-					right: 0;
-					background: linear-gradient(to right, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
-				}
-			}
-
-			&.segment-timeline__part--too-small {
-				height: 100%;
-				top: 0;
-				background: $segment-timeline-too-small-part;
 			}
 
 			&.invalid {
@@ -2235,7 +2126,6 @@ svg.icon {
 
 		.segment-timeline__zoom-area {
 			margin: 0.2em 0 0 0;
-			min-height: 0;
 
 			.segment-timeline__timeline {
 				padding: 0;
@@ -2523,17 +2413,6 @@ svg.icon {
 	}
 }
 
-@keyframes inspector-wipeRight {
-	0% {
-		opacity: 0;
-		clip-path: inset(0 100% 0 -100px);
-	}
-	100% {
-		opacity: 1;
-		clip-path: inset(0 -100px 0 -100px);
-	}
-}
-
 // TODO: this is just a debug label, should not be visible in final app
 .segment-timeline__debug-info {
 	position: absolute;
@@ -2556,7 +2435,7 @@ svg.icon {
 	position: absolute;
 	display: block;
 	border-radius: 5px;
-	background: $segment-mini-inspector-background;
+	background: #474747;
 	box-shadow: 1px -1.5px 3.5px 1.5px rgba(0, 0, 0, 0.5);
 	padding: 0.7em 1em;
 	white-space: normal;
@@ -2573,72 +2452,6 @@ svg.icon {
 		transform: none;
 		bottom: 100%;
 		width: 26em;
-	}
-
-	&.segment-timeline__mini-inspector--small-parts {
-		top: 0;
-		z-index: 1001;
-		width: 350px;
-		max-width: 30vw;
-		transform: translate(0, 0);
-		border-radius: 0;
-		margin-left: 0;
-		box-shadow: 1px -1.5px 30px 15px rgba(0, 0, 0, 0.9);
-		animation: 0.2s inspector-wipeRight;
-		animation-timing-function: ease-out;
-
-		border-top: none;
-		border-bottom: none;
-		border-left: 1px solid #333;
-		border-right: 1px solid #333;
-		background: $segment-mini-inspector-timeline-background;
-		margin-top: $segment-header-height * -1;
-		padding: $segment-timeline-padding;
-
-		overflow: hidden;
-
-		&::before {
-			content: none;
-			display: none;
-		}
-
-		.segment-timeline__mini-inspector--small-parts__duration {
-			display: block;
-			position: absolute;
-			top: 3px;
-			right: 5px;
-			white-space: nowrap;
-			color: #fff;
-			font-weight: 400;
-
-			> .segment-timeline__mini-inspector--small-parts__duration__label {
-				font-weight: 300;
-				text-transform: uppercase;
-				vertical-align: top;
-				font-size: 0.5em;
-				margin-right: 0.5em;
-				position: relative;
-				top: 0.2em;
-				color: #888;
-			}
-		}
-
-		> .segment-timeline__mini-inspector__mini-timeline {
-			position: relative;
-			white-space: nowrap;
-			background: $segment-mini-inspector-background;
-
-			> .segment-timeline__part {
-				display: inline-block;
-				vertical-align: top;
-
-				&.segment-timeline__part--end-of-segment {
-					position: absolute;
-					min-width: 14%;
-					background: $segment-mini-inspector-timeline-background;
-				}
-			}
-		}
 	}
 
 	@include item-type-borders();

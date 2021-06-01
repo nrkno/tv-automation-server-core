@@ -4,24 +4,9 @@ import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { IPropsHeader } from './PieceIcon'
 
-interface IFoundPieceInstance {
-	sourceLayer: ISourceLayer | undefined
-	pieceInstance: PieceInstance | undefined
-}
-
-export function findPieceInstanceToShow(
-	props: IPropsHeader,
-	selectedLayerTypes: Set<SourceLayerType>
-): IFoundPieceInstance {
+export function findPieceInstanceToShow(props: IPropsHeader, supportedLayers: Set<SourceLayerType>) {
 	let pieceInstances = PieceInstances.find({ partInstanceId: props.partInstanceId }).fetch()
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
-
-	if (!showStyleBase) {
-		return {
-			sourceLayer: undefined,
-			pieceInstance: undefined,
-		}
-	}
 
 	let sourceLayers = showStyleBase
 		? normalizeArray<ISourceLayer>(
@@ -29,23 +14,12 @@ export function findPieceInstanceToShow(
 				'_id'
 		  )
 		: {}
-
-	return findPieceInstanceToShowFromInstances(pieceInstances, sourceLayers, selectedLayerTypes)
-}
-
-export function findPieceInstanceToShowFromInstances(
-	pieceInstances: PieceInstance[],
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	},
-	selectedLayerTypes: Set<SourceLayerType>
-): IFoundPieceInstance {
 	let foundSourceLayer: ISourceLayer | undefined
 	let foundPiece: PieceInstance | undefined
 
 	for (const pieceInstance of pieceInstances) {
 		let layer = sourceLayers[pieceInstance.piece.sourceLayerId]
-		if (layer && layer.onPresenterScreen && selectedLayerTypes.has(layer.type)) {
+		if (layer && layer.onPresenterScreen && supportedLayers.has(layer.type)) {
 			if (foundSourceLayer && foundPiece) {
 				if (
 					pieceInstance.piece.enable &&

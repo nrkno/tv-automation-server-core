@@ -48,8 +48,8 @@ const DEFAULT_POSITIONS = [
 ]
 
 export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLSpanElement | null
-	rightLabel: HTMLSpanElement | null
+	leftLabel: HTMLSpanElement
+	rightLabel: HTMLSpanElement
 
 	constructor(props) {
 		super(props)
@@ -141,26 +141,22 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		return (
 			<React.Fragment>
 				<div className="segment-timeline__piece__preview">{this.renderSubItems()}</div>
-				{!this.props.isTooSmallForText && (
-					<>
-						<span
-							className="segment-timeline__piece__label first-words overflow-label"
-							ref={this.setLeftLabelRef}
-							style={this.getItemLabelOffsetLeft()}
-						>
-							{begin}
-						</span>
-						<span
-							className="segment-timeline__piece__label right-side"
-							ref={this.setRightLabelRef}
-							style={this.getItemLabelOffsetRight()}
-						>
-							{end && <span className="segment-timeline__piece__label last-words">{end}</span>}
-							{this.renderInfiniteIcon()}
-							{this.renderOverflowTimeLabel()}
-						</span>
-					</>
-				)}
+				<span
+					className="segment-timeline__piece__label first-words overflow-label"
+					ref={this.setLeftLabelRef}
+					style={this.getItemLabelOffsetLeft()}
+				>
+					{begin}
+				</span>
+				<span
+					className="segment-timeline__piece__label right-side"
+					ref={this.setRightLabelRef}
+					style={this.getItemLabelOffsetRight()}
+				>
+					{end && <span className="segment-timeline__piece__label last-words">{end}</span>}
+					{this.renderInfiniteIcon()}
+					{this.renderOverflowTimeLabel()}
+				</span>
 				{this.props.piece.instance.piece.content ? (
 					<SplitsFloatingInspector
 						floatingInspectorStyle={this.getFloatingInspectorStyle()}

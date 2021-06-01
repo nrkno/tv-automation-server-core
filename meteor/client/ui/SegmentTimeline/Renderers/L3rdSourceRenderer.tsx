@@ -10,13 +10,13 @@ import classNames from 'classnames'
 interface IProps extends ICustomLayerItemProps {}
 interface IState {}
 export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
-	leftLabel: HTMLElement | null
-	rightLabel: HTMLElement | null
+	leftLabel: HTMLElement
+	rightLabel: HTMLElement
 	lastOverflowTime: boolean
 
 	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
-		const rightLabelWidth = this.rightLabel ? getElementWidth(this.rightLabel) : 0
+		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const rightLabelWidth = getElementWidth(this.rightLabel)
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
@@ -57,36 +57,34 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 
 		return (
 			<React.Fragment>
-				{!this.props.isTooSmallForText && (
+				<span
+					className={classNames('segment-timeline__piece__label', {
+						'no-left-margin': isMultiStep,
+					})}
+					ref={this.setLeftLabelRef}
+					style={this.getItemLabelOffsetLeft()}
+				>
+					{isMultiStep && stepContent ? (
+						<span className="segment-timeline__piece__step-chevron">
+							{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
+						</span>
+					) : null}
+					<span className="segment-timeline__piece__label">{innerPiece.name}</span>
+				</span>
+				<span
+					className="segment-timeline__piece__label right-side"
+					ref={this.setRightLabelRef}
+					style={this.getItemLabelOffsetRight()}
+				>
+					{this.renderInfiniteIcon()}
+					{this.renderOverflowTimeLabel()}
+				</span>
+				{isMultiStep ? (
 					<>
-						<span
-							className="segment-timeline__piece__label"
-							ref={this.setLeftLabelRef}
-							style={this.getItemLabelOffsetLeft()}
-						>
-							{isMultiStep && stepContent ? (
-								<span className="segment-timeline__piece__step-chevron">
-									{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
-								</span>
-							) : null}
-							<span className="segment-timeline__piece__label">{innerPiece.name}</span>
-						</span>
-						<span
-							className="segment-timeline__piece__label right-side"
-							ref={this.setRightLabelRef}
-							style={this.getItemLabelOffsetRight()}
-						>
-							{this.renderInfiniteIcon()}
-							{this.renderOverflowTimeLabel()}
-						</span>
-						{isMultiStep ? (
-							<>
-								<span className="segment-timeline__piece--collapsed__step-chevron"></span>
-								<span className="segment-timeline__piece--decoration__step-chevron"></span>
-							</>
-						) : null}
+						<span className="segment-timeline__piece--collapsed__step-chevron"></span>
+						<span className="segment-timeline__piece--decoration__step-chevron"></span>
 					</>
-				)}
+				) : null}
 				<L3rdFloatingInspector
 					content={noraContent}
 					itemElement={this.props.itemElement}

@@ -21,13 +21,3 @@ export const SegmentEnd = (props: React.SVGProps<SVGSVGElement>) => (
 		/>
 	</svg>
 )
-
-export const SmallPartFlag = (props: React.SVGProps<SVGSVGElement>) => (
-	<svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-		<path
-			d="M16 1L8.02307 1C6.9185 1 6.02307 1.89543 6.02307 3L6.02307 15M6.02307 15L11.0461 10M6.02307 15L1 10"
-			stroke="white"
-			strokeWidth="2"
-		/>
-	</svg>
-)

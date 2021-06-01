@@ -1,8 +1,6 @@
 import { PartId } from '../../../../lib/collections/Parts'
 import { unprotectString } from '../../../../lib/lib'
 import { Settings } from '../../../../lib/Settings'
-import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
-import { SegmentTimelinePartClass } from '../../SegmentTimeline/SegmentTimelinePart'
 
 export interface TimeEventArgs {
 	currentTime: number
@@ -104,14 +102,4 @@ export function computeSegmentDuration(
 			(display ? Settings.defaultDisplayDuration : 0)
 		return memo + partDuration
 	}, 0)
-}
-
-export function computeSegmentDisplayDuration(
-	timingDurations: RundownTiming.RundownTimingContext,
-	parts: PartUi[]
-): number {
-	return parts.reduce(
-		(memo, part) => memo + SegmentTimelinePartClass.getPartDisplayDuration(part, timingDurations),
-		0
-	)
 }

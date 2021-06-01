@@ -46,9 +46,11 @@ $timeline-layer-height: 1em;
 	contain: content style;
 
 	&.segment-timeline__timeline-container--grabbable {
-		cursor: ew-resize;
-		cursor: url(/images/cursor_zoom_area_move.png), ew-resize;
-		cursor: url(/images/cursor_zoom_area_move.png) 28 16, ew-resize;
+		cursor: grab;
+
+		&.segment-timeline__timeline-container--grabbed {
+			cursor: grabbing;
+		}
 	}
 
 	.segment-timeline__timeline {
@@ -88,21 +90,6 @@ $timeline-layer-height: 1em;
 		left: 0;
 		width: 100%;
 		height: 100%;
-	}
-}
-.segment-timeline__small-parts-flag-hoist {
-	position: relative;
-	flex: 0 0;
-	max-width: 0;
-}
-.segment-timeline__small-parts-flag {
-	position: absolute;
-	top: -2.2em;
-	display: flex;
-
-	.segment-timeline__small-parts-flag__part {
-		flex: 0 0;
-		white-space: nowrap;
 	}
 }
 .segment-timeline__part {

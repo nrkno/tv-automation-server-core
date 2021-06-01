@@ -27,7 +27,6 @@ export default class CamInputIcon extends React.Component<{ inputIndex?: string;
 						textLength="107.21"
 						lengthAdjust="spacing"
 						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
-						className="label"
 					>
 						{this.props.abbreviation ? this.props.abbreviation : 'C'}
 						<tspan style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>

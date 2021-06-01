@@ -1,4 +1,6 @@
 import * as React from 'react'
+
+// @todo: use colours from the scss
 export default class GraphicsInputIcon extends React.Component<{ abbreviation?: string }> {
 	render() {
 		return (
@@ -22,9 +24,8 @@ export default class GraphicsInputIcon extends React.Component<{ abbreviation?: 
 						x="37.5"
 						y="71.513954"
 						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '75px', fontWeight: 100 }}
-						className="label"
 					>
-						{this.props.abbreviation ? this.props.abbreviation : 'G'}
+						{this.props.abbreviation ? this.props.abbreviation : 'G '}
 					</tspan>
 				</text>
 			</svg>

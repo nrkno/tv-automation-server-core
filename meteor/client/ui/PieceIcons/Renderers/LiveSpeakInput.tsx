@@ -1,5 +1,7 @@
 import * as React from 'react'
 
+// @todo: use colours from the scss
+// @todo: split can use any source (rather than cam + live)
 export default class LiveSpeakInputIcon extends React.Component<{ abbreviation?: string }> {
 	render() {
 		return (
@@ -20,12 +22,7 @@ export default class LiveSpeakInputIcon extends React.Component<{ abbreviation?:
 					}}
 					xmlSpace="preserve"
 				>
-					<tspan
-						x="5"
-						y="66.514"
-						style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '62px', fontWeight: 100 }}
-						className="label"
-					>
+					<tspan x="5" y="66.514" style={{ fill: '#ffffff', fontFamily: 'Roboto', fontSize: '62px', fontWeight: 100 }}>
 						{this.props.abbreviation ? this.props.abbreviation : 'LSK'}
 					</tspan>
 				</text>
