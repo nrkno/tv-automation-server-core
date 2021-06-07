@@ -59,7 +59,6 @@ interface ISourceLayerItemState {
 	cursorPosition: OffsetPosition
 	scrollLeftOffset: number
 	cursorTimePosition: number
-	elementWidth: number
 	itemElement: HTMLDivElement | null
 	leftAnchoredWidth: number
 	rightAnchoredWidth: number
@@ -83,12 +82,38 @@ export const SourceLayerItem = withTranslation()(
 				},
 				scrollLeftOffset: 0,
 				cursorTimePosition: 0,
-				elementWidth: 0,
 				itemElement: null,
 				leftAnchoredWidth: 0,
 				rightAnchoredWidth: 0,
 				highlight: false,
 			}
+		}
+
+		getInTransitionDuration = (): number => {
+			const innerPiece = this.props.piece.instance.piece
+
+			return innerPiece.transitions && innerPiece.transitions.inTransition
+				? innerPiece.transitions.inTransition.duration || 0
+				: 0
+		}
+
+		getOutTransitionDuration = (): number => {
+			const innerPiece = this.props.piece.instance.piece
+
+			return innerPiece.transitions && innerPiece.transitions.outTransition
+				? innerPiece.transitions.outTransition.duration || 0
+				: 0
+		}
+
+		getElementWidth = (): number => {
+			const itemDuration = this.getItemDuration()
+
+			const innerPiece = this.props.piece.instance.piece
+
+			let inTransitionDuration = this.getInTransitionDuration()
+			let outTransitionDuration = this.getOutTransitionDuration()
+
+			return (itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale
 		}
 
 		setRef = (e: HTMLDivElement) => {
@@ -108,14 +133,8 @@ export const SourceLayerItem = withTranslation()(
 					const piece = this.props.piece
 					const innerPiece = piece.instance.piece
 
-					let inTransitionDuration =
-						innerPiece.transitions && innerPiece.transitions.inTransition
-							? innerPiece.transitions.inTransition.duration || 0
-							: 0
-					let outTransitionDuration =
-						innerPiece.transitions && innerPiece.transitions.outTransition
-							? innerPiece.transitions.outTransition.duration || 0
-							: 0
+					let inTransitionDuration = this.getInTransitionDuration()
+					let outTransitionDuration = this.getOutTransitionDuration()
 
 					const inPoint = piece.renderedInPoint || 0
 					const duration = Number.isFinite(piece.renderedDuration || 0)
@@ -126,7 +145,7 @@ export const SourceLayerItem = withTranslation()(
 						this.props.isTooSmallForText ||
 						(this.state.leftAnchoredWidth > 0 &&
 							this.state.rightAnchoredWidth > 0 &&
-							this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth)
+							this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.getElementWidth())
 
 					const nextIsTouching = !!piece.cropped
 
@@ -149,7 +168,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.getElementWidth() - this.state.rightAnchoredWidth).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -162,7 +181,7 @@ export const SourceLayerItem = withTranslation()(
 											? targetPos
 											: Math.min(
 													targetPos,
-													this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10
+													this.getElementWidth() - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10
 											  )
 									).toString() +
 									'px, 0, 0) ' +
@@ -175,8 +194,8 @@ export const SourceLayerItem = withTranslation()(
 
 							return styleObj
 						} else if (
-							this.state.rightAnchoredWidth < this.state.elementWidth &&
-							this.state.leftAnchoredWidth < this.state.elementWidth &&
+							this.state.rightAnchoredWidth < this.getElementWidth() &&
+							this.state.leftAnchoredWidth < this.getElementWidth() &&
 							this.props.scrollLeft + liveLineHistoryWithMargin / this.props.timeScale >=
 								inPoint + duration + this.props.partStartsAt - outTransitionDuration
 						) {
@@ -187,7 +206,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.getElementWidth() - this.state.rightAnchoredWidth).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -198,7 +217,7 @@ export const SourceLayerItem = withTranslation()(
 									Math.floor(
 										Math.min(
 											targetPos,
-											this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10
+											this.getElementWidth() - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10
 										)
 									).toString() +
 									'px, 0, 0) ' +
@@ -223,7 +242,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
+										? (this.getElementWidth() - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -236,7 +255,7 @@ export const SourceLayerItem = withTranslation()(
 											? targetPos
 											: Math.min(
 													targetPos,
-													this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth
+													this.getElementWidth() - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth
 											  )
 									).toString() +
 									'px,  0, 5px)',
@@ -248,7 +267,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
+										? (this.getElementWidth() - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -273,11 +292,7 @@ export const SourceLayerItem = withTranslation()(
 					const piece = this.props.piece
 					const innerPiece = piece.instance.piece
 
-					// let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-					let outTransitionDuration =
-						innerPiece.transitions && innerPiece.transitions.outTransition
-							? innerPiece.transitions.outTransition.duration || 0
-							: 0
+					let outTransitionDuration = this.getOutTransitionDuration()
 
 					const inPoint = piece.renderedInPoint || 0
 					const duration =
@@ -300,7 +315,7 @@ export const SourceLayerItem = withTranslation()(
 								this.props.partStartsAt -
 								outTransitionDuration) *
 								this.props.timeScale,
-							(this.state.elementWidth -
+							(this.getElementWidth() -
 								this.state.leftAnchoredWidth -
 								this.state.rightAnchoredWidth -
 								LEFT_RIGHT_ANCHOR_SPACER) *
@@ -359,14 +374,7 @@ export const SourceLayerItem = withTranslation()(
 			const piece = this.props.piece
 			const innerPiece = piece.instance.piece
 
-			let inTransitionDuration =
-				innerPiece.transitions && innerPiece.transitions.inTransition
-					? innerPiece.transitions.inTransition.duration || 0
-					: 0
-			let outTransitionDuration =
-				innerPiece.transitions && innerPiece.transitions.outTransition
-					? innerPiece.transitions.outTransition.duration || 0
-					: 0
+			let inTransitionDuration = this.getInTransitionDuration()
 
 			// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
 			// If not, as-run part "duration" limits renderdDuration which takes priority over MOS-import
@@ -386,10 +394,7 @@ export const SourceLayerItem = withTranslation()(
 				return {
 					left:
 						Math.floor(((piece.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
-					width:
-						Math.round(
-							(itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale
-						).toString() + 'px',
+					width: Math.round(this.getElementWidth()).toString() + 'px',
 				}
 			}
 		}
@@ -406,54 +411,6 @@ export const SourceLayerItem = withTranslation()(
 		// 		}
 		// 	}
 		// }
-
-		private onResize = (entries: ResizeObserverEntry[]) => {
-			const firstEntry = entries && entries[0]
-
-			if (firstEntry && firstEntry.contentBoxSize && firstEntry.contentBoxSize.width) {
-				const width = firstEntry.contentBoxSize!.width
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			} else if (firstEntry && firstEntry.borderBoxSize && firstEntry.borderBoxSize.width) {
-				const width = firstEntry.borderBoxSize!.width
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			} else if (firstEntry && firstEntry.contentRect && firstEntry.contentRect.width) {
-				const width = firstEntry.contentRect!.width
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			}
-		}
-
-		private mountResizeObserver() {
-			if (this.props.isLiveLine && !this._resizeObserver && this.state.itemElement) {
-				this._resizeObserver = new ResizeObserver(this.onResize)
-				this._resizeObserver.observe(this.state.itemElement)
-
-				const width = getElementWidth(this.state.itemElement) || 0
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			}
-		}
-
-		private unmountResizeObserver() {
-			if (this._resizeObserver) {
-				this._resizeObserver.disconnect()
-				this._resizeObserver = undefined
-			}
-		}
 
 		private highlightTimeout: NodeJS.Timer
 
@@ -472,17 +429,12 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		componentDidMount() {
-			if (this.props.isLiveLine) {
-				this.mountResizeObserver()
-			}
-
 			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		}
 
 		componentWillUnmount() {
 			super.componentWillUnmount && super.componentWillUnmount()
 			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
-			this.unmountResizeObserver()
 			clearTimeout(this.highlightTimeout)
 		}
 
@@ -496,12 +448,6 @@ export const SourceLayerItem = withTranslation()(
 						cursorTimePosition,
 					})
 				}
-			}
-
-			if (this.props.isLiveLine && this.state.itemElement && !this._resizeObserver) {
-				this.mountResizeObserver()
-			} else if (!this.props.isLiveLine && this._resizeObserver) {
-				this.unmountResizeObserver()
 			}
 		}
 
@@ -717,7 +663,7 @@ export const SourceLayerItem = withTranslation()(
 							'hide-overflow-labels':
 								this.state.leftAnchoredWidth > 0 &&
 								this.state.rightAnchoredWidth > 0 &&
-								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth,
+								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.getElementWidth(),
 
 							infinite: piece.instance.userDuration === undefined && innerPiece.lifespan !== PieceLifespan.WithinPart, // 0 is a special value
 							'next-is-touching': this.props.piece.cropped,
