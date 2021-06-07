@@ -187,16 +187,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		})
 	}
 
-	renderMiniLiveLine() {
-		if (this.props.isLiveSegment) {
-			let lineStyle = {
-				left: ((this.props.livePosition / this.getSegmentDuration()) * 100).toString() + '%',
-			}
-
-			return <div className="segment-timeline__zoom-area__liveline" style={lineStyle}></div>
-		}
-	}
-
 	render() {
 		return (
 			<div
@@ -219,7 +209,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 						maxTimeScale={this.props.maxTimeScale}
 						onZoomChange={this.props.onZoomChange}
 					/>
-					{this.renderMiniLiveLine()}
 				</div>
 			</div>
 		)
