@@ -1,0 +1,10 @@
+{
+	"name": "@slack/client",
+	"dependencies": {
+		"@slack/rtm-api": {
+			"dependencies": {
+				"ws": { "version": "6.2.2" }
+			}
+		}
+	}
+}
