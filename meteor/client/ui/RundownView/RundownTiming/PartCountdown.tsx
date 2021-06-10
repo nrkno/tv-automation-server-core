@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react'
+import Moment from 'react-moment'
 import { PartId } from '../../../../lib/collections/Parts'
 import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
@@ -8,6 +9,7 @@ interface IPartCountdownProps {
 	partId?: PartId
 	hideOnZero?: boolean
 	label?: ReactNode
+	useWallClock?: boolean
 }
 
 /**
@@ -27,9 +29,17 @@ export const PartCountdown = withTiming<IPartCountdownProps, {}>()(function Part
 		<>
 			{props.label}
 			<span>
-				{RundownUtils.formatTimeToShortTime(
-					thisPartCountdown!
-				) /* shouldShow will be false if thisPartCountdown is undefined */}
+				{props.useWallClock ? (
+					<Moment
+						interval={0}
+						format="HH:mm:ss"
+						date={(props.timingDurations.currentTime || 0) + (thisPartCountdown || 0)}
+					/>
+				) : (
+					RundownUtils.formatTimeToShortTime(
+						thisPartCountdown! // shouldShow will be false if thisPartCountdown is undefined
+					)
+				)}
 			</span>
 		</>
 	) : null

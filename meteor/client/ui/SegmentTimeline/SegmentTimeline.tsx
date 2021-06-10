@@ -23,7 +23,7 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
-import { getAllowSpeaking } from '../../lib/localStorage'
+import { getAllowSpeaking, getUseWallClockCountdowns } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
@@ -791,6 +791,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			}
 		}
 
+		const useWallClockCountdowns = getUseWallClockCountdowns()
+
 		return (
 			<div
 				id={this.props.id}
@@ -880,7 +882,14 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						<PartCountdown
 							partId={countdownToPartId}
 							hideOnZero={true}
-							label={<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>}
+							useWallClock={useWallClockCountdowns}
+							label={
+								useWallClockCountdowns ? (
+									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+								) : (
+									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+								)
+							}
 						/>
 					)}
 					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (

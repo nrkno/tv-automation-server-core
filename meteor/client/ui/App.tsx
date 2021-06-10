@@ -18,6 +18,7 @@ import {
 	setHelpMode,
 	setUIZoom,
 	getUIZoom,
+	setUseWallClockCountdowns,
 } from '../lib/localStorage'
 import Status from './Status'
 import { Settings as SettingsView } from './Settings'
@@ -98,6 +99,7 @@ export const App = translateWithTracker(() => {
 			}
 			if (params['speak']) setAllowSpeaking(params['speak'] === '1')
 			if (params['help']) setHelpMode(params['help'] === '1')
+			if (params['wallClock']) setUseWallClockCountdowns(params['wallClock'] === '1')
 			if (params['zoom'] && typeof params['zoom'] === 'string') {
 				setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
 			}

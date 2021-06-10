@@ -81,3 +81,10 @@ export function setUIZoom(uiZoomLevel: number) {
 export function getUIZoom(): number {
 	return parseFloat(localStorage.getItem('uiZoomLevel') || '1') || 1
 }
+
+export function getUseWallClockCountdowns(): boolean {
+	return localStorage.getItem('useWallClockCountdowns') === '1'
+}
+export function setUseWallClockCountdowns(useWallClockCountdowns: boolean) {
+	localStorage.setItem('useWallClockCountdowns', useWallClockCountdowns ? '1' : '0')
+}
