@@ -16,6 +16,8 @@ export interface IBlueprintRundownPlaylistInfo {
 	outOfOrderTiming?: boolean
 	/** Should the rundown playlist loop at the end */
 	loop?: boolean
+	/** Should time-of-day clocks be used instead of countdowns by default */
+	timeOfDayCountdowns?: boolean
 }
 
 /** The Rundown generated from Blueprint */

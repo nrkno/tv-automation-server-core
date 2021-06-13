@@ -715,7 +715,11 @@ svg.icon {
 		letter-spacing: 0;
 		font-weight: 400;
 
+		cursor: pointer;
+		transition: 0.3s color;
+
 		> span.negative {
+			transition: none;
 			color: $general-late-color;
 			font-weight: 500;
 		}
@@ -746,6 +750,17 @@ svg.icon {
 	.segment-timeline__timeUntil {
 		color: #888;
 	}
+
+	&.time-of-day-countdowns {
+		.segment-timeline__duration {
+			color: #888;
+		}
+		.segment-timeline__timeUntil {
+			color: #fff;
+			font-weight: 500;
+		}
+	}
+
 	.segment-timeline__unsynced {
 		text-transform: uppercase;
 	}
