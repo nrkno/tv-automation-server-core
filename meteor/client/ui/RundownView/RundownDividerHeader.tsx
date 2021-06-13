@@ -4,7 +4,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import Moment from 'react-moment'
 import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
-import { withTranslation } from 'react-i18next'
+import { useTranslation, withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 
@@ -114,22 +114,64 @@ export const RundownDividerHeader = withTranslation()(
 	}
 )
 
-interface ILoopingHeaderProps {
-	playlist: RundownPlaylist
-}
-export const RundownLoopingHeader = withTranslation()(
-	class RundownLoopingHeader extends React.Component<Translated<ILoopingHeaderProps>> {
+const NextLoopClock = withTiming<{ useWallClock?: boolean }, {}>()(
+	class NextLoopClock extends React.Component<
+		WithTiming<{
+			useWallClock?: boolean
+		}>
+	> {
 		render() {
-			const { t, playlist } = this.props
+			const { timingDurations, useWallClock } = this.props
+
+			if (!timingDurations?.partCountdown) return null
+			const thisPartCountdown = timingDurations.partCountdown[
+				Object.keys(timingDurations.partCountdown)[0] // use the countdown to first part of rundown
+			] as number | undefined
+
 			return (
-				<div className="rundown-divider-timeline">
-					<h3 className="rundown-divider-timeline__playlist-name">
-						<LoopingIcon />
-						&nbsp;
-						{t('Looping')}: {playlist.name}
-					</h3>
-				</div>
+				<span>
+					{useWallClock ? (
+						<Moment
+							interval={0}
+							format="HH:mm:ss"
+							date={(timingDurations.currentTime || 0) + (thisPartCountdown || 0)}
+						/>
+					) : (
+						RundownUtils.formatTimeToShortTime(
+							thisPartCountdown! // shouldShow will be false if thisPartCountdown is undefined
+						)
+					)}
+				</span>
 			)
 		}
 	}
 )
+
+interface ILoopingHeaderProps {
+	playlist: RundownPlaylist
+	showCountdowns?: boolean
+}
+export function RundownLoopingHeader(props: ILoopingHeaderProps) {
+	const { t } = useTranslation()
+	const { playlist, showCountdowns } = props
+
+	return (
+		<div className="rundown-divider-timeline">
+			<h2 className="rundown-divider-timeline__title--loop">
+				<LoopingIcon />
+				&nbsp;
+				{t('Looping')}: {playlist.name}
+			</h2>
+			{showCountdowns ? (
+				<>
+					<div className="rundown-divider-timeline__point rundown-divider-timeline__point--time-of-day">
+						<NextLoopClock useWallClock={true} />
+					</div>
+					<div className="rundown-divider-timeline__point rundown-divider-timeline__point--countdown">
+						<NextLoopClock />
+					</div>
+				</>
+			) : null}
+		</div>
+	)
+}

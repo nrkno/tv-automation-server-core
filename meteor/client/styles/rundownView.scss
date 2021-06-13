@@ -2255,6 +2255,19 @@ svg.icon {
 		display: inline-block;
 	}
 
+	> .rundown-divider-timeline__title--loop {
+		margin: 0 1em 0 0; // center vertically
+		padding: 0.3em;
+		line-height: 1.2em;
+		font-size: 1.2em;
+		letter-spacing: 0px;
+		font-weight: 600;
+		hyphens: auto;
+		-webkit-hyphens: auto;
+		-ms-hyphens: auto;
+		display: inline-block;
+	}
+
 	> .rundown-divider-timeline__playlist-name {
 		margin: 0.7em 1em 0.4em 0; // center vertically
 		line-height: 1.2em;
@@ -2305,6 +2318,24 @@ svg.icon {
 
 	> .rundown-divider-timeline__expected-duration {
 		margin-left: auto;
+	}
+
+	> .rundown-divider-timeline__point {
+		font-size: 1.2em;
+		margin-right: 1em;
+		line-height: 1.8em;
+
+		&:first-of-type {
+			margin-left: 3em;
+		}
+
+		&.rundown-divider-timeline__point--time-of-day {
+			font-weight: 600;
+		}
+
+		&.rundown-divider-timeline__point--countdown {
+			font-weight: 300;
+		}
 	}
 }
 
