@@ -14,7 +14,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayoutBase, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
@@ -51,7 +51,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 		key: string
 		label: string
 	}>
-	rundownLayout?: RundownLayoutBase
+	rundownLayout?: RundownLayoutShelfBase
 	fullViewport?: boolean
 	shelfDisplayOptions: {
 		buckets: boolean

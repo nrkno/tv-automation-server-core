@@ -79,6 +79,10 @@ import {
 	RundownLayoutType,
 	RundownLayoutBase,
 	RundownLayoutId,
+	RundownViewLayout,
+	DashboardLayout,
+	RundownLayoutShelfBase,
+	RundownLayoutRundownHeader,
 } from '../../lib/collections/RundownLayouts'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
@@ -99,6 +103,7 @@ import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioPackageContainersContext from './RundownView/StudioPackageContainersContext'
+import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -205,6 +210,7 @@ interface ITimingDisplayProps {
 	rundownPlaylist: RundownPlaylist
 	currentRundown: Rundown | undefined
 	rundownCount: number
+	layout: RundownLayoutRundownHeader | undefined
 }
 
 export enum RundownViewKbdShortcuts {
@@ -391,7 +397,9 @@ const TimingDisplay = withTranslation()(
 							<React.Fragment>
 								{!rundownPlaylist.loop && this.props.timingDurations ? (
 									<span className="timing-clock plan-end right visual-last-child">
-										<span className="timing-clock-label right">{t('Expected End')}</span>
+										<span className="timing-clock-label right">
+											{this.props.layout?.expectedEndText ? t(this.props.layout.expectedEndText) : t('Expected End')}
+										</span>
 										<Moment
 											interval={0}
 											format="HH:mm:ss"
@@ -448,6 +456,7 @@ interface IRundownHeaderProps {
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
 	inActiveRundownView?: boolean
+	layout: RundownLayoutRundownHeader | undefined
 }
 
 interface IRundownHeaderState {
@@ -1336,6 +1345,7 @@ const RundownHeader = withTranslation()(
 									rundownPlaylist={this.props.playlist}
 									currentRundown={this.props.currentRundown}
 									rundownCount={this.props.rundownIds.length}
+									layout={this.props.layout}
 								/>
 								<RundownSystemStatus
 									studio={this.props.studio}
@@ -1396,7 +1406,10 @@ interface IState {
 	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
-	rundownLayout: RundownLayoutBase | undefined
+	shelfLayout: RundownLayoutShelfBase | undefined
+	rundownViewLayout: RundownLayoutBase | undefined
+	rundownHeaderLayout: RundownLayoutRundownHeader | undefined
+	miniShelfLayout: RundownLayoutShelfBase | undefined
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
@@ -1419,7 +1432,10 @@ interface ITrackedProps {
 	rundownLayouts?: Array<RundownLayoutBase>
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
-	rundownLayoutId?: RundownLayoutId
+	shelfLayoutId?: RundownLayoutId
+	rundownViewLayoutId?: RundownLayoutId
+	rundownHeaderLayoutId?: RundownLayoutId
+	miniShelfLayoutId?: RundownLayoutId
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1451,7 +1467,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const params = queryStringParse(location.search)
 
-	const displayOptions = ((params['display'] as string) || 'buckets,layout,inspector').split(',')
+	const displayOptions = ((params['display'] as string) || 'buckets,layout,shelfLayout,inspector').split(',')
 	const bucketDisplayFilter = !(params['buckets'] as string)
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
@@ -1518,10 +1534,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					subType: TSR.DeviceType.CASPARCG,
 				}).fetch()) ||
 			undefined,
-		rundownLayoutId: protectString((params['layout'] as string) || ''),
+		shelfLayoutId: protectString((params['layout'] as string) || (params['shelfLayout'] as string) || ''), // 'layout' kept for backwards compatibility
+		rundownViewLayoutId: protectString((params['rundownViewLayout'] as string) || ''),
+		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
+		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
-			layout: displayOptions.includes('layout'),
+			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
 			inspector: displayOptions.includes('inspector'),
 		},
 		bucketDisplayFilter,
@@ -1570,7 +1589,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				})
 			}
 
-			const rundownLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.rundownLayoutId)
+			const shelfLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.shelfLayoutId)
+			let isInspectorShelfExpanded = false
+
+			if (shelfLayout && RundownLayoutsAPI.IsLayoutForShelf(shelfLayout)) {
+				isInspectorShelfExpanded = shelfLayout.openByDefault
+			}
 
 			this.state = {
 				timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
@@ -1593,39 +1617,103 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				]),
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
-				isInspectorShelfExpanded: rundownLayout?.openByDefault ?? false,
+				isInspectorShelfExpanded,
 				isClipTrimmerOpen: false,
 				selectedPiece: undefined,
-				rundownLayout: undefined,
+				shelfLayout: undefined,
+				rundownViewLayout: undefined,
+				rundownHeaderLayout: undefined,
+				miniShelfLayout: undefined,
 				currentRundown: undefined,
 				wasShelfResizedByUser: false,
 			}
 		}
 
 		static getDerivedStateFromProps(props: Translated<IProps & ITrackedProps>): Partial<IState> {
-			let selectedLayout: RundownLayoutBase | undefined = undefined
+			let selectedShelfLayout: RundownLayoutBase | undefined = undefined
+			let selectedViewLayout: RundownLayoutBase | undefined = undefined
+			let selectedHeaderLayout: RundownLayoutBase | undefined = undefined
+			let selectedMiniShelfLayout: RundownLayoutBase | undefined = undefined
 
 			if (props.rundownLayouts) {
 				// first try to use the one selected by the user
-				if (props.rundownLayoutId) {
-					selectedLayout = props.rundownLayouts.find((i) => i._id === props.rundownLayoutId)
+				if (props.shelfLayoutId) {
+					selectedShelfLayout = props.rundownLayouts.find((i) => i._id === props.shelfLayoutId)
+				}
+
+				if (props.rundownViewLayoutId) {
+					selectedViewLayout = props.rundownLayouts.find((i) => i._id === props.rundownViewLayoutId)
+				}
+
+				if (props.rundownHeaderLayoutId) {
+					selectedHeaderLayout = props.rundownLayouts.find((i) => i._id === props.rundownHeaderLayoutId)
+				}
+
+				if (props.miniShelfLayoutId) {
+					selectedMiniShelfLayout = props.rundownLayouts.find((i) => i._id === props.miniShelfLayoutId)
 				}
 
 				// if couldn't find based on id, try matching part of the name
-				if (props.rundownLayoutId && !selectedLayout) {
-					selectedLayout = props.rundownLayouts.find(
-						(i) => i.name.indexOf(unprotectString(props.rundownLayoutId!)) >= 0
+				if (props.shelfLayoutId && !selectedShelfLayout) {
+					selectedShelfLayout = props.rundownLayouts.find(
+						(i) => i.name.indexOf(unprotectString(props.shelfLayoutId!)) >= 0
 					)
 				}
 
+				if (props.rundownViewLayoutId && !selectedViewLayout) {
+					selectedViewLayout = props.rundownLayouts.find(
+						(i) => i.name.indexOf(unprotectString(props.rundownViewLayoutId!)) >= 0
+					)
+				}
+
+				if (props.rundownHeaderLayoutId && !selectedHeaderLayout) {
+					selectedHeaderLayout = props.rundownLayouts.find(
+						(i) => i.name.indexOf(unprotectString(props.rundownHeaderLayoutId!)) >= 0
+					)
+				}
+
+				if (props.miniShelfLayoutId && !selectedMiniShelfLayout) {
+					selectedMiniShelfLayout = props.rundownLayouts.find(
+						(i) => i.name.indexOf(unprotectString(props.miniShelfLayoutId!)) >= 0
+					)
+				}
+
+				// Try to load defaults from rundown view layouts
+				if (selectedViewLayout && RundownLayoutsAPI.IsLayoutForRundownView(selectedViewLayout)) {
+					const rundownLayout = selectedViewLayout as RundownViewLayout
+					if (!selectedShelfLayout && rundownLayout.shelfLayout) {
+						selectedShelfLayout = props.rundownLayouts.find((i) => i._id === rundownLayout.shelfLayout)
+					}
+
+					if (!selectedMiniShelfLayout && rundownLayout.miniShelfLayout) {
+						selectedMiniShelfLayout = props.rundownLayouts.find((i) => i._id === rundownLayout.miniShelfLayout)
+					}
+
+					if (!selectedHeaderLayout && rundownLayout.rundownHeaderLayout) {
+						selectedHeaderLayout = props.rundownLayouts.find((i) => i._id === rundownLayout.rundownHeaderLayout)
+					}
+				}
+
 				// if not, try the first RUNDOWN_LAYOUT available
-				if (!selectedLayout) {
-					selectedLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
+				if (!selectedShelfLayout) {
+					selectedShelfLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
 				}
 
 				// if still not found, use the first one
-				if (!selectedLayout) {
-					selectedLayout = props.rundownLayouts[0]
+				if (!selectedShelfLayout) {
+					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForShelf(i))
+				}
+
+				if (!selectedViewLayout) {
+					selectedViewLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForRundownView(i))
+				}
+
+				if (!selectedHeaderLayout) {
+					selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForRundownHeader(i))
+				}
+
+				if (!selectedMiniShelfLayout) {
+					selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForMiniShelf(i))
 				}
 			}
 
@@ -1638,7 +1726,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 
 			return {
-				rundownLayout: selectedLayout,
+				shelfLayout:
+					selectedShelfLayout && RundownLayoutsAPI.IsLayoutForShelf(selectedShelfLayout)
+						? selectedShelfLayout
+						: undefined,
+				rundownViewLayout: selectedViewLayout,
+				rundownHeaderLayout:
+					selectedHeaderLayout && RundownLayoutsAPI.IsLayoutForRundownHeader(selectedHeaderLayout)
+						? selectedHeaderLayout
+						: undefined,
+				miniShelfLayout:
+					selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
+						? selectedMiniShelfLayout
+						: undefined,
 				currentRundown,
 			}
 		}
@@ -2663,6 +2763,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											onRegisterHotkeys={this.onRegisterHotkeys}
 											inActiveRundownView={this.props.inActiveRundownView}
 											currentRundown={this.state.currentRundown || this.props.rundowns[0]}
+											layout={this.state.rundownHeaderLayout}
 										/>
 									</ErrorBoundary>
 									<ErrorBoundary>
@@ -2719,7 +2820,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											buckets={this.props.buckets}
 											isExpanded={
 												this.state.isInspectorShelfExpanded ||
-												(!this.state.wasShelfResizedByUser && this.state.rundownLayout?.openByDefault)
+												(!this.state.wasShelfResizedByUser && this.state.shelfLayout?.openByDefault)
 											}
 											onChangeExpanded={this.onShelfChangeExpanded}
 											hotkeys={this.state.usedHotkeys}
@@ -2728,7 +2829,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											studioMode={this.state.studioMode}
 											onChangeBottomMargin={this.onChangeBottomMargin}
 											onRegisterHotkeys={this.onRegisterHotkeys}
-											rundownLayout={this.state.rundownLayout}
+											rundownLayout={this.state.shelfLayout}
 											shelfDisplayOptions={this.props.shelfDisplayOptions}
 											bucketDisplayFilter={this.props.bucketDisplayFilter}
 											studio={this.props.studio}
@@ -2777,7 +2878,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									studioMode={this.state.studioMode}
 									onChangeBottomMargin={this.onChangeBottomMargin}
 									onRegisterHotkeys={this.onRegisterHotkeys}
-									rundownLayout={this.state.rundownLayout}
+									rundownLayout={this.state.shelfLayout}
 									studio={this.props.studio}
 									fullViewport={true}
 									shelfDisplayOptions={this.props.shelfDisplayOptions}

@@ -36,15 +36,18 @@ export function getShelfLink(rundownId: RundownId | RundownPlaylistId, layoutId:
 	const encodedRundownId = encodeURIComponent(encodeURIComponent(unprotectString(rundownId)))
 	const encodedLayoutId = encodeURIComponent(encodeURIComponent(unprotectString(layoutId)))
 
-	return `/rundown/${encodedRundownId}/shelf/?layout=${encodedLayoutId}`
+	return `/rundown/${encodedRundownId}/shelf/?shelfLayout=${encodedLayoutId}`
 }
 
-export function getRundownWithLayoutLink(rundownId: RundownId | RundownPlaylistId, layoutId: RundownLayoutId): string {
+export function getRundownWithShelfLayoutLink(
+	rundownId: RundownId | RundownPlaylistId,
+	layoutId: RundownLayoutId
+): string {
 	// double encoding so that "/" are handled correctly
 	const encodedRundownId = encodeURIComponent(encodeURIComponent(unprotectString(rundownId)))
 	const encodedLayoutId = encodeURIComponent(encodeURIComponent(unprotectString(layoutId)))
 
-	return `/rundown/${encodedRundownId}?layout=${encodedLayoutId}`
+	return `/rundown/${encodedRundownId}?rundownViewLayout=${encodedLayoutId}`
 }
 
 export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {

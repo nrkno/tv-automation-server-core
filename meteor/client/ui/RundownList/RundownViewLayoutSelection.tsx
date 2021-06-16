@@ -3,7 +3,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { Link } from 'react-router-dom'
 import { SplitDropdown } from '../../lib/SplitDropdown'
-import { getRundownPlaylistLink, getRundownWithLayoutLink, getShelfLink } from './util'
+import { getRundownPlaylistLink, getRundownWithShelfLayoutLink as getRundownWithLayoutLink, getShelfLink } from './util'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -11,6 +11,7 @@ import classNames from 'classnames'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { withTranslation } from 'react-i18next'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface IRundownShelfLayoutSelectionProps {
 	playlistId: RundownPlaylistId
@@ -22,7 +23,7 @@ interface IRundownShelfLayoutSelectionState {
 	selectedView: string
 }
 
-export const RundownShelfLayoutSelection = withTranslation()(
+export const RundownViewLayoutSelection = withTranslation()(
 	class RundownShelfLayoutSelection extends React.Component<
 		Translated<IRundownShelfLayoutSelectionProps>,
 		IRundownShelfLayoutSelectionState
@@ -42,7 +43,7 @@ export const RundownShelfLayoutSelection = withTranslation()(
 		private renderLinkItem(layout: RundownLayoutBase, link: string, key: string) {
 			return {
 				key,
-				children: (
+				node: (
 					<Link to={link} onClick={() => this.saveViewChoice(key)}>
 						<div className="action-btn expco-item">
 							<div
@@ -67,12 +68,12 @@ export const RundownShelfLayoutSelection = withTranslation()(
 			)
 
 			const standaloneLayouts = layoutsInRundown
-				.filter((layout) => layout.exposeAsStandalone)
+				.filter((layout) => RundownLayoutsAPI.IsLayoutForShelf(layout) && layout.exposeAsStandalone)
 				.map((layout) => {
 					return this.renderLinkItem(layout, getShelfLink(this.props.playlistId, layout._id), `standalone${layout._id}`)
 				})
-			const shelfLayouts = layoutsInRundown
-				.filter((layout) => layout.exposeAsShelf)
+			const rundownViewLayouts = layoutsInRundown
+				.filter((layout) => RundownLayoutsAPI.IsLayoutForRundownView(layout) && layout.exposeAsSelectableLayout)
 				.map((layout) => {
 					return this.renderLinkItem(
 						layout,
@@ -81,7 +82,7 @@ export const RundownShelfLayoutSelection = withTranslation()(
 					)
 				})
 
-			return shelfLayouts.length > 0 || standaloneLayouts.length > 0 ? (
+			return rundownViewLayouts.length > 0 || standaloneLayouts.length > 0 ? (
 				<React.Fragment>
 					<SplitDropdown
 						selectedKey={this.state.selectedView}
@@ -89,7 +90,7 @@ export const RundownShelfLayoutSelection = withTranslation()(
 							{ node: <div className="expco-header">{t('Standalone Shelf')}</div> },
 							...standaloneLayouts,
 							{ node: <div className="expco-header">{t('Rundown & Shelf')}</div> },
-							...shelfLayouts,
+							...rundownViewLayouts,
 							{ node: <div className="expco-separator"></div> },
 							{
 								key: 'default',

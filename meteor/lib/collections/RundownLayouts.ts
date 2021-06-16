@@ -16,8 +16,17 @@ import { registerIndex } from '../database'
  * @enum {string}
  */
 export enum RundownLayoutType {
+	RUNDOWN_VIEW_LAYOUT = 'rundown_view_layout',
 	RUNDOWN_LAYOUT = 'rundown_layout',
 	DASHBOARD_LAYOUT = 'dashboard_layout',
+	RUNDOWN_HEADER_LAYOUT = 'rundown_header_layout',
+}
+
+export enum CustomizableRegions {
+	RundownView = 'rundown_view_layouts',
+	Shelf = 'shelf_layouts',
+	MiniShelf = 'mini_shelf_layouts',
+	RundownHeader = 'rundown_header_layouts',
 }
 
 /**
@@ -152,19 +161,38 @@ export interface RundownLayoutBase {
 	blueprintId?: BlueprintId
 	userId?: UserId
 	name: string
-	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
+	type: RundownLayoutType
 	filters: RundownLayoutElementBase[]
-	exposeAsStandalone: boolean
-	exposeAsShelf: boolean
 	icon: string
 	iconColor: string
+	/* Customizable region that the layout modifies. */
+	regionId: string
+}
+
+export interface RundownViewLayout extends RundownLayoutBase {
+	type: RundownLayoutType.RUNDOWN_VIEW_LAYOUT
+	expectedEndText: string
+	/** Expose as a layout that can be selected by the user in the lobby view */
+	exposeAsSelectableLayout: boolean
+	shelfLayout: RundownLayoutId
+	miniShelfLayout: RundownLayoutId
+	rundownHeaderLayout: RundownLayoutId
+}
+
+export interface RundownLayoutShelfBase extends RundownLayoutBase {
+	exposeAsStandalone: boolean
 	openByDefault: boolean
 	startingHeight?: number
 }
 
-export interface RundownLayout extends RundownLayoutBase {
+export interface RundownLayout extends RundownLayoutShelfBase {
 	type: RundownLayoutType.RUNDOWN_LAYOUT
-	filters: RundownLayoutElementBase[]
+}
+
+export interface RundownLayoutRundownHeader extends RundownLayoutBase {
+	type: RundownLayoutType.RUNDOWN_HEADER_LAYOUT
+	expectedEndText: string
+	nextBreakText: string
 }
 
 export enum ActionButtonType {
@@ -192,7 +220,7 @@ export interface DashboardLayoutActionButton {
 	label: string
 }
 
-export interface DashboardLayout extends RundownLayoutBase {
+export interface DashboardLayout extends RundownLayoutShelfBase {
 	type: RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutElementBase[]
 	actionButtons?: DashboardLayoutActionButton[]
