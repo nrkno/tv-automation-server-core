@@ -491,10 +491,10 @@ export class TSRHandler {
 
 		if (peripheralDevice) {
 			const rundownPlaylists = this._coreHandler.core.getCollection('rundownPlaylists')
-			const activeRundownPlaylist = rundownPlaylists.findOne({
-				studioId: peripheralDevice.studioId,
-				activationId: {$exists: true}
+			const activeRundownPlaylist = rundownPlaylists.findOne((i: any) => {
+				return i.studioId === peripheralDevice.studioId && i.activationId
 			})
+				
 			const activeRundownPlaylistId = activeRundownPlaylist?._id
 			this.logger.info(`Got active rundownPlaylist ${activeRundownPlaylistId}`)
 
