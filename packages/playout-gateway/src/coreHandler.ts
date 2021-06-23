@@ -203,12 +203,12 @@ export class CoreHandler {
 	onConnected(fcn: () => any): void {
 		this._onConnected = fcn
 	}
-	onDeviceChanged(id: string): void {
-		if (id === this.core.deviceId) {
+	onDeviceChanged(deviceId: string): void {
+		if (deviceId === this.core.deviceId) {
 			const col = this.core.getCollection('peripheralDevices')
 			if (!col) throw new Error('collection "peripheralDevices" not found!')
 
-			const device = col.findOne(id)
+			const device = col.findOne(deviceId)
 			if (device) {
 				this.deviceSettings = device.settings || {}
 			} else {
