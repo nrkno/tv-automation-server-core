@@ -993,8 +993,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
-		queue: boolean
+		queue: boolean,
+		time?: number
 	) {
+		if (time) {
+			const now = Date.now()
+			logger.warn(`ADLIB_RUN: io took ${now - time}ms`)
+		}
 		return traceAction(
 			UserActionAPIMethods.baselineAdLibPieceStart,
 			rundownBaselineAdLibPieceStart,

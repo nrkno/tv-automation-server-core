@@ -2,6 +2,20 @@
  * This file is the entry-point for Meteor's server side
  */
 
+import { Meteor } from 'meteor/meteor'
+
+// if (Meteor.isServer && Meteor.isDevelopment) {
+// 	const blocked = require('blocked-at')
+// 	blocked(
+// 		(time, stack) => {
+// 			console.log(`Blocked for ${time}ms, operation started here:`, stack)
+// 		},
+// 		{
+// 			threshold: 20, //ms
+// 		}
+// 	)
+// }
+
 import '../lib/main'
 
 // Import all files that register Meteor methods:

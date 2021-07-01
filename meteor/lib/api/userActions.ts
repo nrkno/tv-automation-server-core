@@ -106,7 +106,8 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
-		queue: boolean
+		queue: boolean,
+		time?: number
 	)
 	sourceLayerStickyPieceStart(
 		userEvent: string,

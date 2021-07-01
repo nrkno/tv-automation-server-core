@@ -19,7 +19,7 @@ import {
 	produceRundownPlaylistInfoFromRundown,
 	removeRundownsFromDb,
 } from '../rundownPlaylist'
-import { clone, makePromise, max, protectString, unprotectString } from '../../../lib/lib'
+import { clone, makePromise, max, protectString, sleep, unprotectString } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'
@@ -66,6 +66,8 @@ export async function CommitIngestOperation(
 		ingestCache.discardChanges()
 		return
 	}
+
+	await sleep(0)
 
 	const showStyle = data.showStyle ?? (await getShowStyleCompoundForRundown(rundown))
 	const blueprint = (data.showStyle ? data.blueprint : undefined) ?? loadShowStyleBlueprint(showStyle)
@@ -158,6 +160,8 @@ export async function CommitIngestOperation(
 		)
 	}
 
+	await sleep(0)
+
 	// Rundown needs to be removed, and has been removed its old playlist, so we can now do the discard
 	if (data.removeRundown && !trappedInPlaylistId) {
 		// It was removed from the playlist just above us, so this can simply discard the contents
@@ -174,6 +178,9 @@ export async function CommitIngestOperation(
 		if (tmpNewPlaylist.studioId !== ingestCache.Studio.doc._id)
 			throw new Meteor.Error(404, `Rundown Playlist "${newPlaylistId[0]}" exists but belongs to another studio!`)
 	}
+
+	await sleep(10)
+
 	runStudioOperationWithLock(
 		'ingest.commit.saveRundownToPlaylist',
 		ingestCache.Studio.doc._id,

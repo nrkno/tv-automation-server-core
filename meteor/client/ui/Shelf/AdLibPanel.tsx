@@ -1146,7 +1146,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 							this.props.playlist._id,
 							currentPartInstanceId,
 							adlibPiece._id,
-							queue || false
+							queue || false,
+							Date.now()
 						)
 					)
 				} else if (adlibPiece.isSticky) {

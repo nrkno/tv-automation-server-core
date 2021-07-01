@@ -13,7 +13,7 @@ import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collectio
 import { DBRundown } from '../../../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, sleep, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
@@ -81,6 +81,8 @@ export async function calculateSegmentsFromIngestData(
 		const showStyle = await getShowStyleCompoundForRundown(rundown)
 		const blueprint = loadShowStyleBlueprint(showStyle)
 
+		await sleep(0)
+
 		for (let ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
 
@@ -98,6 +100,8 @@ export async function calculateSegmentsFromIngestData(
 			)
 
 			const blueprintRes = blueprint.blueprint.getSegment(context, ingestSegment)
+
+			await sleep(0)
 
 			// Ensure all parts have a valid externalId set on them
 			const knownPartExternalIds = blueprintRes.parts.map((p) => p.part.externalId)
@@ -220,6 +224,8 @@ export async function calculateSegmentsFromIngestData(
 				newSegment.isHidden = true
 			}
 		}
+
+		await sleep(0)
 
 		span?.end()
 		return {
@@ -440,6 +446,8 @@ export async function updateRundownFromIngestData(
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
+	await sleep(0)
+
 	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base)
 	const blueprintContext = new ShowStyleUserContext(
 		{
@@ -450,6 +458,8 @@ export async function updateRundownFromIngestData(
 		showStyle.compound
 	)
 	const rundownRes = showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
+
+	await sleep(0)
 
 	const translationNamespaces: string[] = []
 	if (showStyleBlueprint.blueprintId) {
@@ -510,6 +520,8 @@ export async function updateRundownFromIngestData(
 			: {}),
 	})
 	const dbRundown = cache.Rundown.replace(dbRundownData)
+
+	await sleep(0)
 
 	// Save the baseline
 	const blueprintRundownContext = new CommonContext({

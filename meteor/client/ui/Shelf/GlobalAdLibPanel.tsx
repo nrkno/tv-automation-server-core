@@ -608,7 +608,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 							this.props.playlist._id,
 							currentPartInstanceId,
 							adlibPiece._id,
-							queue || false
+							queue || false,
+							Date.now()
 						)
 					)
 				}
