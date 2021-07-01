@@ -16,6 +16,18 @@ class Profiler {
 	setActive(active: boolean) {
 		this.active = active
 	}
+
+	setLabel(name: string, value: string) {
+		if (!this.active) return
+
+		Agent.setLabel(name, value)
+	}
+
+	hasTransaction(): boolean {
+		if (!this.active) return false
+
+		return !!Agent.currentTransaction
+	}
 }
 
 const profiler = new Profiler()

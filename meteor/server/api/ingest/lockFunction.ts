@@ -75,21 +75,30 @@ export function runIngestOperationWithCache(
 
 		// Recalculate the ingest data
 		const oldIngestRundown = ingestObjCache.fetchRundown()
-		const updatedIngestRundown = updateCacheFcn(clone(oldIngestRundown))
 		let newIngestRundown: LocalIngestRundown | undefined
-		switch (updatedIngestRundown) {
-			// case UpdateIngestRundownAction.REJECT:
-			// 	// Reject change
-			// 	return
-			case UpdateIngestRundownAction.DELETE:
-				ingestObjCache.delete()
-				newIngestRundown = undefined
-				break
-			default:
-				ingestObjCache.update(updatedIngestRundown)
-				newIngestRundown = updatedIngestRundown
-				break
+		try {
+			const updatedIngestRundown = updateCacheFcn(clone(oldIngestRundown))
+			switch (updatedIngestRundown) {
+				// case UpdateIngestRundownAction.REJECT:
+				// 	// Reject change
+				// 	return
+				case UpdateIngestRundownAction.DELETE:
+					ingestObjCache.delete()
+					newIngestRundown = undefined
+					break
+				default:
+					ingestObjCache.update(updatedIngestRundown)
+					newIngestRundown = updatedIngestRundown
+					break
+			}
+		} catch (e) {
+			// inform ingest cache it is no longer needed
+			pIngestCache.then((c) => c.discardChanges())
+
+			// rethrow error
+			throw e
 		}
+
 		// Start saving the ingest data
 		const pSaveIngestChanges = ingestObjCache.saveToDatabase()
 

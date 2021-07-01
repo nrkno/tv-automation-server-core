@@ -479,4 +479,13 @@ export class DbCacheWriteCollection<
 		}
 		return false
 	}
+	countModified(): number {
+		let count = 0
+		for (const doc of Array.from(this.documents.values())) {
+			if (doc === null || doc.inserted || doc.updated) {
+				count++
+			}
+		}
+		return count
+	}
 }

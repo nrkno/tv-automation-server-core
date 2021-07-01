@@ -38,7 +38,8 @@ import { CacheForPlayout } from '../../playout/cache'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownContext
-	implements ISyncIngestUpdateToPartInstanceContext {
+	implements ISyncIngestUpdateToPartInstanceContext
+{
 	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
@@ -96,8 +97,12 @@ export class SyncIngestUpdateToPartInstanceContext
 	}
 
 	applyChangesToCache(cache: CacheForPlayout) {
-		if (this._partInstanceCache.isModified() || this._pieceInstanceCache.isModified()) {
-			this.logInfo(`Found ingest changes to apply to PartInstance`)
+		const modifiedPartInstances = this._partInstanceCache.countModified()
+		const modifiedPieceInstances = this._pieceInstanceCache.countModified()
+		if (modifiedPartInstances > 0 || modifiedPieceInstances > 0) {
+			this.logInfo(
+				`Found ingest changes to apply to PartInstance (${modifiedPartInstances} PartInstances, ${modifiedPieceInstances} PieceInstances)`
+			)
 		} else {
 			this.logInfo(`No ingest changes to apply to PartInstance`)
 		}

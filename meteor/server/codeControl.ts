@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { getHash } from '../lib/lib'
+import { profiler } from './api/profiler'
 // import * as callerModule from 'caller-module'
 
 const ACCEPTABLE_WAIT_TIME = 200 // ms
@@ -108,6 +109,9 @@ function syncFunctionInner<T extends Function>(
 		const name = getFunctionName(context, fcn)
 		logger.debug(`syncFunction: ${id} (${name})`)
 		const waitingOnFunctions = getSyncFunctionsRunningOrWaiting(id)
+
+		profiler.setLabel(id, name)
+
 		syncFunctionFcns.push({
 			id: id,
 			fcn: fcn,
@@ -154,7 +158,8 @@ function evaluateFunctions() {
 				nextFcn.status = syncFunctionFcnStatus.RUNNING
 				nextFcn.started = Date.now()
 				const waitTime = nextFcn.started - nextFcn.queueTime
-				if (waitTime > ACCEPTABLE_WAIT_TIME) {
+				if (nextFcn.waitingOnFunctions.length > 0) {
+					// ACCEPTABLE_WAIT_TIME) {
 					logger.warn(
 						`syncFunction ${nextFcn.id} "${
 							nextFcn.name
@@ -164,10 +169,19 @@ function evaluateFunctions() {
 					)
 				}
 				Meteor.setTimeout(() => {
+					// If there is no transaction, start one
+					const transaction = !profiler.hasTransaction()
+						? profiler.startTransaction(nextFcn.name, 'syncFunction')
+						: null
+
+					transaction?.setLabel('id', nextFcn.id)
+
 					try {
 						let result = nextFcn.fcn(...nextFcn.args)
+						transaction?.end()
 						nextFcn.cb(null, result)
 					} catch (e) {
+						transaction?.end()
 						nextFcn.cb(e)
 					}
 					if (nextFcn.status === syncFunctionFcnStatus.TIMEOUT) {

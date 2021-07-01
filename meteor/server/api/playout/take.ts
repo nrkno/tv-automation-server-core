@@ -460,9 +460,12 @@ export function triggerGarbageCollection() {
 			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
 
 			if (!isAnySyncFunctionsRunning()) {
+				const start = Date.now()
 				// by passing true, we're triggering the "full" collection
 				// @ts-ignore (typings not avaiable)
 				global.gc(true)
+				const end = Date.now()
+				logger.debug(`Ran GC in ${end - start}ms`)
 			}
 		}
 	}, 500)
