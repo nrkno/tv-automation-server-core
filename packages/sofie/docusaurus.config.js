@@ -20,6 +20,7 @@ module.exports = {
         src: 'img/logo.svg',
       },
       items: [
+        {to: '/releases', label: 'Releases', position: 'left'},
         {
           type: 'doc',
           docId: 'intro',
@@ -41,7 +42,7 @@ module.exports = {
           title: 'Docs',
           items: [
             {
-              label: 'Tutorial',
+              label: 'Docs',
               to: '/docs/intro',
             },
           ],
@@ -102,12 +103,22 @@ module.exports = {
     [
       '@docusaurus/plugin-content-docs',
       {
-        id: 'legacy',
-        path: 'legacy',
-        routeBasePath: 'legacy',
+        id: 'releases',
+        path: 'releases',
+        routeBasePath: 'releases',
         sidebarPath: require.resolve('./sidebars.js'),
         // ... other options
       },
     ],
+    // [
+    //   '@docusaurus/plugin-content-docs',
+    //   {
+    //     id: 'legacy',
+    //     path: 'legacy',
+    //     routeBasePath: 'legacy',
+    //     sidebarPath: require.resolve('./sidebars.js'),
+    //     // ... other options
+    //   },
+    // ],
   ],
 };
