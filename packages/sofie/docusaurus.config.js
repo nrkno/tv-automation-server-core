@@ -20,13 +20,10 @@ module.exports = {
         src: 'img/logo.svg',
       },
       items: [
+        {to: '/docs/getting-started/intro', label: 'Getting Started', position: 'left'},
+        {to: '/docs/main/intro', label: 'Docs', position: 'left'},
+        {to: '/docs/for-developers/intro', label: 'For Developers', position: 'left'},
         {to: '/releases', label: 'Releases', position: 'left'},
-        {
-          type: 'doc',
-          docId: 'intro',
-          position: 'left',
-          label: 'Tutorial',
-        },
         // {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/facebook/docusaurus',
@@ -106,7 +103,7 @@ module.exports = {
         id: 'releases',
         path: 'releases',
         routeBasePath: 'releases',
-        sidebarPath: require.resolve('./sidebars.js'),
+        sidebarPath: require.resolve('./sidebarsReleases.js'),
         // ... other options
       },
     ],
