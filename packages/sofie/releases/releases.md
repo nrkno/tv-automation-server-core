@@ -1,4 +1,5 @@
 ---
+slug: /
 description: >-
   A release is made up from a collection of components and their versions that
   together make up the Sofie system.
@@ -55,7 +56,7 @@ Not released yet, target version: 1.33
 
 ### Components
 
-<table>
+<!-- <table>
   <thead>
     <tr>
       <th style="text-align:left">Component</th>
@@ -95,7 +96,7 @@ Not released yet, target version: 1.33
       <td style="text-align:left">1.8</td>
     </tr>
   </tbody>
-</table>
+</table> -->
 
 ## _Release 32_
 
@@ -112,7 +113,7 @@ Release date: 2021-05-05 \(1.32.0\)
 
 ### Components
 
-<table>
+<!-- <table>
   <thead>
     <tr>
       <th style="text-align:left">Component</th>
@@ -152,7 +153,7 @@ Release date: 2021-05-05 \(1.32.0\)
       <td style="text-align:left">1.7</td>
     </tr>
   </tbody>
-</table>
+</table> -->
 
 ## _Release 31_
 
@@ -168,7 +169,7 @@ Release date: 2021-05-05 \(1.19.1\)
 
 ### Components
 
-<table>
+<!-- <table>
   <thead>
     <tr>
       <th style="text-align:left">Component</th>
@@ -208,7 +209,7 @@ Release date: 2021-05-05 \(1.19.1\)
       <td style="text-align:left">1.6.0</td>
     </tr>
   </tbody>
-</table>
+</table> -->
 
 ## _Release 30_
 
@@ -227,7 +228,7 @@ Release date: 2021-02-12 \(1.18.0\)
 * Some reductions in the number of Unsync messages shown during shows with rundown playlists.
 
 ### Components
-
+<!-- 
 <table>
   <thead>
     <tr>
@@ -273,7 +274,7 @@ Release date: 2021-02-12 \(1.18.0\)
       <td style="text-align:left">1.1.0</td>
     </tr>
   </tbody>
-</table>
+</table> -->
 
 ## _Release 29_
 
@@ -289,7 +290,7 @@ Note: 1.17.0 has a wrong version in a dependency of a dependency and should not 
 
 ### Components
 
-<table>
+<!-- <table>
   <thead>
     <tr>
       <th style="text-align:left">Component</th>
@@ -329,7 +330,7 @@ Note: 1.17.0 has a wrong version in a dependency of a dependency and should not 
       <td style="text-align:left">1.4.0 (not updated, no changes)</td>
     </tr>
   </tbody>
-</table>
+</table> -->
 
 ## _Release 28_
 
@@ -348,7 +349,7 @@ Release date: 2021-01-19
 
 ### Components
 
-<table>
+<!-- <table>
   <thead>
     <tr>
       <th style="text-align:left">Component</th>
@@ -388,7 +389,7 @@ Release date: 2021-01-19
       <td style="text-align:left">1.4.0</td>
     </tr>
   </tbody>
-</table>
+</table> -->
 
 ## _Release 27_
 
