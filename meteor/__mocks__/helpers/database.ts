@@ -22,6 +22,7 @@ import {
 	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
+	PlaylistTimingType,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -311,6 +312,9 @@ export async function setupMockShowStyleBlueprint(
 						// expectedStart?:
 						// expectedDuration?: number;
 						metaData: ingestRundown.payload,
+						timing: {
+							type: PlaylistTimingType.None,
+						},
 					}
 
 					// Allow the rundown to specify a playlistExternalId that should be used
@@ -468,6 +472,9 @@ export function setupDefaultRundown(
 		studioId: env.studio._id,
 		showStyleBaseId: env.showStyleBase._id,
 		showStyleVariantId: env.showStyleVariant._id,
+		timing: {
+			type: PlaylistTimingType.None,
+		},
 
 		playlistId: playlistId,
 		_rank: 0,

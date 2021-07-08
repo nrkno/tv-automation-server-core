@@ -221,7 +221,7 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 										item,
 										(this.props.timingDurations && this.props.timingDurations.partDurations) || {},
 										Math.max(
-											(this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1,
+											(this.props.timingDurations && this.props.timingDurations.asDisplayedPlaylistDuration) || 1,
 											this.props.playlist!.expectedDuration || 1
 										)
 									)

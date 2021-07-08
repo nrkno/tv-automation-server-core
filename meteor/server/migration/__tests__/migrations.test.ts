@@ -12,6 +12,8 @@ import {
 	MigrationStep,
 	MigrationContextStudio,
 	MigrationContextShowStyle,
+	PlaylistTimingType,
+	PlaylistTimingNone,
 } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Studios, Studio } from '../../../lib/collections/Studios'
@@ -355,6 +357,9 @@ describe('Migrations', () => {
 				rundown: {
 					externalId: '',
 					name: '',
+					timing: literal<PlaylistTimingNone>({
+						type: PlaylistTimingType.None,
+					}),
 				},
 				globalAdLibPieces: [],
 				baseline: { timelineObjects: [] },

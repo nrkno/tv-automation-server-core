@@ -7,12 +7,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
-import {
-	RundownTiming,
-	computeSegmentDuration,
-	TimingEvent,
-	computeSegmentDisplayDuration,
-} from '../RundownView/RundownTiming/RundownTiming'
+import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import {
@@ -48,9 +43,10 @@ import RundownViewEventBus, {
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { checkPieceContentStatus, getNoteTypeForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
+import { computeSegmentDuration, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { RundownAPI } from '../../../lib/api/rundown'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -732,7 +728,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		onGoToPartInner = (part: PartUi, timingDurations: RundownTiming.RundownTimingContext, zoomInToFit?: boolean) => {
+		onGoToPartInner = (part: PartUi, timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
 			let newScale: number | undefined
 
 			let scrollLeft =
@@ -760,7 +756,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		onGoToPart = (e: GoToPartEvent) => {
 			if (this.props.segmentId === e.segmentId) {
-				const timingDurations = this.context?.durations as RundownTiming.RundownTimingContext
+				const timingDurations = this.context?.durations as RundownTimingContext
 
 				const part = this.props.parts.find((part) => part.partId === e.partId)
 				if (part) {
@@ -771,7 +767,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		onGoToPartInstance = (e: GoToPartInstanceEvent) => {
 			if (this.props.segmentId === e.segmentId) {
-				const timingDurations = this.context?.durations as RundownTiming.RundownTimingContext
+				const timingDurations = this.context?.durations as RundownTimingContext
 
 				const part = this.props.parts.find((part) => part.instance._id === e.partInstanceId)
 

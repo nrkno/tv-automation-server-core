@@ -9,7 +9,7 @@ import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../.
 import { getCurrentTime, getRandomId, protectString } from '../../../../../lib/lib'
 import { SegmentId } from '../../../../../lib/collections/Segments'
 import { DBPart, Part, PartId, Parts } from '../../../../../lib/collections/Parts'
-import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
+import { LookaheadMode, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../../lib/collections/Timeline'
 import { PartAndPieces, PartInstanceAndPieceInstances } from '../util'
@@ -80,6 +80,9 @@ describe('Lookahead', () => {
 						core: '',
 					},
 					externalNRCSName: 'mock',
+					timing: {
+						type: PlaylistTimingType.None,
+					},
 				}
 				Rundowns.insert(rundown)
 

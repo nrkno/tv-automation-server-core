@@ -15,7 +15,7 @@ import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Run
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
-import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
+import { RundownPlaylistTiming, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
@@ -61,10 +61,8 @@ export interface DBRundownPlaylist {
 	created: Time
 	/** Last modified timestamp */
 	modified: Time
-	/** When the playlist is expected to start */
-	expectedStart?: Time
-	/** How long the playlist is expected to take ON AIR */
-	expectedDuration?: number
+	/** Rundown timing information */
+	timing: RundownPlaylistTiming
 	/** Is the playlist in rehearsal mode (can be used, when active: true) */
 	rehearsal?: boolean
 	/** Playout hold state */
@@ -120,8 +118,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public startedPlayback?: Time
 	public lastIncorrectPartPlaybackReported?: Time
 	public rundownsStartedPlayback?: Record<string, Time>
-	public expectedStart?: Time
-	public expectedDuration?: number
+	public timing: RundownPlaylistTiming
 	public rehearsal?: boolean
 	public holdState?: RundownHoldState
 	public activationId?: RundownPlaylistActivationId
@@ -211,8 +208,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				name: 1,
 				_rank: 1,
 				playlistId: 1,
-				expectedStart: 1,
-				expectedDuration: 1,
+				timing: 1,
 				showStyleBaseId: 1,
 			},
 		})

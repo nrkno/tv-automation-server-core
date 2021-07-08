@@ -130,6 +130,9 @@ Object {
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "studioId": "mockStudio4",
+  "timing": {
+    "type": "none"
+  }
 }
 `;
 
@@ -180,6 +183,9 @@ Object {
   "previousPartInstanceId": null,
   "rehearsal": false,
   "studioId": "mockStudio4",
+  "timing": {
+    "type": "none"
+  }
 }
 `;
 
@@ -205,5 +211,8 @@ Object {
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "studioId": "mockStudio4",
+  "timing": {
+    "type": "none"
+  }
 }
 `;

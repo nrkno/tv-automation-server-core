@@ -10,8 +10,9 @@ import { iconDragHandle, iconRemove, iconResync } from './icons'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { EyeIcon } from '../../lib/ui/icons/rundownList'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
-import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
+import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -107,7 +108,9 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 			<span className="rundown-list-item__text">
 				{rundown.expectedStart ? (
-					<DisplayFormattedTime displayTimestamp={rundown.expectedStart} t={t} />
+					<DisplayFormattedTime timestamp={rundown.expectedStart} t={t} />
+				) : rundown.expectedEnd && rundown.expectedDuration ? (
+					<DisplayFormattedTime timestamp={rundown.expectedEnd - rundown.expectedDuration} t={t} />
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
@@ -138,12 +141,25 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				)}
 			</span>
 			<span className="rundown-list-item__text">
-				<DisplayFormattedTime displayTimestamp={rundown.modified} t={t} />
+				{rundown.expectedEnd ? (
+					<DisplayFormattedTime timestamp={rundown.expectedEnd} t={t} />
+				) : rundown.expectedStart && rundown.expectedDuration ? (
+					<DisplayFormattedTime timestamp={rundown.expectedStart + rundown.expectedDuration} t={t} />
+				) : (
+					<span className="dimmed">{t('Not set')}</span>
+				)}
 			</span>
-			{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
+			<span className="rundown-list-item__text">
+				<DisplayFormattedTime timestamp={rundown.modified} t={t} />
+			</span>
+			{rundownLayouts.some(
+				(l) =>
+					(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
+					(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
+			) && (
 				<span className="rundown-list-item__text">
 					{isOnlyRundownInPlaylist && (
-						<RundownShelfLayoutSelection
+						<RundownViewLayoutSelection
 							rundowns={[rundown]}
 							rundownLayouts={rundownLayouts}
 							playlistId={rundown.playlistId}

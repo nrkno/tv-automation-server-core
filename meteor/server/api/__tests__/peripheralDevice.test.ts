@@ -34,7 +34,7 @@ import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
@@ -70,6 +70,9 @@ describe('test peripheralDevice general API methods', () => {
 			nextPartInstanceId: null,
 			previousPartInstanceId: null,
 			activationId: protectString('active'),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		Rundowns.insert({
 			_id: rundownID,
@@ -92,6 +95,9 @@ describe('test peripheralDevice general API methods', () => {
 			},
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		const segmentID: SegmentId = protectString('segment0')
 		const segmentExternalID = 'segment0'

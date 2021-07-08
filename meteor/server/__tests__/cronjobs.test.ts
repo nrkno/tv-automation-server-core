@@ -8,7 +8,7 @@ import { getRandomId, protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
-import { TSR } from '@sofie-automation/blueprints-integration'
+import { PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -134,6 +134,9 @@ describe('cronjobs', () => {
 				showStyleVariantId: protectString(''),
 				studioId: protectString(''),
 				externalNRCSName: 'mock',
+				timing: {
+					type: PlaylistTimingType.None,
+				},
 			})
 			// Detached IngestDataCache object 0
 			const dataCache0Id = protectString<IngestDataCacheObjId>(Random.id())

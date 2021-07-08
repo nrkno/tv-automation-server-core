@@ -36,6 +36,7 @@ import { SegmentEnd } from '../../lib/ui/icons/segment'
 import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { Part } from '../../../lib/collections/Parts'
 import { TFunction } from 'i18next'
+import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -688,7 +689,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		)
 	}
 
-	static getPartDisplayDuration(part: PartUi, timingDurations: RundownTiming.RundownTimingContext): number {
+	static getPartDisplayDuration(part: PartUi, timingDurations: RundownTimingContext): number {
 		return (
 			part.instance.timings?.duration ||
 			(timingDurations.partDisplayDurations &&
@@ -1016,7 +1017,7 @@ export const SegmentTimelinePart = withTranslation()(
 	withTiming<IProps & WithTranslation, IState>((props: IProps) => {
 		return {
 			isHighResolution: false,
-			filter: (durations: RundownTiming.RundownTimingContext) => {
+			filter: (durations: RundownTimingContext) => {
 				durations = durations || {}
 
 				const partId = unprotectString(props.part.instance.part._id)

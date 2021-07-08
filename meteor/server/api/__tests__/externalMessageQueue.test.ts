@@ -7,6 +7,7 @@ import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import {
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjSlack,
+	PlaylistTimingType,
 } from '@sofie-automation/blueprints-integration'
 import { testInFiber, runAllTimers, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
@@ -32,6 +33,9 @@ describe('Test external message queue static methods', () => {
 			nextPartInstanceId: protectString('partNext'),
 			previousPartInstanceId: null,
 			activationId: protectString('active'),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		Rundowns.insert({
 			_id: protectString('rundown_1'),
@@ -55,6 +59,9 @@ describe('Test external message queue static methods', () => {
 			},
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		rundown = Rundowns.findOne() as Rundown
 	})
@@ -172,6 +179,9 @@ describe('Test sending messages to mocked endpoints', () => {
 			nextPartInstanceId: protectString('partNext'),
 			previousPartInstanceId: null,
 			activationId: protectString('active'),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		Rundowns.insert({
 			_id: protectString('rundown_1'),
@@ -195,6 +205,9 @@ describe('Test sending messages to mocked endpoints', () => {
 			},
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		rundown = Rundowns.findOne() as Rundown
 

@@ -1,7 +1,7 @@
 import { Time, literal, protectString, getRandomId } from '../../../lib/lib'
 import { RundownImportVersions, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
 import { RundownNote } from '../../../lib/api/notes'
-import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
+import { PlaylistTimingType, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
@@ -14,6 +14,7 @@ export interface Rundown {
 	name: string
 	expectedStart?: Time
 	expectedDuration?: number
+	expectedEnd?: Time
 	metaData?: {
 		[key: string]: any
 	}
@@ -59,8 +60,12 @@ export function makePlaylistFromRundown_1_0_0(
 		created: rundown.created,
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
-		expectedDuration: rundown.expectedDuration,
-		expectedStart: rundown.expectedStart,
+		timing: {
+			type: PlaylistTimingType.ForwardTime,
+			expectedDuration: rundown.expectedDuration,
+			expectedStart: rundown.expectedStart || 0,
+			expectedEnd: rundown.expectedEnd,
+		},
 		holdState: rundown.holdState,
 		name: rundown.name,
 		nextPartManual: rundown.nextPartManual,

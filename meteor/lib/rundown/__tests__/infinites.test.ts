@@ -3,7 +3,7 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { PieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { literal, protectString, getCurrentTime } from '../../../lib/lib'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { getPlayheadTrackingInfinitesForPart, processAndPrunePieceInstanceTimings } from '../infinites'
 import { Piece } from '../../../lib/collections/Pieces'
 import { PartInstance, PartInstanceId } from '../../collections/PartInstances'
@@ -491,6 +491,9 @@ describe('Infinites', () => {
 					},
 					externalNRCSName: 'test',
 					playlistId,
+					timing: {
+						type: PlaylistTimingType.None,
+					},
 				})
 			)
 		}

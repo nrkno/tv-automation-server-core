@@ -54,6 +54,7 @@ import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { checkAccessToPlaylist } from './lib'
+import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
 	runStudioOperationWithCache('removeEmptyPlaylists', studioId, StudioLockFunctionPriority.MISC, async (cache) => {
@@ -169,8 +170,7 @@ export function produceRundownPlaylistInfoFromRundown(
 			organizationId: studio.organizationId,
 			studioId: studio._id,
 			name: playlistInfo.playlist.name,
-			expectedStart: playlistInfo.playlist.expectedStart,
-			expectedDuration: playlistInfo.playlist.expectedDuration,
+			timing: playlistInfo.playlist.timing,
 
 			loop: playlistInfo.playlist.loop,
 
@@ -211,8 +211,7 @@ function defaultPlaylistForRundown(
 		organizationId: studio.organizationId,
 		studioId: studio._id,
 		name: rundown.name,
-		expectedStart: rundown.expectedStart,
-		expectedDuration: rundown.expectedDuration,
+		timing: rundown.timing,
 
 		modified: getCurrentTime(),
 	}
@@ -486,9 +485,26 @@ export function restoreRundownsInPlaylistToDefaultOrder(context: MethodContext, 
 function sortDefaultRundownInPlaylistOrder(rundowns: ReadonlyDeep<Array<DBRundown>>): ReadonlyDeep<Array<DBRundown>> {
 	return mongoFindOptions<ReadonlyDeep<DBRundown>, ReadonlyDeep<DBRundown>>(rundowns, {
 		sort: {
-			expectedStart: 1,
 			name: 1,
 			_id: 1,
 		},
+	}).sort((a, b) => {
+		// Compare start times, then allow rundowns with start time to be first
+		if (
+			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&
+			PlaylistTiming.isPlaylistTimingForwardTime(b.timing)
+		)
+			return a.timing.expectedStart - b.timing.expectedStart
+		if (PlaylistTiming.isPlaylistTimingForwardTime(a.timing)) return -1
+		if (PlaylistTiming.isPlaylistTimingForwardTime(b.timing)) return 1
+
+		// Compare end times, then allow rundowns with end time to be first
+		if (PlaylistTiming.isPlaylistTimingBackTime(a.timing) && PlaylistTiming.isPlaylistTimingBackTime(b.timing))
+			return a.timing.expectedEnd - b.timing.expectedEnd
+		if (PlaylistTiming.isPlaylistTimingBackTime(a.timing)) return -1
+		if (PlaylistTiming.isPlaylistTimingBackTime(b.timing)) return 1
+
+		// No timing
+		return 0
 	})
 }

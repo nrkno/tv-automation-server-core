@@ -74,6 +74,7 @@ function getShowStyleBaseIdSegmentPartUi(
 			name: 1,
 			expectedStart: 1,
 			expectedDuration: 1,
+			expectedEnd: 1,
 		},
 	})
 	showStyleBaseId = currentRundown?.showStyleBaseId
@@ -317,9 +318,9 @@ export class PresenterScreenBase extends MeteorReactComponent<
 			const nextSegment = this.props.nextSegment
 
 			const overUnderClock = playlist.expectedDuration
-				? (this.props.timingDurations.asPlayedRundownDuration || 0) - playlist.expectedDuration
-				: (this.props.timingDurations.asPlayedRundownDuration || 0) -
-				  (this.props.timingDurations.totalRundownDuration || 0)
+				? (this.props.timingDurations.asDisplayedPlaylistDuration || 0) - playlist.expectedDuration
+				: (this.props.timingDurations.asDisplayedPlaylistDuration || 0) -
+				  (this.props.timingDurations.totalPlaylistDuration || 0)
 
 			return (
 				<div className="presenter-screen">

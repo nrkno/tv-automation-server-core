@@ -38,7 +38,8 @@ import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { getAllowStudio } from '../../lib/localStorage'
 import { doUserAction, UserAction } from '../../lib/userAction'
-import { RundownShelfLayoutSelection } from './RundownShelfLayoutSelection'
+import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -340,7 +341,9 @@ export const RundownPlaylistUi = DropTarget(
 							</span>
 							<span className="rundown-list-item__text">
 								{playlist.expectedStart ? (
-									<DisplayFormattedTime displayTimestamp={playlist.expectedStart} t={t} />
+									<DisplayFormattedTime timestamp={playlist.expectedStart} t={t} />
+								) : playlist.expectedEnd && playlist.expectedDuration ? (
+									<DisplayFormattedTime timestamp={playlist.expectedEnd - playlist.expectedDuration} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}
@@ -357,11 +360,24 @@ export const RundownPlaylistUi = DropTarget(
 								)}
 							</span>
 							<span className="rundown-list-item__text">
-								<DisplayFormattedTime displayTimestamp={playlist.modified} t={t} />
+								{playlist.expectedEnd ? (
+									<DisplayFormattedTime timestamp={playlist.expectedEnd} t={t} />
+								) : playlist.expectedStart && playlist.expectedDuration ? (
+									<DisplayFormattedTime timestamp={playlist.expectedStart + playlist.expectedDuration} t={t} />
+								) : (
+									<span className="dimmed">{t('Not set')}</span>
+								)}
 							</span>
-							{rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
+							<span className="rundown-list-item__text">
+								<DisplayFormattedTime timestamp={playlist.modified} t={t} />
+							</span>
+							{rundownLayouts.some(
+								(l) =>
+									(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
+									(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
+							) && (
 								<span className="rundown-list-item__text">
-									<RundownShelfLayoutSelection
+									<RundownViewLayoutSelection
 										rundowns={playlist.rundowns}
 										rundownLayouts={rundownLayouts}
 										playlistId={playlist._id}

@@ -10,7 +10,7 @@
 	 * Note that the standard size is used for several columns, which is why these
 	 * percentages do not add up to a perfect 100% (ie. 1.0)
 	 */
-	--nameColumnSize: 0.4;
+	--nameColumnSize: 0.3;
 	--showStyleColumnSize: 0.17;
 	--standardColumnSize: 0.11;
 	--layoutSelectionColumnSize: 0.075;
@@ -23,6 +23,7 @@
 	--showStyleColumnWidth: calc(var(--componentWidth) * var(--showStyleColumnSize));
 	--airTimeColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
 	--durationColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
+	--expectedEndColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
 	--lastModifiedColumnWidth: calc(var(--componentWidth) * var(--standardColumnSize));
 	--layoutSelectionColumnWidth: calc(var(--componentWidth) * var(--layoutSelectionColumnSize));
 	--actionsColumnWidth: calc(var(--componentWidth) * var(--actionsColumnSize));
@@ -36,7 +37,7 @@
 		display: grid;
 		grid-template-columns:
 			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
-			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth);
+			var(--durationColumnWidth) var(--expectedEndColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth);
 
 		background-color: #898989;
 		color: #fff;
@@ -173,7 +174,7 @@
 				// for the header, the first column spans the first four item columns
 				grid-template-columns:
 					calc(var(--nameColumnWidth) + var(--showStyleColumnWidth)) var(--airTimeColumnWidth)
-					var(--durationColumnWidth) var(--lastModifiedColumnWidth);
+					var(--durationColumnWidth) var(--expectedEndColumnWidth) var(--lastModifiedColumnWidth);
 
 				> span {
 					align-self: center;
@@ -246,6 +247,7 @@
 					--showStyleColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--showStyleColumnSize));
 					--airTimeColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
 					--durationColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
+					--expectedEndColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
 					--lastModifiedColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--standardColumnSize));
 					--actionsColumnWidth: calc((var(--componentWidth) + var(--leftGutterWidth)) * var(--actionsColumnSize));
 
@@ -304,7 +306,7 @@
 		display: grid;
 		grid-template-columns:
 			var(--nameColumnWidth) var(--showStyleColumnWidth) var(--airTimeColumnWidth)
-			var(--durationColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth);
+			var(--durationColumnWidth) var(--expectedEndColumnWidth) var(--lastModifiedColumnWidth) var(--layoutSelectionColumnWidth);
 
 		.rundown-list-item__actions {
 			padding: 0 0 3px; // cater for icons being larger than the font

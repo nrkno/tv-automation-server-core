@@ -18,6 +18,7 @@ import {
 	TSR,
 	PieceLifespan,
 	IUserNotesContext,
+	PlaylistTimingType,
 } from '@sofie-automation/blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
@@ -57,6 +58,9 @@ describe('Test blueprint post-process', () => {
 			externalNRCSName: 'mockNRCS',
 			playlistId: protectString(''),
 			_rank: 0,
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		// const playlist = new RundownPlaylist({
 		// 	_id: protectString(''),
