@@ -4,7 +4,7 @@ Sofie Core is configured at it's most basic level using a settings file and envi
 
 ### Environment variables
 
-<table>
+<!-- <table>
   <thead>
     <tr>
       <th style="text-align:left">Setting</th>
@@ -60,7 +60,7 @@ Sofie Core is configured at it's most basic level using a settings file and envi
       </td>
     </tr>
   </tbody>
-</table>
+</table> -->
 
 ### Settings file
 
