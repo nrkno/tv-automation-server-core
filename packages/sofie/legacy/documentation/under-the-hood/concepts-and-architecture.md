@@ -2,7 +2,7 @@
 
 ## System architecture
 
-![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](../../.gitbook/assets/frame%20%287%29%20%287%29%20%285%29.png)
+![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](/legacy/assets/frame (7) (7) (5).png)
 
 \*\*\*\*[**Sofie Core**](dictionary.md#sofie-core) is a web-server and communicates with the web GUI.  
 [Gateways](dictionary.md#gateways) are applications that are connected to Sofie Core and exchanges data; such as rundown-data for ingest or the [timeline ](dictionary.md#timeline)for play-out.
@@ -58,13 +58,13 @@ The timeline-objects can be programmed to contain relative references to each ot
 
 The [Playout Gateway](libraries.md#gateways) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)\) controls the play-out devices to make sure that they actually play what is intended.
 
-![Example of 2 objects in a timeline: The \#video object, destined to play at a certain time, and \#gfx0, destined to start 15 seconds into the video.](../../.gitbook/assets/timeline.png)
+![Example of 2 objects in a timeline: The \#video object, destined to play at a certain time, and \#gfx0, destined to start 15 seconds into the video.](/legacy/assets/timeline.png)
 
 ### Why a timeline?
 
 The Sofie system is made to work with a modern web- and IT-based approach in mind. Therefore, the Sofie Core can be run either on-site, or in an off-site cloud.
 
-![Sofie Core can run in the cloud](../../.gitbook/assets/sofie-web-architecture%20%281%29.png)
+![Sofie Core can run in the cloud](/legacy/assets/sofie-web-architecture (1).png)
 
 One drawback of running in a cloud over the public internet is the sometimes unpredictable latency. The Timeline overcomes this by moving all the immediate control of the play-out devices to the Playout Gateway, which is intended to run on a local network, close to the hardware it controls.  
 This also gives the system a simple way of load-balancing - since the number of web-clients or load on Sofie Core won't affect the play-out.

@@ -12,7 +12,7 @@ After having installed the Sofie Server Core, navigate to [`http://localhost:300
 
 Welcome to Sofie! The first page is the Rundown List, you can get back to it at any time by clicking "Rundowns" on the top navigation bar.
 
-![The front page - Rundown List](../.gitbook/assets/image%20%284%29.png)
+![The front page - Rundown List](/legacy/assets/image (4).png)
 
 {% hint style="info" %}
 You might not see the "Settings" link at the top right yet, this is because you haven't set the configure access level to this browser. You can do this simply navigating to [http://localhost:3000?configure=1](http://localhost:3000?configure=1)

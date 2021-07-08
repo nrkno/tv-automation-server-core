@@ -18,15 +18,15 @@ Before you select the Device, you want to add it to the current _Studio_ you are
 
 Now you can select the _Device_ from the _Devices menu_ and click the link provided to enable your Google Drive API to send files to the _Sofie Core_. The page that opens will look similar to the image below.
 
-![Google Drive API Developers Page](../../../../.gitbook/assets/settings-page-full-spreadsheet-gateway-2.jpg)
+![Google Drive API Developers Page](/legacy/assets/settings-page-full-spreadsheet-gateway-2.jpg)
 
 Next click the button labeled _Enable the Drive API_ and a popup window will open.
 
-![Google Drive API Page - Popup Step 1](../../../../.gitbook/assets/settings-page-full-spreadsheet-gateway-3.jpg)
+![Google Drive API Page - Popup Step 1](/legacy/assets/settings-page-full-spreadsheet-gateway-3.jpg)
 
 In the drop down menu, select _Desktop app_ and then you can click the _Create_ button to move to the next page.
 
-![Google Drive API - Popup Page 2](../../../../.gitbook/assets/settings-page-full-spreadsheet-gateway-4.jpg)
+![Google Drive API - Popup Page 2](/legacy/assets/settings-page-full-spreadsheet-gateway-4.jpg)
 
 On the second page in the popup window you are presented with your client ID and secret. Use the button to download the configuration to a file and navigate back to _Sofie Core's Settings page_. Select the Spreadsheet Gateway, then click the _Browse_ button and upload the configuration file you just downloaded. A new link will appear to confirm access to your google drive account. Select the link and in the new window, select the Google account you would like to use. Currently, the Sofie Core Application is not verified with Google so you will need to acknowledge this and proceed passed the unverified page. Click the _Advanced_ button and then click _Go to QuickStart \( Unsafe \)_. 
 

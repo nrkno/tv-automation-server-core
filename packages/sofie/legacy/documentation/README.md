@@ -6,11 +6,11 @@
 
 ![Producer&apos;s / Director&apos;s  View](https://raw.githubusercontent.com/nrkno/Sofie-TV-automation/master/images/Sofie_GUI_example.jpg)
 
-![Warnings and notifications are displayed to the user in the GUI](../.gitbook/assets/image%20%283%29.png)
+![Warnings and notifications are displayed to the user in the GUI](/legacy/assets/image (3).png)
 
-![The Host view, displaying time information and countdowns](../.gitbook/assets/image%20%285%29.png)
+![The Host view, displaying time information and countdowns](/legacy/assets/image (5).png)
 
-![The prompter view](../.gitbook/assets/image%20%282%29.png)
+![The prompter view](/legacy/assets/image (2).png)
 
 {% hint style="info" %}
 Tip: The different web views \(such as the host view and the prompter\) can easily be transmitted over an SDI signal using the HTML producer in [CasparCG](installation/installing-connections-and-additional-hardware/casparcg-server-installation.md).

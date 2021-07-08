@@ -6,15 +6,15 @@ _Sofie_ can be installed in many different ways, depending on which platforms, n
 
 The _Rundowns_ page will display all the active rundowns that the _Sofie Core_ has access to. 
 
-![Rundown Page](../../.gitbook/assets/image%20%284%29.png)
+![Rundown Page](/legacy/assets/image (4).png)
 
 The _Status_ pages displays the current status for the attached devices and gateways.
 
-![Status Page &#x2013; Describes the state of Sofie Core](../../.gitbook/assets/status-page.jpg)
+![Status Page &#x2013; Describes the state of Sofie Core](/legacy/assets/status-page.jpg)
 
 The _Settings_ pages contains various settings for the studio, show styles, blueprints etc.. If the link to the settings page is not visible in your application, review the [Sofie Access Levels](sofie-navigation.md) portion of this guide. More info on specific parts of the _Settings_ page can be found in their corresponding guide sections. 
 
-![Settings Page &#x2013; Describes how the Core is configured](../../.gitbook/assets/settings-page.jpg)
+![Settings Page &#x2013; Describes how the Core is configured](/legacy/assets/settings-page.jpg)
 
 ## Sofie Core Overview
 

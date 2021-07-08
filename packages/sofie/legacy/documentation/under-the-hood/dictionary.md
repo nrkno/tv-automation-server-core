@@ -32,7 +32,7 @@ Read more: [_System architecture_](concepts-and-architecture.md#system-architect
 
 ## Playing Things
 
-![](../../.gitbook/assets/takenext%20%281%29%20%281%29.png)
+![](/legacy/assets/takenext (1) (1).png)
 
 ### Take Point
 
@@ -107,7 +107,7 @@ A Rundown always has a [showstyle](dictionary.md#showstyle) and is played out in
 
 Only a single Rundown can be active at a time within each Studio.
 
-![The Producer&apos;s view and naming conventions of components](../../.gitbook/assets/sofie-naming-conventions.png)
+![The Producer&apos;s view and naming conventions of components](/legacy/assets/sofie-naming-conventions.png)
 
 ### Segment
 
@@ -144,7 +144,7 @@ An AdLib isn't added to the Part in the GUI until it starts playing, instead you
 
 ### Shelf
 
-The Shelf contains the playable AdLib pieces, as well as some other non-essential information.![](../../.gitbook/assets/shelf.png)
+The Shelf contains the playable AdLib pieces, as well as some other non-essential information.![](/legacy/assets/shelf.png)
 
 {% hint style="info" %}
 You can open the shelf either by clicking the handle at the bottom of the GUI, to by pressing the TAB key.

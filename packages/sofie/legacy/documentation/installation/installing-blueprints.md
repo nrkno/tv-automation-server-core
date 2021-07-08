@@ -11,7 +11,7 @@ Blueprints are custom scripts that you create yourself \(or download an existing
 
 To begin installing any Blueprint, navigate to the _Settings page_. Getting there is covered in the [Sofie Access Levels](../getting-started/sofie-navigation.md) page.
 
-![The Settings Page](../../.gitbook/assets/settings-page.jpg)
+![The Settings Page](/legacy/assets/settings-page.jpg)
 
 To upload a new blueprint, click the _+_ icon next to Blueprints menu option. Select the newly created Blueprint and upload the local blueprint JS file. You will get a confirmation if the installation was successful.
 

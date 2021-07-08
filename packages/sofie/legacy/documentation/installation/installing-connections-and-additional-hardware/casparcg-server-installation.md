@@ -90,15 +90,15 @@ Once the card in installed in your machine, you will need to download the contro
 
 Once booted back up, you should be able to launch the Desktop Video application and see your Decklink Card.
 
-![Desktop Video Application](../../../.gitbook/assets/desktop-video.png)
+![Desktop Video Application](/legacy/assets/desktop-video.png)
 
 Click the icon in the center of the screen to open the setup window. Each production situation will very in frame rate and resolution so go through the settings and set what you know. Most things are set to standards based on your region so the default option will most likely be correct.
 
-![Desktop Video Settings](../../../.gitbook/assets/desktop-video-settings.png)
+![Desktop Video Settings](/legacy/assets/desktop-video-settings.png)
 
 If you chose a Decklink Duo, then you will also need to set SDI connectors one and two to be your outputs.
 
-![Decklink Dou SDI Output Settings](../../../.gitbook/assets/decklink_dou_card.png)
+![Decklink Dou SDI Output Settings](/legacy/assets/decklink_dou_card.png)
 
 ## Hardware Specific Configurations
 
