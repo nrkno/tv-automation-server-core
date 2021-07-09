@@ -370,7 +370,7 @@ jobs:
       - name: Run typedoc
         run: |
           cd packages
-          yarn typedoc
+          yarn docs:typedoc
           # cp docs documentation/build/typedoc -R
         env:
           CI: true
