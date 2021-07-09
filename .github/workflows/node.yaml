@@ -345,7 +345,7 @@ jobs:
 
     # only run for release tags
     # TODO - we should only do this if the latest release
-    if: contains(github.ref, 'refs/tags/')
+    # if: contains(github.ref, 'refs/tags/') // HACK
 
     needs: release-libs
 
@@ -361,17 +361,24 @@ jobs:
           yarn install
         env:
           CI: true
-      - name: Run typecheck and linter
+      - name: Run docusaurus
+        run: |
+          cd packages/documentation
+          yarn build
+        env:
+          CI: true
+      - name: Run typedoc
         run: |
           cd packages
           yarn docs
+          cp docs documentation/build/typedoc -R
         env:
           CI: true
       - name: Publish
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./packages/docs
+          publish_dir: ./packages/documentation/build
 
   prerelease-libs:
     name: Prerelease Lib

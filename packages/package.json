@@ -24,7 +24,8 @@
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001236;caniuse-lite@1.0.30001237;mos-gateway@1.36.0-in-development;playout-gateway@1.36.0-in-development\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
-		"test": "lerna run --concurrency 2 --stream test"
+		"test": "lerna run --concurrency 2 --stream test",
+		"docs:serve": "lerna run --scope sofie-documentation start"
 	},
 	"devDependencies": {
 		"@sofie-automation/code-standard-preset": "^0.4.1",

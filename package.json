@@ -17,6 +17,7 @@
 		"validate:release": "yarn install && yarn build:packages && yarn validate:release:packages && yarn validate:release:meteor",
 		"validate:release:meteor": "cd meteor && meteor npm run validate:prod-dependencies && meteor npm run license-validate && meteor npm run lint && meteor npm run test",
 		"validate:release:packages": "cd packages && yarn validate:dependencies && yarn lint && yarn test",
-		"meteor": "cd meteor && meteor"
+		"meteor": "cd meteor && meteor",
+		"docs:serve": "cd packages && yarn docs:serve"
 	}
 }
