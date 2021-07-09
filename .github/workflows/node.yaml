@@ -361,6 +361,8 @@ jobs:
           yarn install
         env:
           CI: true
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       # - name: Run docusaurus
       #   run: |
       #     cd packages/documentation
