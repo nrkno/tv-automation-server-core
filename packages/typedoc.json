@@ -11,7 +11,8 @@
 		"*/dist",
 		"*/src/types",
 		"*/examples",
-		"*-gateway"
+		"*-gateway",
+		"packages/*-gateway"
 	],
 	"external-modulemap": ".*packages/([^/]+)/.*"
 }
