@@ -23,7 +23,7 @@ module.exports = {
 				{ to: '/docs/getting-started/intro', label: 'Getting Started', position: 'left' },
 				{ to: '/docs/main/intro', label: 'Docs', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-				{ to: '/typedoc', label: 'API Docs' },
+				{ href: 'https://julusian.github.io/tv-automation-server-core/typedoc', label: 'API Docs' }, // external link to typedoc
 				{ to: '/releases', label: 'Releases', position: 'left' },
 				// {to: '/blog', label: 'Blog', position: 'left'},
 
