@@ -26,8 +26,20 @@ module.exports = {
 				{ to: '/typedoc', label: 'API Docs' },
 				{ to: '/releases', label: 'Releases', position: 'left' },
 				// {to: '/blog', label: 'Blog', position: 'left'},
+
 				{
-					href: 'https://github.com/facebook/docusaurus',
+					type: 'docsVersionDropdown',
+
+					position: 'right',
+					// Add additional dropdown items at the beginning/end of the dropdown.
+					dropdownItemsBefore: [],
+					// dropdownItemsAfter: [{ to: '/versions', label: 'All versions' }],
+					// Do not add the link active class when browsing docs.
+					dropdownActiveClassDisabled: true,
+					docsPluginId: 'default',
+				},
+				{
+					href: 'https://github.com/nrknk/tv-automation-server-core',
 					label: 'GitHub',
 					position: 'right',
 				},
@@ -82,8 +94,16 @@ module.exports = {
 			{
 				docs: {
 					sidebarPath: require.resolve('./sidebars.js'),
-					// Please change this to your repo.
 					editUrl: 'https://github.com/nrkno/tv-automation-server-core/edit/master/packages/documentation/',
+					// default to the 'next' docs
+					lastVersion: 'current',
+					versions: {
+						// Override the rendering of the 'next' docs to be 'latest'
+						current: {
+							label: 'Latest',
+							banner: 'none',
+						},
+					},
 				},
 				// blog: {
 				//   showReadingTime: true,
