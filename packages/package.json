@@ -12,7 +12,7 @@
 	},
 	"scripts": {
 		"postinstall": "yarn lerna bootstrap",
-		"build": "yarn lerna exec yarn build",
+		"build": "yarn lerna run build",
 		"watch": "lerna run --parallel build:main -- --watch --preserveWatchOutput",
 		"sync-version-and-changelog": "lerna version --conventional-commits --no-git-tag-version --no-push --yes $(node -p \"require('../meteor/package.json').version\")",
 		"postsync-version-and-changelog": "yarn stage-versions",
