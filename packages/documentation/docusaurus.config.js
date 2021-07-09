@@ -39,7 +39,7 @@ module.exports = {
 					docsPluginId: 'default',
 				},
 				{
-					href: 'https://github.com/nrknk/tv-automation-server-core',
+					href: 'https://github.com/nrkno/tv-automation-server-core',
 					label: 'GitHub',
 					position: 'right',
 				},
