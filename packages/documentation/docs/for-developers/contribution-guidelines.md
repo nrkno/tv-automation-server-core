@@ -40,18 +40,18 @@ All of the Sofie projects use Typescript. When you contribute code, be sure to k
 
 #### Code style & formatting
 
-Most of the projects use a linter. Before pushing your code, make sure it abides to the linting rules by running `yarn lint`.  `yarn lint --fix`can fix most of the issues.
+Most of the projects use a linter. Before pushing your code, make sure it abides to the linting rules by running `yarn lint`. `yarn lint --fix`can fix most of the issues.
 
-{% hint style="info" %}
+:::info
 Tip: If using VS Code, turn on the "format on save"-feature in the settings, that way you won't have to think about formatting!
-{% endhint %}
+:::
 
 #### Documentation
 
 To be honest, we don't aim to have the "absolute perfect documentation possible". BUT we do try to improve and add documentation to have a good-enough-to-be-comprehensible standard.
 
-* The "what" something does something, is not as important - we can read the code for that.
-* The "why" something does something, IS important. Implied usage, side-effects, descriptions of the context etc.. Those are things that greatly help a reader.
+- The "what" something does something, is not as important - we can read the code for that.
+- The "why" something does something, IS important. Implied usage, side-effects, descriptions of the context etc.. Those are things that greatly help a reader.
 
 #### Tests
 
@@ -71,7 +71,6 @@ We use the yarn resolutions property in package.json sometimes to fix security v
 
 When updating other dependencies, it is a good idea to make sure that the resolutions defined still apply and are correct
 
-{% hint style="info" %}
+:::info
 We use Jest for running unit-tests. [Read more about its CLI here](https://jestjs.io/docs/en/cli).
-{% endhint %}
-
+:::

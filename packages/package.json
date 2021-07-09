@@ -25,7 +25,7 @@
 		"lint": "lerna run --concurrency 4 --stream lint",
 		"test": "lerna run --concurrency 2 --stream test",
 		"docs:typedoc": "yarn typedoc .",
-		"docs:serve": "lerna run --scope sofie-documentation start"
+		"docs:serve": "lerna run --scope sofie-documentation --stream start"
 	},
 	"devDependencies": {
 		"@sofie-automation/code-standard-preset": "^0.4.1",

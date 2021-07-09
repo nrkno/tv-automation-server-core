@@ -4,17 +4,17 @@
 
 ### Web-based GUI
 
-![Producer&apos;s / Director&apos;s  View](https://raw.githubusercontent.com/nrkno/Sofie-TV-automation/master/images/Sofie_GUI_example.jpg)
+![Producer's / Director's  View](/img/docs/Sofie_GUI_example.jpg)
 
-![Warnings and notifications are displayed to the user in the GUI](/gitbook/assets/image (3).png)
+![Warnings and notifications are displayed to the user in the GUI](/img/docs/warnings-and-notifications.png)
 
-![The Host view, displaying time information and countdowns](/gitbook/assets/image (5).png)
+![The Host view, displaying time information and countdowns](/img/docs/host-view.png)
 
-![The prompter view](/gitbook/assets/image (2).png)
+![The prompter view](/img/docs/prompter-view.png)
 
-{% hint style="info" %}
+:::info
 Tip: The different web views \(such as the host view and the prompter\) can easily be transmitted over an SDI signal using the HTML producer in [CasparCG](getting-started/installation/installing-connections-and-additional-hardware/casparcg-server-installation.md).
-{% endhint %}
+:::
 
 ### Modular Device Control
 
@@ -35,7 +35,7 @@ Sofie features a modular ingest data-flow, allowing multiple types of input data
 The [Blueprints ](features-and-configuration/concepts-and-architecture.md#blueprints)are plugins to Sofie, which allows for customization and tailor-made show designs.  
 The blueprints are made different depending on how the input data \(rundowns\) look like, how the show-design look like, and what devices to control.
 
-## Documentation
+<!-- ## Documentation
 
 {% page-ref page="getting-started/" %}
 
@@ -44,4 +44,4 @@ The blueprints are made different depending on how the input data \(rundowns\) l
 {% page-ref page="releases.md" %}
 
 {% page-ref page="getting-started/installation/" %}
-
+ -->
