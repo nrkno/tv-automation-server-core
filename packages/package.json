@@ -3,7 +3,8 @@
 	"workspaces": {
 		"packages": [
 			"*-integration",
-			"*-gateway"
+			"*-gateway",
+			"documentation"
 		],
 		"nohoist": [
 			"**/timeline-state-resolver-types"
