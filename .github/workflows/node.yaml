@@ -343,12 +343,6 @@ jobs:
     continue-on-error: true
     timeout-minutes: 15
 
-    # only run for release tags
-    # TODO - we should only do this if the latest release
-    # if: contains(github.ref, 'refs/tags/') // HACK
-
-    # needs: release-libs
-
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js 12.x
@@ -376,6 +370,9 @@ jobs:
         env:
           CI: true
       - name: Publish
+        # only run for release tags
+        # TODO - we should only do this if the latest release
+        # if: contains(github.ref, 'refs/tags/') # HACK
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

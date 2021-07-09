@@ -3,26 +3,27 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
-	title: 'My Site',
+	title: 'Sofie Automation',
 	tagline: 'Dinosaurs are cool',
-	url: 'https://your-docusaurus-test-site.com',
+	url: 'https://julusian.github.io',
 	baseUrl: '/tv-automation-server-core/',
 	onBrokenLinks: 'warn',
 	onBrokenMarkdownLinks: 'warn',
 	favicon: 'img/favicon.ico',
-	organizationName: 'facebook', // Usually your GitHub org/user name.
-	projectName: 'docusaurus', // Usually your repo name.
+	organizationName: 'nrkno', // Usually your GitHub org/user name.
+	projectName: 'tv-automation-server-core', // Usually your repo name.
 	themeConfig: {
 		navbar: {
-			title: 'My Site',
+			title: 'Sofie Automation',
 			logo: {
-				alt: 'My Site Logo',
-				src: 'img/logo.svg',
+				alt: 'Sofie Logo',
+				src: 'img/sofie-logo.svg',
 			},
 			items: [
 				{ to: '/docs/getting-started/intro', label: 'Getting Started', position: 'left' },
 				{ to: '/docs/main/intro', label: 'Docs', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
+				{ to: '/typedoc', label: 'API Docs' },
 				{ to: '/releases', label: 'Releases', position: 'left' },
 				// {to: '/blog', label: 'Blog', position: 'left'},
 				{
@@ -41,6 +42,7 @@ module.exports = {
 						{ to: '/docs/getting-started/intro', label: 'Getting Started' },
 						{ to: '/docs/main/intro', label: 'Docs' },
 						{ to: '/docs/for-developers/intro', label: 'For Developers' },
+						{ to: '/typedoc', label: 'API Docs' },
 						{ to: '/releases', label: 'Releases' },
 					],
 				},
@@ -81,7 +83,7 @@ module.exports = {
 				docs: {
 					sidebarPath: require.resolve('./sidebars.js'),
 					// Please change this to your repo.
-					editUrl: 'https://github.com/facebook/docusaurus/edit/master/website/',
+					editUrl: 'https://github.com/nrkno/tv-automation-server-core/edit/master/packages/documentation/',
 				},
 				// blog: {
 				//   showReadingTime: true,
