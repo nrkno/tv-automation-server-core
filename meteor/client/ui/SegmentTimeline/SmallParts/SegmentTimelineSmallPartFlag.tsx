@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react'
+import React, { useRef, useState } from 'react'
 import { SmallPartFlag } from '../../../lib/ui/icons/segment'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineSmallPartFlagIcon } from './SegmentTimelineSmallPartFlagIcon'
@@ -25,7 +25,6 @@ export const SegmentTimelineSmallPartFlag = ({
 	liveLineHistorySize,
 	isLastSegment,
 	isLastInSegment,
-	timelineWidth,
 }: {
 	t: TFunction
 	parts: [PartUi, number][]
@@ -50,10 +49,10 @@ export const SegmentTimelineSmallPartFlag = ({
 	const flagRef = useRef<HTMLDivElement>(null)
 
 	const [isHover, setHover] = useState(false)
-	const onMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+	const onMouseEnter = () => {
 		setHover(true)
 	}
-	const onMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+	const onMouseLeave = () => {
 		setHover(false)
 	}
 

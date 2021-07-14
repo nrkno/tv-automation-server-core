@@ -49,6 +49,10 @@ export interface StudioContentAccess {
 	cred: ResolvedCredentials | Credentials
 }
 
+export interface ExternalMessageContentAccess extends StudioContentAccess {
+	message: ExternalMessageQueueObj
+}
+
 export namespace StudioContentWriteAccess {
 	// These functions throws if access is not allowed.
 
@@ -77,14 +81,14 @@ export namespace StudioContentWriteAccess {
 	export function bucket(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
-	export function externalMessage(
+	export async function externalMessage(
 		cred0: Credentials,
 		existingMessage: ExternalMessageQueueObj | ExternalMessageQueueObjId
-	) {
+	): Promise<ExternalMessageContentAccess> {
 		triggerWriteAccess()
 		if (existingMessage && isProtectedString(existingMessage)) {
 			const messageId = existingMessage
-			const m = ExternalMessageQueue.findOne(messageId)
+			const m = await ExternalMessageQueue.findOneAsync(messageId)
 			if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 			existingMessage = m
 		}

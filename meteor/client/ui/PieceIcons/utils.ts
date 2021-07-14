@@ -13,8 +13,8 @@ export function findPieceInstanceToShow(
 	props: IPropsHeader,
 	selectedLayerTypes: Set<SourceLayerType>
 ): IFoundPieceInstance {
-	let pieceInstances = PieceInstances.find({ partInstanceId: props.partInstanceId }).fetch()
-	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
+	const pieceInstances = PieceInstances.find({ partInstanceId: props.partInstanceId }).fetch()
+	const showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
 	if (!showStyleBase) {
 		return {
@@ -23,7 +23,7 @@ export function findPieceInstanceToShow(
 		}
 	}
 
-	let sourceLayers = showStyleBase
+	const sourceLayers = showStyleBase
 		? normalizeArray<ISourceLayer>(
 				showStyleBase.sourceLayers.map((layer) => ({ ...layer })),
 				'_id'
@@ -44,7 +44,7 @@ export function findPieceInstanceToShowFromInstances(
 	let foundPiece: PieceInstance | undefined
 
 	for (const pieceInstance of pieceInstances) {
-		let layer = sourceLayers[pieceInstance.piece.sourceLayerId]
+		const layer = sourceLayers[pieceInstance.piece.sourceLayerId]
 		if (layer && layer.onPresenterScreen && selectedLayerTypes.has(layer.type)) {
 			if (foundSourceLayer && foundPiece) {
 				if (

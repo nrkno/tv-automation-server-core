@@ -85,8 +85,8 @@ namespace UserActionAPI {
 
 describe('User Actions - General', () => {
 	let env: DefaultEnvironment
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 		setMinimumTakeSpan(0)
 	})
 	testInFiber('Basic rundown control', () => {

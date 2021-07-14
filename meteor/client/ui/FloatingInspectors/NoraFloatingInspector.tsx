@@ -166,7 +166,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		}, 1000)
 
 		// set up IntersectionObserver to keep the preview inside the viewport
-		let options = {
+		const options = {
 			threshold: [] as number[],
 		}
 		for (let i = 0; i < 50; i++) {

@@ -48,6 +48,7 @@ export function runInFiber<T>(fcn: () => T | Promise<T>): Promise<T> {
 				}
 			} catch (e) {
 				console.log('Error: ' + e)
+				if (e.stack) console.log(e.stack)
 				reject(e)
 			}
 		}).run()

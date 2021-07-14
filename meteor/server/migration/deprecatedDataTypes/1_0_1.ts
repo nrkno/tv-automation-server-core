@@ -49,7 +49,7 @@ export function makePlaylistFromRundown_1_0_0(
 	rundown0: DBRundown,
 	newPlaylistId?: RundownPlaylistId
 ): DBRundownPlaylist {
-	const rundown = (rundown0 as any) as Rundown
+	const rundown = rundown0 as any as Rundown
 	if (!newPlaylistId) newPlaylistId = protectString('pl_' + rundown._id)
 	const playlist = literal<DBRundownPlaylist>({
 		_id: newPlaylistId,

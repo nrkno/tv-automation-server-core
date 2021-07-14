@@ -13,6 +13,7 @@ import {
 	HyperdeckDevice,
 	QuantelDevice,
 	MediaObject,
+	DeviceOptionsAny,
 } from 'timeline-state-resolver'
 import { CollectionObj } from '@sofie-automation/server-core-integration'
 
@@ -462,7 +463,7 @@ export class CoreHandler {
 	restartCasparCG(deviceId: string): Promise<any> {
 		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
 
-		const device = this._tsrHandler.tsr.getDevice(deviceId).device as ThreadedClass<CasparCGDevice>
+		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<CasparCGDevice>
 		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
 
 		return device.restartCasparCG()
@@ -470,7 +471,7 @@ export class CoreHandler {
 	restartQuantel(deviceId: string): Promise<any> {
 		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
 
-		const device = this._tsrHandler.tsr.getDevice(deviceId).device as ThreadedClass<QuantelDevice>
+		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<QuantelDevice>
 		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
 
 		return device.restartGateway()
@@ -478,7 +479,7 @@ export class CoreHandler {
 	async formatHyperdeck(deviceId: string): Promise<void> {
 		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
 
-		const device = this._tsrHandler.tsr.getDevice(deviceId).device as ThreadedClass<HyperdeckDevice>
+		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<HyperdeckDevice>
 		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
 
 		await device.formatDisks()
@@ -509,7 +510,6 @@ export class CoreHandler {
 		}
 
 		const pkgNames = [
-			'@sofie-automation/server-core-integration',
 			'timeline-state-resolver',
 			'atem-connection',
 			'atem-state',
@@ -538,9 +538,9 @@ export class CoreHandler {
 export class CoreTSRDeviceHandler {
 	core!: CoreConnection
 	public _observers: Array<any> = []
-	public _devicePr: Promise<DeviceContainer>
+	public _devicePr: Promise<DeviceContainer<DeviceOptionsAny>>
 	public _deviceId: string
-	public _device!: DeviceContainer
+	public _device!: DeviceContainer<DeviceOptionsAny>
 	private _coreParentHandler: CoreHandler
 	private _tsrHandler: TSRHandler
 	private _subscriptions: Array<string> = []
@@ -550,7 +550,12 @@ export class CoreTSRDeviceHandler {
 		messages: ['Starting up...'],
 	}
 
-	constructor(parent: CoreHandler, device: Promise<DeviceContainer>, deviceId: string, tsrHandler: TSRHandler) {
+	constructor(
+		parent: CoreHandler,
+		device: Promise<DeviceContainer<DeviceOptionsAny>>,
+		deviceId: string,
+		tsrHandler: TSRHandler
+	) {
 		this._coreParentHandler = parent
 		this._devicePr = device
 		this._deviceId = deviceId

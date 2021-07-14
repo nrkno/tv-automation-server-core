@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
@@ -8,7 +7,7 @@ import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 
-interface IResetPageProps extends RouteComponentProps<{ token: string }> {}
+type IResetPageProps = RouteComponentProps<{ token: string }>
 
 interface IResetPageState {
 	password: string
@@ -51,8 +50,8 @@ export const ResetPasswordPage = translateWithTracker((props: IResetPageProps) =
 			if (errors.length) {
 				this.handleError(
 					<React.Fragment>
-						{errors.map((e) => (
-							<span>{e}</span>
+						{errors.map((e, i) => (
+							<span key={i}>{e}</span>
 						))}
 					</React.Fragment>
 				)

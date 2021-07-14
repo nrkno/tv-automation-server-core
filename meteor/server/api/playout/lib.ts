@@ -219,7 +219,7 @@ export function setNextPart(
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	const newNextPartInstance = rawNextPart && 'playlistActivationId' in rawNextPart ? rawNextPart : null
-	let newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
+	const newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
 
 	if (newNextPart || newNextPartInstance) {
 		if (!cache.Playlist.doc.activationId)

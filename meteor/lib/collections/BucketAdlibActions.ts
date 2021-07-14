@@ -1,5 +1,3 @@
-import { PieceId } from './Pieces'
-import { TransformedCollection } from '../typings/meteor'
 import { ArrayElement, registerCollection } from '../lib'
 import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
@@ -44,10 +42,7 @@ export interface BucketAdLibAction extends Omit<IBlueprintActionManifest, 'partI
 	})[]
 }
 
-export const BucketAdLibActions: TransformedCollection<
-	BucketAdLibAction,
-	BucketAdLibAction
-> = createMongoCollection<BucketAdLibAction>('bucketAdlibActions')
+export const BucketAdLibActions = createMongoCollection<BucketAdLibAction, BucketAdLibAction>('bucketAdlibActions')
 registerCollection('BucketAdLibActions', BucketAdLibActions)
 
 registerIndex(BucketAdLibActions, {

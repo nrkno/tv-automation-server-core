@@ -11,17 +11,17 @@
 	},
 	"scripts": {
 		"postinstall": "yarn lerna bootstrap",
-		"build": "yarn lerna exec yarn build",
+		"build": "yarn lerna run build",
 		"watch": "lerna run --parallel build:main -- --watch --preserveWatchOutput",
 		"docs": "yarn typedoc .",
-		"sync-version-and-changelog": "lerna version --conventional-commits --no-git-tag-version --no-push --yes $(node -p \"require('../meteor/package.json').version\")",
+		"sync-version-and-changelog": "lerna version --exact --conventional-commits --no-git-tag-version --no-push --force-publish=* --yes $(node -p \"require('../meteor/package.json').version\")",
 		"postsync-version-and-changelog": "yarn stage-versions",
 		"sync-version": "yarn set-version $(node -p \"require('../meteor/package.json').version\")",
 		"stage-versions": "git add */package.json */CHANGELOG.md lerna.json",
-		"set-version": "lerna version --no-changelog --no-git-tag-version --no-push --yes",
+		"set-version": "lerna version --exact --no-changelog --no-git-tag-version --no-push --yes",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001237;mos-gateway@1.35.0-in-development;playout-gateway@1.35.0-in-development\"",
+		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001236;caniuse-lite@1.0.30001237;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\")\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
 		"test": "lerna run --concurrency 2 --stream test"
 	},
@@ -40,7 +40,6 @@
 		"jest-resolve": "^26.6.2",
 		"lerna": "^4.0.0",
 		"node-license-validator": "^1.3.0",
-		"npm-scripts-info": "^0.3.9",
 		"open-cli": "^6.0.1",
 		"rimraf": "^3.0.2",
 		"ts-jest": "^26.5.6",
@@ -57,6 +56,7 @@
 	},
 	"resolutions": {
 		"node-license-validator/**/minimist": "^1.2.3",
-		"ws": "^7.4.6"
+		"ws": "^7.4.6",
+		"lerna/**/trim-newlines": "^4.0.1"
 	}
 }

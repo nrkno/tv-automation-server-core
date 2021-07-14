@@ -36,33 +36,36 @@ export namespace ConfigRef {
 	export function getShowStyleConfigRef(showStyleVariantId: ShowStyleVariantId, configKey: string): string {
 		return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
 	}
-	export function retrieveRefs(
+	export async function retrieveRefs(
 		stringWithReferences: string,
 		modifier?: (str: string) => string,
 		bailOnError?: boolean
-	): string {
+	): Promise<string> {
 		if (!stringWithReferences) return stringWithReferences
 
 		const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
-		_.each(refs, (ref) => {
+		for (const ref of refs) {
 			if (ref) {
-				let value = retrieveRef(ref, bailOnError) + ''
+				let value = (await retrieveRef(ref, bailOnError)) + ''
 				if (value) {
 					if (modifier) value = modifier(value)
 					stringWithReferences = stringWithReferences.replace(ref, value)
 				}
 			}
-		})
+		}
 		return stringWithReferences
 	}
-	function retrieveRef(reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
+	async function retrieveRef(
+		reference: string,
+		bailOnError?: boolean
+	): Promise<ConfigItemValue | string | undefined> {
 		if (!reference) return undefined
-		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+		const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
 		if (m) {
 			if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
 				const studioId: StudioId = protectString(m[2])
 				const configId = m[3]
-				const studio = Studios.findOne(studioId)
+				const studio = await Studios.findOneAsync(studioId)
 				if (studio) {
 					return objectPathGet(studio.blueprintConfig, configId)
 				} else if (bailOnError)
@@ -70,7 +73,7 @@ export namespace ConfigRef {
 			} else if (m[1] === 'showStyle' && _.isString(m[2]) && _.isString(m[3])) {
 				const showStyleVariantId = protectString<ShowStyleVariantId>(m[2])
 				const configId = m[3]
-				const showStyleCompound = getShowStyleCompound(showStyleVariantId)
+				const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
 				if (showStyleCompound) {
 					return objectPathGet(showStyleCompound.blueprintConfig, configId)
 				} else if (bailOnError)
@@ -176,14 +179,14 @@ export function forceClearAllBlueprintConfigCaches() {
 	showStyleBlueprintConfigCache.clear()
 }
 
-export function resetStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): void {
+export async function resetStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): Promise<void> {
 	for (const map of studioBlueprintConfigCache.values()) {
 		map.delete(studio._id)
 	}
-	getStudioBlueprintConfig(studio)
+	await getStudioBlueprintConfig(studio)
 }
 
-export function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): unknown {
+export async function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): Promise<unknown> {
 	let blueprintConfigMap = studio.blueprintId ? studioBlueprintConfigCache.get(studio.blueprintId) : undefined
 	if (!blueprintConfigMap && studio.blueprintId) {
 		blueprintConfigMap = new Map()
@@ -196,7 +199,7 @@ export function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): unknown 
 	}
 
 	logger.debug('Building Studio config')
-	const studioBlueprint = loadStudioBlueprint(studio)
+	const studioBlueprint = await loadStudioBlueprint(studio)
 	if (studioBlueprint) {
 		const diffs = findMissingConfigs(studioBlueprint.blueprint.studioConfigManifest, studio.blueprintConfig)
 		if (diffs && diffs.length) {
@@ -212,18 +215,17 @@ export function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): unknown 
 	return compiledConfig
 }
 
-export function resetShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): void {
+export async function resetShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): Promise<void> {
 	for (const map of showStyleBlueprintConfigCache.values()) {
 		map.get(showStyleCompound._id)?.delete(showStyleCompound.showStyleVariantId)
 	}
-	getShowStyleBlueprintConfig(showStyleCompound)
+	await getShowStyleBlueprintConfig(showStyleCompound)
 }
-export function getShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): unknown {
-	let blueprintConfigMap:
-		| Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>>
-		| undefined = showStyleCompound.blueprintId
-		? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId)
-		: new Map()
+export async function getShowStyleBlueprintConfig(
+	showStyleCompound: ReadonlyDeep<ShowStyleCompound>
+): Promise<unknown> {
+	let blueprintConfigMap: Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>> | undefined =
+		showStyleCompound.blueprintId ? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId) : new Map()
 	if (!blueprintConfigMap) {
 		blueprintConfigMap = new Map()
 		showStyleBlueprintConfigCache.set(showStyleCompound.blueprintId, blueprintConfigMap)
@@ -240,7 +242,7 @@ export function getShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<Show
 		return cachedConfig.config
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyleCompound)
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyleCompound)
 	if (showStyleBlueprint) {
 		const diffs = findMissingConfigs(
 			showStyleBlueprint.blueprint.showStyleConfigManifest,

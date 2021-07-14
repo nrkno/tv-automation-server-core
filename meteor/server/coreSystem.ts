@@ -4,41 +4,39 @@ import {
 	SYSTEM_ID,
 	getCoreSystemCursor,
 	parseVersion,
-	Version,
 	parseRange,
-	stripVersion,
-	VersionRange,
 	GENESIS_SYSTEM_VERSION,
+	parseCoreIntegrationCompatabilityRange,
+	compareSemverVersions,
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime, unprotectString, waitForPromiseAll } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from './migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
-import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus'
+import { setSystemStatus, removeSystemStatus } from './systemStatus/systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { Studios, StudioId } from '../lib/collections/Studios'
 import { logger } from './logging'
-import * as semver from 'semver'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
 import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 import { profiler } from './api/profiler'
-import * as path from 'path'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
+import { StatusCode } from '../lib/api/systemStatus'
 
 export { PackageInfo }
 
 function initializeCoreSystem() {
-	let system = getCoreSystem()
+	const system = getCoreSystem()
 	if (!system) {
 		// At this point, we probably have a system that is as fresh as it gets
 
-		let version = parseVersion(GENESIS_SYSTEM_VERSION)
+		const version = parseVersion(GENESIS_SYSTEM_VERSION)
 		CoreSystem.insert({
 			_id: SYSTEM_ID,
 			created: getCurrentTime(),
@@ -59,7 +57,7 @@ function initializeCoreSystem() {
 		})
 
 		// Check what migration has to provide:
-		let migration = prepareMigration(true)
+		const migration = prepareMigration(true)
 		if (migration.migrationNeeded && migration.manualStepCount === 0 && migration.chunks.length <= 1) {
 			// Since we've determined that the migration can be done automatically, and we have a fresh system, just do the migration automatically:
 			runMigration(migration.chunks, migration.hash, [])
@@ -67,7 +65,7 @@ function initializeCoreSystem() {
 	}
 
 	// Monitor database changes:
-	let systemCursor = getCoreSystemCursor()
+	const systemCursor = getCoreSystemCursor()
 	systemCursor.observeChanges({
 		added: checkDatabaseVersions,
 		changed: checkDatabaseVersions,
@@ -114,20 +112,20 @@ let lastDatabaseVersionBlueprintIds: { [id: string]: true } = {}
 function checkDatabaseVersions() {
 	// Core system
 
-	let databaseSystem = getCoreSystem()
+	const databaseSystem = getCoreSystem()
 	if (!databaseSystem) {
 		setSystemStatus('databaseVersion', { statusCode: StatusCode.BAD, messages: ['Database not set up'] })
 	} else {
-		let dbVersion = databaseSystem.version ? parseVersion(databaseSystem.version) : null
-		let currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
+		const dbVersion = parseVersion(databaseSystem.version)
+		const currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
 
 		setSystemStatus(
 			'databaseVersion',
-			checkDatabaseVersion(currentVersion, dbVersion, 'to fix, run migration', 'core', 'system database')
+			compareSemverVersions(currentVersion, dbVersion, 'to fix, run migration', 'core', 'system database')
 		)
 
 		// Blueprints:
-		let blueprintIds: { [id: string]: true } = {}
+		const blueprintIds: { [id: string]: true } = {}
 		Blueprints.find().forEach((blueprint) => {
 			if (blueprint.code) {
 				blueprintIds[unprotectString(blueprint._id)] = true
@@ -145,19 +143,17 @@ function checkDatabaseVersions() {
 					messages: [],
 				}
 
-				let studioIds: { [studioId: string]: true } = {}
+				const studioIds: { [studioId: string]: true } = {}
 				ShowStyleBases.find({
 					blueprintId: blueprint._id,
 				}).forEach((showStyleBase) => {
 					if (o.statusCode === StatusCode.GOOD) {
-						o = checkDatabaseVersion(
-							blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-							parseRange(
-								blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)] || '0.0.0'
-							),
+						o = compareSemverVersions(
+							parseVersion(blueprint.blueprintVersion),
+							parseRange(blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)]),
 							'to fix, run migration',
-							'blueprint.blueprintVersion',
-							`databaseVersion.showStyle[${showStyleBase._id}]`
+							'blueprint version',
+							`showStyle "${showStyleBase._id}" migrations`
 						)
 					}
 
@@ -170,14 +166,12 @@ function checkDatabaseVersions() {
 							studioIds[unprotectString(studio._id)] = true
 
 							if (o.statusCode === StatusCode.GOOD) {
-								o = checkDatabaseVersion(
-									blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-									parseRange(
-										blueprint.databaseVersion.studio[unprotectString(studio._id)] || '0.0.0'
-									),
+								o = compareSemverVersions(
+									parseVersion(blueprint.blueprintVersion),
+									parseRange(blueprint.databaseVersion.studio[unprotectString(studio._id)]),
 									'to fix, run migration',
-									'blueprint.blueprintVersion',
-									`databaseVersion.studio[${studio._id}]`
+									'blueprint version',
+									`studio "${studio._id}]" migrations`
 								)
 							}
 						}
@@ -195,127 +189,35 @@ function checkDatabaseVersions() {
 		lastDatabaseVersionBlueprintIds = blueprintIds
 	}
 }
-/**
- * Compares two versions and returns a system Status
- * @param currentVersion
- * @param dbVersion
- */
-function checkDatabaseVersion(
-	currentVersion: Version | null,
-	expectVersion: VersionRange | null,
-	fixMessage: string,
-	meName: string,
-	theyName: string
-): { statusCode: StatusCode; messages: string[] } {
-	if (currentVersion) currentVersion = semver.clean(currentVersion)
 
-	if (expectVersion) {
-		if (currentVersion) {
-			if (semver.satisfies(currentVersion, expectVersion)) {
-				return {
-					statusCode: StatusCode.GOOD,
-					messages: [`${meName} version: ${currentVersion}`],
-				}
-			} else {
-				const currentV = new semver.SemVer(currentVersion, { includePrerelease: true })
-
-				try {
-					const expectV = new semver.SemVer(stripVersion(expectVersion), { includePrerelease: true })
-
-					const message =
-						`Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` +
-						(fixMessage ? ` (${fixMessage})` : '')
-
-					if (!expectV || !currentV) {
-						return {
-							statusCode: StatusCode.BAD,
-							messages: [message],
-						}
-					} else if (expectV.major !== currentV.major) {
-						return {
-							statusCode: StatusCode.BAD,
-							messages: [message],
-						}
-					} else if (expectV.minor !== currentV.minor) {
-						return {
-							statusCode: StatusCode.WARNING_MAJOR,
-							messages: [message],
-						}
-					} else if (expectV.patch !== currentV.patch) {
-						return {
-							statusCode: StatusCode.WARNING_MINOR,
-							messages: [message],
-						}
-					} else if (!_.isEqual(expectV.prerelease, currentV.prerelease)) {
-						return {
-							statusCode: StatusCode.WARNING_MINOR,
-							messages: [message],
-						}
-					} else {
-						return {
-							statusCode: StatusCode.BAD,
-							messages: [message],
-						}
-					}
-					// the expectedVersion may be a proper range, in which case the new semver.SemVer will throw an error, even though the semver.satisfies check would work.
-				} catch (e) {
-					const message =
-						`Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version range of ${theyName}: "${expectVersion}"` +
-						(fixMessage ? ` (${fixMessage})` : '')
-
-					return {
-						statusCode: StatusCode.BAD,
-						messages: [message],
-					}
-				}
-			}
-		} else {
-			return {
-				statusCode: StatusCode.FATAL,
-				messages: [`Current ${meName} version missing (when comparing with ${theyName})`],
-			}
-		}
-	} else {
-		return {
-			statusCode: StatusCode.FATAL,
-			messages: [`Expected ${theyName} version missing (when comparing with ${meName})`],
-		}
-	}
-}
+const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
 
 function checkBlueprintCompability(blueprint: Blueprint) {
-	if (!PackageInfo.dependencies) throw new Meteor.Error(500, `Package.dependencies not set`)
-
 	const systemStatusId = 'blueprintCompability_' + blueprint._id
 
-	const systemVersions = getRelevantSystemVersions()
-
-	const integrationStatus = checkDatabaseVersion(
-		parseVersion(blueprint.integrationVersion || '0.0.0'),
-		parseRange('~' + PackageInfo.version),
-		'Blueprint has to be updated',
-		'blueprint.integrationVersion',
-		'core.@sofie-automation/blueprints-integration'
-	)
-	const tsrStatus = checkDatabaseVersion(
-		parseVersion(blueprint.TSRVersion || '0.0.0'),
-		parseRange('~' + systemVersions['timeline-state-resolver-types']),
-		'Blueprint has to be updated',
-		'blueprint.TSRVersion',
-		'core.timeline-state-resolver-types'
-	)
-
-	if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
-		integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
-		setSystemStatus(systemStatusId, integrationStatus)
-	} else if (tsrStatus && tsrStatus.statusCode >= StatusCode.WARNING_MAJOR) {
-		tsrStatus.messages[0] = 'Core - TSR library version: ' + tsrStatus.messages[0]
-		setSystemStatus(systemStatusId, tsrStatus)
-	} else {
+	if (blueprint.disableVersionChecks) {
 		setSystemStatus(systemStatusId, {
 			statusCode: StatusCode.GOOD,
-			messages: ['Versions match'],
+			messages: ['Version checks have been disabled'],
 		})
+	} else {
+		const integrationStatus = compareSemverVersions(
+			parseVersion(blueprint.integrationVersion),
+			parseRange(integrationVersionRange),
+			'Blueprint has to be updated',
+			'blueprint.integrationVersion',
+			'@sofie-automation/blueprints-integration'
+		)
+
+		if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
+			integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
+			setSystemStatus(systemStatusId, integrationStatus)
+		} else {
+			setSystemStatus(systemStatusId, {
+				statusCode: StatusCode.GOOD,
+				messages: ['Versions match'],
+			})
+		}
 	}
 }
 
@@ -335,7 +237,7 @@ function queueCheckBlueprintsConfig() {
 
 let lastBlueprintConfigIds: { [id: string]: true } = {}
 const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
-	let blueprintIds: { [id: string]: true } = {}
+	const blueprintIds: { [id: string]: true } = {}
 
 	// Studios
 	_.each(Studios.find({}).fetch(), (studio) => {
@@ -404,17 +306,9 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 	}
 	const versions: { [name: string]: string } = {}
 
-	let dependencies: any = PackageInfo.dependencies
+	const dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
 		const libNames: string[] = ['mos-connection', 'superfly-timeline']
-
-		const sanitizeVersion = (v: string) => {
-			if (v.match(/git/i) || v.match(/file:../i)) {
-				return '0.0.0'
-			} else {
-				return v
-			}
-		}
 
 		const getRealVersion = async (name: string, fallback: string): Promise<string> => {
 			try {
@@ -422,7 +316,7 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 				return pkgInfo.version
 			} catch (e) {
 				logger.warn(`Failed to read version of package "${name}": ${e}`)
-				return sanitizeVersion(fallback)
+				return parseVersion(fallback)
 			}
 		}
 
@@ -464,7 +358,7 @@ function startupMessage() {
 }
 
 function startInstrumenting() {
-	if (!!process.env.JEST_WORKER_ID) {
+	if (process.env.JEST_WORKER_ID) {
 		return
 	}
 

@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Route, Switch, NavLink } from 'react-router-dom'
@@ -12,7 +11,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 interface IStatusMenuProps {
 	match?: any
 }
-interface IStatusMenuState {}
+type IStatusMenuState = {}
 const StatusMenu = withTranslation()(
 	class StatusMenu extends React.Component<Translated<IStatusMenuProps>, IStatusMenuState> {
 		render() {

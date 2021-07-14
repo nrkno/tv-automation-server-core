@@ -7,9 +7,6 @@ import { ExternalFramePanel } from './ExternalFramePanel'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { Bucket } from '../../../lib/collections/Buckets'
-import { unprotectString } from '../../../lib/lib'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceCountdownPanel } from './PieceCountdownPanel'
@@ -21,7 +18,7 @@ import { AdLibPieceUi } from './AdLibPanel'
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
 	playlist: RundownPlaylist
-	buckets: Bucket[] | undefined
+	// buckets: Bucket[] | undefined
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	shouldQueue: boolean
@@ -33,7 +30,7 @@ export interface IShelfDashboardLayoutProps {
 }
 
 export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
-	const { rundownLayout, buckets } = props
+	const { rundownLayout } = props
 	return (
 		<div className="dashboard">
 			{rundownLayout.filters

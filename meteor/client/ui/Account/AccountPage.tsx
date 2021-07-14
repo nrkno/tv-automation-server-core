@@ -1,19 +1,11 @@
 import * as React from 'react'
-import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
-import {
-	NotificationCenter,
-	Notification,
-	NoticeLevel,
-	NotificationAction,
-} from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
-import { getUser, User, Users, getUserRoles } from '../../../lib/collections/Users'
+import { getUser, User, getUserRoles } from '../../../lib/collections/Users'
 import { Organizations, DBOrganization, UserRoles } from '../../../lib/collections/Organization'
 import { Spinner } from '../../lib/Spinner'
 import { Link } from 'react-router-dom'
@@ -29,12 +21,6 @@ interface IAccountPageState {
 	password: string
 	oldPassword: string
 	edit: boolean
-}
-
-interface UserUI {
-	username: string
-	emails: { address: string; verified: boolean }[]
-	password: string
 }
 
 export const AccountPage = translateWithTracker(() => {

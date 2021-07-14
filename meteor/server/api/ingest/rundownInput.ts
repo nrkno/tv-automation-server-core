@@ -6,7 +6,7 @@ import { getCurrentTime, literal, waitForPromise } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
+import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
 	LocalIngestRundown,

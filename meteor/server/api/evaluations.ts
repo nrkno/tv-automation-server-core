@@ -25,20 +25,20 @@ export function saveEvaluation(methodContext: MethodContext, evaluation: Evaluat
 	})
 
 	Meteor.defer(() => {
-		let studio = Studios.findOne(evaluation.studioId)
+		const studio = Studios.findOne(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
 		const webhookUrls = _.compact((studio.settings.slackEvaluationUrls || '').split(','))
 
 		if (webhookUrls.length) {
 			// Only send notes if not everything is OK
-			let evaluationLevel = _.find(evaluation.answers, (_answer, key) => {
+			const evaluationLevel = _.find(evaluation.answers, (_answer, key) => {
 				return key === 'q0'
 			})
-			let evaluationMessage = _.find(evaluation.answers, (_answer, key) => {
+			const evaluationMessage = _.find(evaluation.answers, (_answer, key) => {
 				return key === 'q1'
 			})
-			let evaluationProducer = _.find(evaluation.answers, (_answer, key) => {
+			const evaluationProducer = _.find(evaluation.answers, (_answer, key) => {
 				return key === 'q2'
 			})
 
@@ -57,8 +57,8 @@ export function saveEvaluation(methodContext: MethodContext, evaluation: Evaluat
 
 			// only send message for evaluations with content
 			if (evaluationMessage) {
-				let playlist = RundownPlaylists.findOne(evaluation.playlistId)
-				let hostUrl = studio.settings.sofieUrl
+				const playlist = RundownPlaylists.findOne(evaluation.playlistId)
+				const hostUrl = studio.settings.sofieUrl
 
 				slackMessage +=
 					'rundown ' +

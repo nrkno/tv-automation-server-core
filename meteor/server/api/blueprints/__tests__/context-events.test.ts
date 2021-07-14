@@ -23,7 +23,6 @@ import {
 	unprotectPartInstance,
 } from '../../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstanceInfiniteId, PieceInstance } from '../../../../lib/collections/PieceInstances'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { RundownPlaylist, RundownPlaylists, ABSessionInfo } from '../../../../lib/collections/RundownPlaylists'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 import { getShowStyleCompoundForRundown } from '../../showStyles'
@@ -65,12 +64,12 @@ describe('Test blueprint api context', () => {
 	}
 
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 	})
 
 	describe('PartEventContext', () => {
-		testInFiber('get part', async () => {
+		test('get part', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -118,7 +117,7 @@ describe('Test blueprint api context', () => {
 			)
 		}
 
-		testInFiber('formatDateAsTimecode', async () => {
+		test('formatDateAsTimecode', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -129,7 +128,7 @@ describe('Test blueprint api context', () => {
 			expect(context.formatDateAsTimecode(d.getTime())).toEqual('18:33:34:22')
 		})
 
-		testInFiber('formatDurationAsTimecode', async () => {
+		test('formatDurationAsTimecode', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -172,7 +171,7 @@ describe('Test blueprint api context', () => {
 			)
 		}
 
-		testInFiber('getFirstPartInstanceInRundown ', async () => {
+		test('getFirstPartInstanceInRundown', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -194,7 +193,7 @@ describe('Test blueprint api context', () => {
 			expect(() => context2.getFirstPartInstanceInRundown()).toThrowError('No PartInstances found for Rundown')
 		})
 
-		testInFiber('getPartInstancesInSegmentPlayoutId ', async () => {
+		test('getPartInstancesInSegmentPlayoutId', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -223,7 +222,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance2))).toHaveLength(1)
 		})
 
-		testInFiber('getPieceInstances ', async () => {
+		test('getPieceInstances', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -249,7 +248,7 @@ describe('Test blueprint api context', () => {
 			expect(context.getPieceInstances(unprotectString(pieceInstance.partInstanceId))).toHaveLength(2)
 		})
 
-		testInFiber('getSegment - no id', async () => {
+		test('getSegment - no id', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -266,7 +265,7 @@ describe('Test blueprint api context', () => {
 				context.getSegment()
 			}).toThrowError('Match error: Expected string, got undefined')
 		})
-		testInFiber('getSegment - unknown id', async () => {
+		test('getSegment - unknown id', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -280,7 +279,7 @@ describe('Test blueprint api context', () => {
 
 			expect(context.getSegment('not-a-real-segment')).toBeUndefined()
 		})
-		testInFiber('getSegment - good', async () => {
+		test('getSegment - good', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -296,7 +295,7 @@ describe('Test blueprint api context', () => {
 			expect(segment).toBeTruthy()
 			expect(segment._id).toEqual(`${rundown._id}_segment1`)
 		})
-		testInFiber('getSegment - good with event segmentId', async () => {
+		test('getSegment - good with event segmentId', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -353,10 +352,10 @@ describe('Test blueprint api context', () => {
 
 			return sessions.map((s) => _.omit(s, 'keep'))
 		}
-		function overwriteKnownSessions(context: TimelineEventContext, sessions: ABSessionInfo[]): void {
-			const context2 = context as any
-			context2._knownSessions = sessions
-		}
+		// function overwriteKnownSessions(context: TimelineEventContext, sessions: ABSessionInfo[]): void {
+		// 	const context2 = context as any
+		// 	context2._knownSessions = sessions
+		// }
 		function createPieceInstance(
 			partInstanceId: PartInstanceId | string,
 			infiniteInstanceId?: PieceInstanceInfiniteId
@@ -391,7 +390,7 @@ describe('Test blueprint api context', () => {
 			} as any
 		}
 
-		testInFiber('getPieceABSessionId - knownSessions basic', async () => {
+		test('getPieceABSessionId - knownSessions basic', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -417,7 +416,7 @@ describe('Test blueprint api context', () => {
 			}
 		})
 
-		testInFiber('getPieceABSessionId - bad parameters', async () => {
+		test('getPieceABSessionId - bad parameters', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -450,7 +449,7 @@ describe('Test blueprint api context', () => {
 			}
 		})
 
-		testInFiber('getPieceABSessionId - normal session', async () => {
+		test('getPieceABSessionId - normal session', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -493,7 +492,7 @@ describe('Test blueprint api context', () => {
 			expect(context.knownSessions).toHaveLength(3)
 		})
 
-		testInFiber('getPieceABSessionId - existing normal sessions', async () => {
+		test('getPieceABSessionId - existing normal sessions', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -543,7 +542,7 @@ describe('Test blueprint api context', () => {
 			expect(context.knownSessions).toHaveLength(3)
 		})
 
-		testInFiber('getPieceABSessionId - continue normal session from previous part', async () => {
+		test('getPieceABSessionId - continue normal session from previous part', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -563,7 +562,7 @@ describe('Test blueprint api context', () => {
 			expect(context.knownSessions).toHaveLength(1)
 		})
 
-		testInFiber('getPieceABSessionId - promote lookahead session from previous part', async () => {
+		test('getPieceABSessionId - promote lookahead session from previous part', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -617,7 +616,7 @@ describe('Test blueprint api context', () => {
 			expect(context.knownSessions).toHaveLength(3)
 		})
 
-		testInFiber('getPieceABSessionId - infinite sessions', async () => {
+		test('getPieceABSessionId - infinite sessions', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -650,7 +649,7 @@ describe('Test blueprint api context', () => {
 			expect(context.knownSessions).toHaveLength(2)
 		})
 
-		testInFiber('getTimelineObjectAbSessionId - bad parameters', async () => {
+		test('getTimelineObjectAbSessionId - bad parameters', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -719,7 +718,7 @@ describe('Test blueprint api context', () => {
 			]
 		}
 
-		testInFiber('getTimelineObjectAbSessionId - normal', async () => {
+		test('getTimelineObjectAbSessionId - normal', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -764,7 +763,7 @@ describe('Test blueprint api context', () => {
 			expect(getAllKnownSessions(context)).toEqual(existingSessions)
 		})
 
-		testInFiber('getTimelineObjectAbSessionId - lookahead', async () => {
+		test('getTimelineObjectAbSessionId - lookahead', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -823,7 +822,7 @@ describe('Test blueprint api context', () => {
 			expect(getAllKnownSessions(context)).toEqual(existingSessions)
 		})
 
-		testInFiber('getTimelineObjectAbSessionId - lookahead', async () => {
+		test('getTimelineObjectAbSessionId - lookahead2', async () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()

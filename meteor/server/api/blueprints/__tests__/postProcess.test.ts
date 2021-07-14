@@ -22,13 +22,12 @@ import {
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 
 describe('Test blueprint post-process', () => {
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 	})
 
 	function getStudio() {
@@ -59,18 +58,18 @@ describe('Test blueprint post-process', () => {
 			playlistId: protectString(''),
 			_rank: 0,
 		})
-		const playlist = new RundownPlaylist({
-			_id: protectString(''),
-			externalId: '',
-			organizationId: protectString(''),
-			studioId: env.studio._id,
-			name: 'playlistmock',
-			created: 0,
-			modified: 0,
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null,
-		})
+		// const playlist = new RundownPlaylist({
+		// 	_id: protectString(''),
+		// 	externalId: '',
+		// 	organizationId: protectString(''),
+		// 	studioId: env.studio._id,
+		// 	name: 'playlistmock',
+		// 	created: 0,
+		// 	modified: 0,
+		// 	currentPartInstanceId: null,
+		// 	nextPartInstanceId: null,
+		// 	previousPartInstanceId: null,
+		// })
 
 		const studio = getStudio()
 		const showStyle = {} as ShowStyleCompound
@@ -83,14 +82,14 @@ describe('Test blueprint post-process', () => {
 		)
 
 		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
-		expect(((context as unknown) as IUserNotesContext).notifyUserError).toBeUndefined()
+		expect((context as unknown as IUserNotesContext).notifyUserError).toBeUndefined()
 		return context
 	}
 	function getStudioContext(studio: Studio) {
 		const context = new StudioContext({ name: studio.name, identifier: `studioId=${studio._id}` }, studio)
 
 		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
-		expect(((context as unknown) as IUserNotesContext).notifyUserError).toBeUndefined()
+		expect((context as unknown as IUserNotesContext).notifyUserError).toBeUndefined()
 		return context
 	}
 
@@ -214,14 +213,9 @@ describe('Test blueprint post-process', () => {
 				},
 			])
 
-			try {
-				postProcessStudioBaselineObjects(studio, _.clone(rawObjects))
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
-				)
-			}
+			expect(() => postProcessStudioBaselineObjects(studio, _.clone(rawObjects))).toThrow(
+				`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
+			)
 		})
 	})
 
@@ -349,14 +343,9 @@ describe('Test blueprint post-process', () => {
 			])
 
 			const blueprintId = 'some-blueprints'
-			try {
+			expect(() =>
 				postProcessRundownBaselineItems(context, protectString(blueprintId), _.clone(rawObjects))
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
-				)
-			}
+			).toThrow(`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`)
 		})
 	})
 

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Redirect } from 'react-router'
-import { withTracker } from './ReactMeteorData/ReactMeteorData'
+import { Translated, withTracker } from './ReactMeteorData/ReactMeteorData'
 import { Mongo } from 'meteor/mongo'
 import { withTranslation } from 'react-i18next'
 import { Studios } from '../../lib/collections/Studios'
@@ -37,11 +37,11 @@ interface ISettingsNavigationBaseState {
 	redirect: boolean
 	redirectRoute: string
 }
-export class SettingsNavigationBase extends React.Component<
-	ISettingsNavigationBaseProps,
+export class SettingsNavigationBase<TProps extends ISettingsNavigationBaseProps> extends React.Component<
+	TProps,
 	ISettingsNavigationBaseState
 > {
-	constructor(props) {
+	constructor(props: TProps) {
 		super(props)
 
 		this.state = {
@@ -71,20 +71,25 @@ export class SettingsNavigationBase extends React.Component<
 		return this.renderButton()
 	}
 }
-function wrapSettingsNavigation(newClass) {
-	return withTracker((props: ISettingsNavigationBaseProps) => {
+
+interface ISettingsNavigationWrappedProps extends ISettingsNavigationBaseProps {
+	myObject: unknown
+}
+
+function wrapSettingsNavigation(newClass: React.ComponentType<ISettingsNavigationWrappedProps>) {
+	return withTracker<ISettingsNavigationBaseProps, {}, { myObject: unknown }>((props: ISettingsNavigationBaseProps) => {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
 		return {
 			myObject: props.collection ? props.collection.findOne(props.obj._id) : props.obj || {},
 		}
-	})(newClass)
+	})(newClass as React.ComponentClass<ISettingsNavigationWrappedProps>)
 }
 
 const Blueprint = wrapSettingsNavigation(
 	withTranslation()(
-		class Blueprint extends SettingsNavigationBase {
-			constructor(props) {
+		class Blueprint0 extends SettingsNavigationBase<Translated<ISettingsNavigationWrappedProps>> {
+			constructor(props: Translated<ISettingsNavigationWrappedProps>) {
 				super(props)
 			}
 
@@ -94,7 +99,7 @@ const Blueprint = wrapSettingsNavigation(
 					.then((blueprintId) => {
 						this.props.obj['blueprintId'] = blueprintId
 						if (this.props.obj) {
-							let m = {}
+							const m = {}
 							m['blueprintId'] = blueprintId
 							Studios.update(this.props.obj['_id'], { $set: m })
 						}
@@ -138,8 +143,8 @@ const Blueprint = wrapSettingsNavigation(
 
 const ShowStyle = wrapSettingsNavigation(
 	withTranslation()(
-		class ShowStyle extends SettingsNavigationBase {
-			constructor(props) {
+		class ShowStyle extends SettingsNavigationBase<Translated<ISettingsNavigationWrappedProps>> {
+			constructor(props: Translated<ISettingsNavigationWrappedProps>) {
 				super(props)
 			}
 
@@ -165,8 +170,8 @@ const ShowStyle = wrapSettingsNavigation(
 
 const NewShowStyle = wrapSettingsNavigation(
 	withTranslation()(
-		class NewShowStyle extends SettingsNavigationBase {
-			constructor(props) {
+		class NewShowStyle extends SettingsNavigationBase<Translated<ISettingsNavigationWrappedProps>> {
+			constructor(props: Translated<ISettingsNavigationWrappedProps>) {
 				super(props)
 			}
 

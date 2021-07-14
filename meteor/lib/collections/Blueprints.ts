@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 
 import { ConfigManifestEntry, BlueprintManifestType } from '@sofie-automation/blueprints-integration'
@@ -35,9 +34,11 @@ export interface Blueprint {
 	blueprintVersion: string
 	integrationVersion: string
 	TSRVersion: string
+	/** Whether version checks should be disabled for this version */
+	disableVersionChecks?: boolean
 }
 
-export const Blueprints: TransformedCollection<Blueprint, Blueprint> = createMongoCollection<Blueprint>('blueprints')
+export const Blueprints = createMongoCollection<Blueprint, Blueprint>('blueprints')
 registerCollection('Blueprints', Blueprints)
 
 registerIndex(Blueprints, {

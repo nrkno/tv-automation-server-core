@@ -124,7 +124,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			reader.readAsText(file)
 		}
 		restoreStoredSnapshot = (snapshotId) => {
-			let snapshot = Snapshots.findOne(snapshotId)
+			const snapshot = Snapshots.findOne(snapshotId)
 			if (snapshot) {
 				doModalDialog({
 					title: 'Restore Snapshot',
@@ -201,7 +201,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			})
 		}
 		removeStoredSnapshot = (snapshotId: SnapshotId) => {
-			let snapshot = Snapshots.findOne(snapshotId)
+			const snapshot = Snapshots.findOne(snapshotId)
 			if (snapshot) {
 				doModalDialog({
 					title: 'Remove Snapshot',
@@ -311,7 +311,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 												</td>
 												<td>{snapshot.type}</td>
 												<td>
-													<a href={`/snapshot/retrieve/${snapshot._id}`} target="_blank">
+													<a href={`/snapshot/retrieve/${snapshot._id}`} target="_blank" rel="noreferrer">
 														{snapshot.name}
 													</a>
 												</td>
@@ -319,12 +319,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 													{this.state.editSnapshotId === snapshot._id ? (
 														[
 															<EditAttribute
+																key={0}
 																collection={Snapshots}
 																obj={snapshot}
 																attribute="comment"
 																type="multiline"
 															/>,
-															<button className="action-btn" onClick={() => this.editSnapshot(snapshot._id)}>
+															<button key={1} className="action-btn" onClick={() => this.editSnapshot(snapshot._id)}>
 																<FontAwesomeIcon icon={faWindowClose} />
 															</button>,
 														]

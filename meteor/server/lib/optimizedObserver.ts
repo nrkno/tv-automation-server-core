@@ -90,7 +90,7 @@ export function setUpOptimizedObserver<Data extends any[], Context extends Conte
 const optimizedObservers: {
 	[studioId: string]: {
 		context: Context0
-		triggerUpdate: (context: { [key: string]: any }, ...args: any[]) => void
+		triggerUpdate: TriggerUpdate<unknown>
 		stop: () => void
 		dataReceivers: Function[]
 	}

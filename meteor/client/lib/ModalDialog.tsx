@@ -282,7 +282,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		}
 	}
 	public addQueue(q: ModalDialogQueueItem) {
-		let queue = this.state.queue
+		const queue = this.state.queue
 		queue.push(q)
 		this.setState({
 			queue,
@@ -292,16 +292,16 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		return this.state.queue.length > 0
 	}
 	onAccept = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			onQueue.onAccept(e, inputResult)
 		}
 	}
 	onDiscard = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			if (onQueue.onDiscard) {
@@ -310,8 +310,8 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		}
 	}
 	onSecondary = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			if (onQueue.onSecondary) {
@@ -320,15 +320,15 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		}
 	}
 	onAction = (e: SomeEvent, inputResult: ModalInputResult, on: OnAction) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			on(e, inputResult)
 		}
 	}
 	renderString = (str: string) => {
-		let lines = (str || '').split('\n')
+		const lines = (str || '').split('\n')
 
 		return _.map(lines, (line: string, i) => {
 			return <p key={i}>{line.trim()}</p>
@@ -336,10 +336,10 @@ class ModalDialogGlobalContainer0 extends React.Component<
 	}
 	render() {
 		const { t } = this.props
-		let onQueue = _.first(this.state.queue)
+		const onQueue = _.first(this.state.queue)
 
 		if (onQueue) {
-			let actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
+			const actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
 				return {
 					...action,
 					on: (e, inputResult) => this.onAction(e, inputResult, action.on),

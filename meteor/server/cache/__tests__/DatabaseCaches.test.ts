@@ -7,11 +7,9 @@ import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 
 // setLoggerLevel('info')
 
-const orgSetTimeout = setTimeout
-
 describe('DatabaseCaches', () => {
-	beforeEach(() => {
-		setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		await setupDefaultStudioEnvironment()
 	})
 	describe('CacheForStudio', () => {
 		testInFiber('Insert, update & remove', async () => {
@@ -180,8 +178,7 @@ describe('DatabaseCaches', () => {
 			expect(deferFcn1).toHaveReturnedTimes(0)
 			expect(deferAfterSaveFcn1).toHaveReturnedTimes(0)
 		})
-	})
-	describe('CacheForStudio', () => {
+
 		testInFiber('Assert no changes', async () => {
 			const studio = Studios.findOne() as Studio
 			expect(studio).toBeTruthy()

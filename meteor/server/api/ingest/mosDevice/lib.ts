@@ -40,14 +40,14 @@ export function getSegmentExternalId(rundownId: RundownId, ingestPart: IngestPar
 
 export function fixIllegalObject(o: any) {
 	if (_.isArray(o)) {
-		_.each(o, (val, key) => {
+		_.each(o, (val, _key) => {
 			fixIllegalObject(val)
 		})
 	} else if (_.isObject(o)) {
 		_.each(_.keys(o), (key: string) => {
-			let val = o[key]
+			const val = o[key]
 			if ((key + '').match(/^\$/)) {
-				let newKey = key.replace(/^\$/, '@')
+				const newKey = key.replace(/^\$/, '@')
 				o[newKey] = val
 				delete o[key]
 				key = newKey

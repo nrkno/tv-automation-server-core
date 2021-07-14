@@ -1,6 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { ensureCollectionProperty } from './lib'
 
 // 1.1.0 (Release 13)
 export const addSteps = addMigrationSteps('1.1.0', [
@@ -17,5 +16,4 @@ export const addSteps = addMigrationSteps('1.1.0', [
 	// },
 
 	ensureCollectionProperty('CoreSystem', {}, 'serviceMessages', {}),
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.1.0'),
 ])

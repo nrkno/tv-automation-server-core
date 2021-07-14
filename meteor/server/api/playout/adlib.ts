@@ -14,9 +14,9 @@ import { logger } from '../../../lib/logging'
 import { RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
-import { Part, Parts } from '../../../lib/collections/Parts'
+import { Part } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, setNextPart, selectNextPart } from './lib'
 import {
 	convertAdLibToPieceInstance,
@@ -32,7 +32,6 @@ import {
 	PieceInstance,
 	PieceInstanceId,
 	rewrapPieceToInstance,
-	wrapPieceToInstance,
 } from '../../../lib/collections/PieceInstances'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
@@ -101,10 +100,10 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const showStyleBase = rundown.getShowStyleBase() // todo: database
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-				if (sourceLayer && (sourceLayer.type !== SourceLayerType.GRAPHICS || sourceLayer.exclusiveGroup))
+				if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
 					throw new Meteor.Error(
 						403,
-						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS item!`
+						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a LOWER_THIRD item!`
 					)
 
 				const newPieceInstance = convertAdLibToPieceInstance(
@@ -165,7 +164,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 				await syncPlayheadInfinitesForNextPartInstance(cache)
 
-				updateTimeline(cache)
+				await updateTimeline(cache)
 			}
 		)
 	}
@@ -313,7 +312,7 @@ export namespace ServerPlayoutAdLibAPI {
 			await syncPlayheadInfinitesForNextPartInstance(cache)
 		}
 
-		updateTimeline(cache)
+		await updateTimeline(cache)
 
 		if (span) span.end()
 	}

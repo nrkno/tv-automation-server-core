@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, ensureCollectionPropertyManual, setExpectedVersion } from './lib'
+import { ensureCollectionProperty, ensureCollectionPropertyManual } from './lib'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
@@ -9,8 +9,6 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Random } from 'meteor/random'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { getRandomId, protectString } from '../../lib/lib'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
 
@@ -32,14 +30,14 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		},
 		migrate: () => {
 			// maybe copy from studio?
-			let studios = Studios.find().fetch()
-			let showStyles = ShowStyles.find().fetch()
+			const studios = Studios.find().fetch()
+			const showStyles = ShowStyles.find().fetch()
 			if (studios.length === 1) {
-				let studio = studios[0]
+				const studio = studios[0]
 
-				let showstyle: any = showStyles.length === 1 ? showStyles[0] : {}
+				const showstyle: any = showStyles.length === 1 ? showStyles[0] : {}
 
-				let id = showstyle.id || 'show0'
+				const id = showstyle.id || 'show0'
 				ShowStyleBases.insert({
 					_id: id,
 					name: showstyle.name || 'Default showstyle',
@@ -141,12 +139,12 @@ export const addSteps = addMigrationSteps('0.19.0', [
 			let fail: string | undefined = undefined
 
 			ros.forEach((item) => {
-				let showStyleBase =
+				const showStyleBase =
 					ShowStyleBases.findOne((item as any).showStyleId) ||
 					ShowStyleBases.findOne(protectString('show0')) ||
 					ShowStyleBases.findOne()
 				if (showStyleBase) {
-					let showStyleVariant = ShowStyleVariants.findOne({
+					const showStyleVariant = ShowStyleVariants.findOne({
 						showStyleBaseId: showStyleBase._id,
 					})
 
@@ -182,7 +180,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
 					if (_.find(studio.config, (c) => c._id === 'media_previews_url')) {
 						validate = `mediaPreviewsUrl not set on studio ${studio._id}`
@@ -193,7 +191,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
 					const value = _.find(studio.config, (c) => c._id === 'media_previews_url')
 					if (value) {
@@ -221,7 +219,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.sofieUrl) {
 					if (_.find(studio.config, (c) => c._id === 'sofie_url')) {
 						validate = `sofieUrl not set on studio ${studio._id}`
@@ -232,7 +230,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.sofieUrl) {
 					const value = _.find(studio.config, (c) => c._id === 'sofie_url')
 					if (value) {
@@ -333,7 +331,4 @@ export const addSteps = addMigrationSteps('0.19.0', [
 			)
 		},
 	},
-
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.15.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.4.6'),
 ])

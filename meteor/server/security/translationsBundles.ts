@@ -1,7 +1,7 @@
 import { TranslationsBundles } from '../../lib/collections/TranslationsBundles'
 
 export namespace TranslationsBundlesSecurity {
-	export function allowReadAccess(selector: object, token: string, context: any): boolean {
+	export function allowReadAccess(_selector: object, _token: string, _context: any): boolean {
 		return true
 	}
 	export function allowWriteAccess(): boolean {

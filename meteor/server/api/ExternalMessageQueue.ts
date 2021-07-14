@@ -13,19 +13,20 @@ import {
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
 } from '@sofie-automation/blueprints-integration'
-import { getCurrentTime, removeNullyProperties, getRandomId, makePromise, protectString, omit } from '../../lib/lib'
+import { getCurrentTime, removeNullyProperties, getRandomId, protectString, omit } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
-import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
+import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { MongoModifier } from '../../lib/typings/meteor'
 import { ReadonlyDeep } from 'type-fest'
+import { StatusCode } from '../../lib/api/systemStatus'
 
 export function queueExternalMessages(
 	rundown: ReadonlyDeep<Rundown>,
@@ -67,7 +68,7 @@ export function queueExternalMessages(
 				triggerdoMessageQueue() // trigger processing of the queue
 			}
 		} else {
-			let now = getCurrentTime()
+			const now = getCurrentTime()
 			let message2: ExternalMessageQueueObj = {
 				_id: getRandomId(),
 
@@ -111,11 +112,11 @@ Meteor.startup(() => {
 	triggerdoMessageQueue(5000)
 })
 function doMessageQueue() {
-	let tryInterval = 1 * 60 * 1000 // 1 minute
-	let limit = errorOnLastRunCount === 0 ? 100 : 5 // if there were errors on last send, don't run too many next time
+	const tryInterval = 1 * 60 * 1000 // 1 minute
+	const limit = errorOnLastRunCount === 0 ? 100 : 5 // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
 	try {
-		let now = getCurrentTime()
+		const now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find(
 			{
 				sent: { $not: { $gt: 0 } },
@@ -137,7 +138,7 @@ function doMessageQueue() {
 
 		errorOnLastRunCount = 0
 
-		let ps: Array<Promise<any>> = []
+		const ps: Array<Promise<any>> = []
 
 		messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
 			return msg.retryUntil === undefined || msg.manualRetry || now < msg.retryUntil
@@ -267,32 +268,32 @@ Meteor.startup(() => {
 	updateExternalMessageQueueStatus()
 })
 
-function removeExternalMessage(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
+async function removeExternalMessage(context: MethodContext, messageId: ExternalMessageQueueObjId): Promise<void> {
 	check(messageId, String)
-	StudioContentWriteAccess.externalMessage(context, messageId)
+	await StudioContentWriteAccess.externalMessage(context, messageId)
 
-	ExternalMessageQueue.remove(messageId)
+	await ExternalMessageQueue.removeAsync(messageId)
 }
-function toggleHold(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
+async function toggleHold(context: MethodContext, messageId: ExternalMessageQueueObjId): Promise<void> {
 	check(messageId, String)
-	const access = StudioContentWriteAccess.externalMessage(context, messageId)
+	const access = await StudioContentWriteAccess.externalMessage(context, messageId)
 	const m = access.message
 	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 
-	ExternalMessageQueue.update(messageId, {
+	await ExternalMessageQueue.updateAsync(messageId, {
 		$set: {
 			hold: !m.hold,
 		},
 	})
 }
-function retry(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
+async function retry(context: MethodContext, messageId: ExternalMessageQueueObjId): Promise<void> {
 	check(messageId, String)
-	const access = StudioContentWriteAccess.externalMessage(context, messageId)
+	const access = await StudioContentWriteAccess.externalMessage(context, messageId)
 	const m = access.message
 	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 
-	let tryGap = getCurrentTime() - 1 * 60 * 1000
-	ExternalMessageQueue.update(messageId, {
+	const tryGap = getCurrentTime() - 1 * 60 * 1000
+	await ExternalMessageQueue.updateAsync(messageId, {
 		$set: {
 			manualRetry: true,
 			hold: false,
@@ -302,7 +303,7 @@ function retry(context: MethodContext, messageId: ExternalMessageQueueObjId): vo
 	})
 	triggerdoMessageQueue(1000)
 }
-function setRunMessageQueue(_context: MethodContext, value: boolean): void {
+async function setRunMessageQueue(_context: MethodContext, value: boolean): Promise<void> {
 	check(value, Boolean)
 	triggerWriteAccessBecauseNoCheckNecessary()
 
@@ -315,16 +316,16 @@ function setRunMessageQueue(_context: MethodContext, value: boolean): void {
 
 class ServerExternalMessageQueueAPI extends MethodContextAPI implements NewExternalMessageQueueAPI {
 	remove(messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => removeExternalMessage(this, messageId))
+		return removeExternalMessage(this, messageId)
 	}
 	toggleHold(messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => toggleHold(this, messageId))
+		return toggleHold(this, messageId)
 	}
 	retry(messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => retry(this, messageId))
+		return retry(this, messageId)
 	}
 	setRunMessageQueue(value: boolean) {
-		return makePromise(() => setRunMessageQueue(this, value))
+		return setRunMessageQueue(this, value)
 	}
 }
 registerClassToMeteorMethods(ExternalMessageQueueAPIMethods, ServerExternalMessageQueueAPI, false)

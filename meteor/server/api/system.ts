@@ -74,7 +74,7 @@ function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 			if (!existingIndex.name) return // ?
 
 			// Check if the existing index should be kept:
-			let found = _.find([...i.indexes, { _id: 1 }], (newIndex) => {
+			const found = _.find([...i.indexes, { _id: 1 }], (newIndex) => {
 				return _.isEqual(newIndex, existingIndex.key)
 			})
 
@@ -510,7 +510,7 @@ let mongoTest: TransformedCollection<any, any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
-		mongoTest = createMongoCollection<any>('benchmark-test')
+		mongoTest = createMongoCollection<any, any>('benchmark-test')
 		mongoTest._ensureIndex({
 			indexedProp: 1,
 		})
@@ -535,7 +535,7 @@ async function doSystemBenchmarkInner() {
 		waitTime(10)
 		{
 			// MongoDB test: Do a number of small writes:
-			let startTime = Date.now()
+			const startTime = Date.now()
 			const insertedIds: string[] = []
 			for (let i = 0; i < 100; i++) {
 				const objectToInsert = {
@@ -560,7 +560,7 @@ async function doSystemBenchmarkInner() {
 		waitTime(10)
 		{
 			// MongoDB test: Do a number of large writes:
-			let startTime = Date.now()
+			const startTime = Date.now()
 			const insertedIds: string[] = []
 			for (let i = 0; i < 10; i++) {
 				const objectToInsert = {
@@ -575,8 +575,7 @@ async function doSystemBenchmarkInner() {
 							data4: 'wvklwjnserolvjwn3erlkvjwnerlkvn',
 							data5: '3oig23oi45ugnf2o3iu4nf2o3iu4nf',
 							data6: '5g2987543hg9285hg3',
-							data7:
-								'20359gj2834hf2390874fh203874hf02387h4f02837h4f0238h028h428734f0273h4f08723h4tpo2n,mnbsdfljbvslfkvnkjgv',
+							data7: '20359gj2834hf2390874fh203874hf02387h4f02837h4f0238h028h428734f0273h4f08723h4tpo2n,mnbsdfljbvslfkvnkjgv',
 						}
 					}),
 					prop0: 'asdf',
@@ -604,8 +603,7 @@ async function doSystemBenchmarkInner() {
 					objs: _.range(0, 100).map((j) => {
 						return {
 							id: 'innerObj' + j,
-							data0:
-								'asdfkawhbeckjawhefkjashvdfckasdf9q37246fg2w9375fhg209485hf0238757h834h08273h50235h4gf+0237h5u7hg2475hg082475hgt',
+							data0: 'asdfkawhbeckjawhefkjashvdfckasdf9q37246fg2w9375fhg209485hf0238757h834h08273h50235h4gf+0237h5u7hg2475hg082475hgt',
 						}
 					}),
 					prop0: i,
@@ -642,7 +640,7 @@ async function doSystemBenchmarkInner() {
 		waitTime(10)
 		// CPU test: arithmetic calculations:
 		{
-			let startTime = Date.now()
+			const startTime = Date.now()
 			const map: any = {}
 			let number = 0
 			for (let i = 0; i < 6e4; i++) {
@@ -669,10 +667,10 @@ async function doSystemBenchmarkInner() {
 					},
 				}
 			})
-			let startTime = Date.now()
+			const startTime = Date.now()
 
 			const strings: string[] = objectsToStringify.map((o) => JSON.stringify(o))
-			const newObjects = strings.map((str) => JSON.parse(str))
+			const _newObjects = strings.map((str) => JSON.parse(str))
 
 			result.cpuStringifying = Date.now() - startTime
 		}
@@ -692,7 +690,7 @@ async function doSystemBenchmark(context: MethodContext, runCount: number = 1): 
 	if (runCount < 1) throw new Error(`runCount must be >= 1`)
 
 	const results: BenchmarkResult[] = []
-	for (let i of _.range(0, runCount)) {
+	for (const _i of _.range(0, runCount)) {
 		results.push(await doSystemBenchmarkInner())
 		waitTime(50)
 	}

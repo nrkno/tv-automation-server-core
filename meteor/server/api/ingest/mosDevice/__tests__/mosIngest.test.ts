@@ -2,6 +2,7 @@ import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
+import '../../../../../__mocks__/_extendJest'
 import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
 import { Segments, DBSegment, SegmentId, Segment } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
@@ -17,11 +18,11 @@ import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections
 import { getPartId } from '../../lib'
 import { PartInstance } from '../../../../../lib/collections/PartInstances'
 import { resetRandomId, restartRandomId } from '../../../../../__mocks__/random'
+import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
+import { removeRundownPlaylistFromDb } from '../../../rundownPlaylist'
 
 jest.mock('../../updateNext')
 import { ensureNextPartIsValid } from '../../updateNext'
-import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
-import { removeRundownPlaylistFromDb } from '../../../rundownPlaylist'
 type TensureNextPartIsValid = jest.MockedFunction<typeof ensureNextPartIsValid>
 const ensureNextPartIsValidMock = ensureNextPartIsValid as TensureNextPartIsValid
 
@@ -45,12 +46,12 @@ function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
 
 describe('Test recieved mos ingest payloads', () => {
 	let device: PeripheralDevice
-	beforeAll(() => {
+	beforeAll(async () => {
 		// Start with ids not at the beginning
 		resetRandomId()
 		resetRandomId()
 
-		device = setupDefaultStudioEnvironment().ingestDevice
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 	})
 	beforeEach(() => {
 		restartRandomId()
@@ -192,12 +193,9 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(Rundowns.findOne()).toBeFalsy()
 		expect(RundownPlaylists.findOne()).toBeFalsy()
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoDelete(device._id, device.token, roData.ID)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toMatch(/Rundown.*not found/i)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoDelete(device._id, device.token, roData.ID)
+		).rejects.toMatchToString(/Rundown.*not found/i)
 	})
 
 	testInFiber('mosRoStatus: Update ro', async () => {
@@ -264,12 +262,9 @@ describe('Test recieved mos ingest payloads', () => {
 			Time: new MOS.MosTime(0),
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStatus(device._id, device.token, payload)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toMatch(/Rundown.*not found/i)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStatus(device._id, device.token, payload)
+		).rejects.toMatchToString(/Rundown.*not found/i)
 	})
 
 	testInFiber('mosRoReadyToAir: Update ro', async () => {
@@ -330,12 +325,9 @@ describe('Test recieved mos ingest payloads', () => {
 			Status: newStatus,
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoReadyToAir(device._id, device.token, payload)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toMatch(/Rundown.*not found/i)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoReadyToAir(device._id, device.token, payload)
+		).rejects.toMatchToString(/Rundown.*not found/i)
 	})
 
 	testInFiber('mosRoStoryStatus: Update part', async () => {
@@ -373,7 +365,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const rundownExternalId = 'fakeId'
 		expect(Rundowns.findOne({ externalId: rundownExternalId })).toBeFalsy()
 
-		let part = Parts.findOne() as Part
+		const part = Parts.findOne() as Part
 		expect(part).toBeTruthy()
 		expect(part.status).not.toEqual(newStatus.toString())
 
@@ -384,12 +376,9 @@ describe('Test recieved mos ingest payloads', () => {
 			Time: new MOS.MosTime(0),
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStoryStatus(device._id, device.token, payload)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toMatch(/Rundown.*not found/i)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStoryStatus(device._id, device.token, payload)
+		).rejects.toMatchToString(/Rundown.*not found/i)
 	})
 
 	testInFiber('mosRoStoryStatus: Missing part', async () => {
@@ -407,12 +396,9 @@ describe('Test recieved mos ingest payloads', () => {
 			Time: new MOS.MosTime(0),
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStoryStatus(device._id, device.token, payload)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[404] Part ${partExternalId} in rundown ${rundown.externalId} not found`)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStoryStatus(device._id, device.token, payload)
+		).rejects.toThrowMeteor(404, `Part ${partExternalId} in rundown ${rundown.externalId} not found`)
 	})
 
 	testInFiber('mosRoStoryInsert: Into segment', async () => {
@@ -533,12 +519,9 @@ describe('Test recieved mos ingest payloads', () => {
 			StoryID: new MOS.MosString128('newFakePart'),
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
+		).rejects.toThrowMeteor(404, `Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
 
 		expect(Parts.findOne({ externalId: newPartData.ID.toString() })).toBeFalsy()
 	})
@@ -556,14 +539,12 @@ describe('Test recieved mos ingest payloads', () => {
 			StoryID: new MOS.MosString128('ro1;s2;p1'),
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(
-				`[500] Parts ${newPartData.ID.toString()} already exist in rundown ${rundown.externalId}`
-			)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
+		).rejects.toThrowMeteor(
+			500,
+			`Parts ${newPartData.ID.toString()} already exist in rundown ${rundown.externalId}`
+		)
 	})
 
 	// TODO - check if this should be allowed
@@ -665,12 +646,9 @@ describe('Test recieved mos ingest payloads', () => {
 			StoryID: new MOS.MosString128('fakeId2'),
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData])
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData])
+		).rejects.toThrowMeteor(404, `Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
 
 		expect(Parts.findOne({ externalId: newPartData.ID.toString() })).toBeFalsy()
 	})
@@ -721,12 +699,9 @@ describe('Test recieved mos ingest payloads', () => {
 			RunningOrderID: new MOS.MosString128(rundown.externalId),
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStoryDelete(device._id, device.token, action, partExternalIds)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[404] Parts fakeId in rundown ${rundown.externalId} were not found`)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStoryDelete(device._id, device.token, action, partExternalIds)
+		).rejects.toThrowMeteor(404, `Parts fakeId in rundown ${rundown.externalId} were not found`)
 
 		expect(Parts.find({ externalId: { $in: partExternalIds } }).count()).toEqual(1)
 	})
@@ -766,14 +741,12 @@ describe('Test recieved mos ingest payloads', () => {
 			Body: [],
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(
-				`[500] handleMosFullStory: Missing MOS Story "${story.ID}" in Rundown ingest data for "${rundown.externalId}"`
-			)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story)
+		).rejects.toThrowMeteor(
+			500,
+			`handleMosFullStory: Missing MOS Story "${story.ID}" in Rundown ingest data for "${rundown.externalId}"`
+		)
 	})
 
 	testInFiber('mosRoFullStory: Unknown Rundown', async () => {
@@ -786,12 +759,9 @@ describe('Test recieved mos ingest payloads', () => {
 			Body: [],
 		})
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[500] handleMosFullStory: Missing MOS Rundown "${story.RunningOrderId}"`)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story)
+		).rejects.toThrowMeteor(500, `handleMosFullStory: Missing MOS Rundown "${story.RunningOrderId}"`)
 	})
 
 	testInFiber('mosRoStorySwap: Within same segment', async () => {
@@ -872,14 +842,12 @@ describe('Test recieved mos ingest payloads', () => {
 		})
 		const story0 = new MOS.MosString128('ro1;s1;p1')
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story0)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(
-				`[400] Cannot swap part ${story0} with itself in rundown ${action.RunningOrderID.toString()}`
-			)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story0)
+		).rejects.toThrowMeteor(
+			400,
+			`Cannot swap part ${story0} with itself in rundown ${action.RunningOrderID.toString()}`
+		)
 	})
 
 	testInFiber('mosRoStorySwap: Story not found', async () => {
@@ -892,19 +860,13 @@ describe('Test recieved mos ingest payloads', () => {
 		const story0 = new MOS.MosString128('ro1;s1;p1')
 		const story1 = new MOS.MosString128('ro1;s1;p99')
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story1)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[404] Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story1)
+		).rejects.toThrowMeteor(404, `Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story1, story0)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[404] Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story1, story0)
+		).rejects.toThrowMeteor(404, `Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
 	})
 
 	testInFiber('mosRoStorySwap: Swap across segments', async () => {
@@ -1057,14 +1019,12 @@ describe('Test recieved mos ingest payloads', () => {
 			new MOS.MosString128('ro1;s1;p3'),
 		]
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(
-				`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`
-			)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories)
+		).rejects.toThrowMeteor(
+			404,
+			`Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`
+		)
 	})
 
 	testInFiber('mosRoStoryMove: Invalid before self', async () => {
@@ -1081,14 +1041,12 @@ describe('Test recieved mos ingest payloads', () => {
 			new MOS.MosString128('ro1;s1;p3'),
 		]
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(
-				`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`
-			)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories)
+		).rejects.toThrowMeteor(
+			404,
+			`Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`
+		)
 	})
 
 	testInFiber('mosRoStoryMove: Bad ID', async () => {
@@ -1107,14 +1065,9 @@ describe('Test recieved mos ingest payloads', () => {
 			new MOS.MosString128('ro1;s1;p3'),
 		]
 
-		try {
-			await MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(
-				`[404] Parts ro1;s1;p999 were not found in rundown ${action.RunningOrderID.toString()}`
-			)
-		}
+		await expect(() =>
+			MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories)
+		).rejects.toThrowMeteor(404, `Parts ro1;s1;p999 were not found in rundown ${action.RunningOrderID.toString()}`)
 	})
 
 	testInFiber('mosRoStoryDelete: Remove first story in segment', async () => {
@@ -1372,18 +1325,18 @@ describe('Test recieved mos ingest payloads', () => {
 			// Make sure we inserted, not replaced
 			const firstSegment = segments[0]
 			expect(firstSegment).toBeTruthy()
-			const firstSegmentParts = firstSegment.getParts()
+			const firstSegmentParts = Parts.find({ segmentId: firstSegment._id }).fetch()
 			expect(firstSegmentParts).toHaveLength(3)
 
 			const refSegment = segments[2]
 			expect(refSegment).toBeTruthy()
-			const refSegmentParts = refSegment.getParts()
+			const refSegmentParts = Parts.find({ segmentId: refSegment._id }).fetch()
 			expect(refSegmentParts).toHaveLength(2)
 
 			// Check the insert was ok
 			const newSegment = segments[1]
 			expect(newSegment).toBeTruthy()
-			const newSegmentParts = newSegment.getParts()
+			const newSegmentParts = Parts.find({ segmentId: newSegment._id }).fetch()
 			expect(newSegmentParts).toHaveLength(1)
 			expect(newSegmentParts[0].externalId).toBe('ro1;s2a;newPart1')
 		}
@@ -1405,13 +1358,13 @@ describe('Test recieved mos ingest payloads', () => {
 			// Make sure first segment is unchanged
 			const firstSegment = segments[0]
 			expect(firstSegment).toBeTruthy()
-			const firstSegmentParts = firstSegment.getParts()
+			const firstSegmentParts = Parts.find({ segmentId: firstSegment._id }).fetch()
 			expect(firstSegmentParts).toHaveLength(3)
 
 			// Make sure segment combiend ok
 			const refSegment = segments[1]
 			expect(refSegment).toBeTruthy()
-			const refSegmentParts = refSegment.getParts()
+			const refSegmentParts = Parts.find({ segmentId: refSegment._id }).fetch()
 			expect(refSegmentParts).toHaveLength(3)
 		}
 	})

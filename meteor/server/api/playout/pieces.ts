@@ -113,9 +113,9 @@ function resolvePieceTimeline(
 	const tlResolved = Resolver.resolveTimeline(objs, { time: baseTime })
 	const resolvedPieces: Array<ResolvedPieceInstance> = []
 
-	let unresolvedIds: string[] = []
+	const unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
-		const obj = (obj0 as any) as TimelineObjRundown
+		const obj = obj0 as any as TimelineObjRundown
 		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
 
 		if (!id) return
@@ -306,7 +306,7 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 	})
 
 	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {
-		let contentObjects = newAdLibPiece.content.timelineObjects
+		const contentObjects = newAdLibPiece.content.timelineObjects
 		const objs = prefixAllObjectIds(
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
@@ -360,7 +360,7 @@ export function convertAdLibToPieceInstance(
 	setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-		let contentObjects = newPieceInstance.piece.content.timelineObjects
+		const contentObjects = newPieceInstance.piece.content.timelineObjects
 		const objs = prefixAllObjectIds(
 			_.compact(
 				_.map(contentObjects, (obj) => {

@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
@@ -69,10 +68,7 @@ export interface ExpectedMediaItemBucketAction extends ExpectedMediaItemBase {
 /** @deprecated */
 export type ExpectedMediaItem = ExpectedMediaItemRundown | ExpectedMediaItemBucketPiece | ExpectedMediaItemBucketAction
 /** @deprecated */
-export const ExpectedMediaItems: TransformedCollection<
-	ExpectedMediaItem,
-	ExpectedMediaItem
-> = createMongoCollection<ExpectedMediaItem>('expectedMediaItems')
+export const ExpectedMediaItems = createMongoCollection<ExpectedMediaItem, ExpectedMediaItem>('expectedMediaItems')
 registerCollection('ExpectedMediaItems', ExpectedMediaItems)
 
 registerIndex(ExpectedMediaItems, {

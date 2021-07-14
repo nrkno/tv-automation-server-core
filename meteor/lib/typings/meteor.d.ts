@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { ProtectedString } from '../lib'

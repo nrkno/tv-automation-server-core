@@ -37,7 +37,7 @@ export interface ShelfContextMenuContextBucketAdLib extends ShelfContextMenuCont
 		bucket: Bucket
 		adLib: BucketAdLibItem
 		canQueue?: boolean
-		onToggle: (aSLine: BucketAdLibItem, queue: boolean, context: any, mode: IBlueprintActionTriggerMode) => void
+		onToggle: (aSLine: BucketAdLibItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	}
 }
 
@@ -46,7 +46,7 @@ export interface ShelfContextMenuContextAdLib extends ShelfContextMenuContextBas
 	details: {
 		adLib: IAdLibListItem
 		canQueue?: boolean
-		onToggle: (aSLine: IAdLibListItem, queue: boolean, context: any, mode: IBlueprintActionTriggerMode) => void
+		onToggle: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	}
 }
 

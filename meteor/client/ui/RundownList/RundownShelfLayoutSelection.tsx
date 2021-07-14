@@ -85,15 +85,15 @@ export const RundownShelfLayoutSelection = withTranslation()(
 				<React.Fragment>
 					<SplitDropdown
 						selectedKey={this.state.selectedView}
-						children={[
-							{ children: <div className="expco-header">{t('Standalone Shelf')}</div> },
+						options={[
+							{ node: <div className="expco-header">{t('Standalone Shelf')}</div> },
 							...standaloneLayouts,
-							{ children: <div className="expco-header">{t('Rundown & Shelf')}</div> },
+							{ node: <div className="expco-header">{t('Rundown & Shelf')}</div> },
 							...shelfLayouts,
-							{ children: <div className="expco-separator"></div> },
+							{ node: <div className="expco-separator"></div> },
 							{
 								key: 'default',
-								children: (
+								node: (
 									<Link
 										to={getRundownPlaylistLink(this.props.playlistId)}
 										onClick={() => this.saveViewChoice('default')}

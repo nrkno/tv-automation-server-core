@@ -13,7 +13,7 @@ import { DatePickerFromTo } from '../../lib/datePicker'
 import { UserActionsList } from '../Status/UserActivity'
 import { Snapshots, SnapshotType } from '../../../lib/collections/Snapshots'
 import { Link } from 'react-router-dom'
-import { MeteorCall, CallUserActionAPIMethod } from '../../../lib/api/methods'
+import { CallUserActionAPIMethod } from '../../../lib/api/methods'
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
 import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
@@ -41,7 +41,7 @@ interface IRecordingListTrackedProps {
 }
 
 const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingListState, IRecordingListTrackedProps>(
-	(props: IRecordingListProps) => {
+	(_props: IRecordingListProps) => {
 		return {
 			log: UserActionsLog.find({}, { sort: { timestamp: 1 } }).fetch(),
 		}
@@ -71,7 +71,7 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 		}
 		updateSubscription() {
 			if (this.props.match && this.props.match.params) {
-				let h = this.state.dateFrom + '_' + this.state.dateTo + '_' + this.props.match.params.rundownPlaylistId
+				const h = this.state.dateFrom + '_' + this.state.dateTo + '_' + this.props.match.params.rundownPlaylistId
 				if (h !== this._currentsub) {
 					this._currentsub = h
 					if (this._sub) {
@@ -246,7 +246,7 @@ interface IRundownSelectTrackedProps {
 	rundownPlaylists: { [id: string]: string }
 }
 const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownSelectState, IRundownSelectTrackedProps>(
-	(props: IRundownSelectProps) => {
+	(_props: IRundownSelectProps) => {
 		const rundownPlaylists = RundownPlaylists.find().fetch()
 		const snapshots = Snapshots.find().fetch()
 

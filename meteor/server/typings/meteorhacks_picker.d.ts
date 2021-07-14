@@ -1,6 +1,5 @@
 declare module 'meteor/meteorhacks:picker' {
 	import { ServerResponse, IncomingMessage } from 'http'
-	import { NextHandleFunction } from 'connect'
 	interface Params {
 		[key: string]: string
 	}
@@ -13,10 +12,10 @@ declare module 'meteor/meteorhacks:picker' {
 		filter(cb: (req: IncomingMessage, res: ServerResponse) => boolean): Router
 	}
 	class Router {
-		middleware(middleware: NextHandleFunction): void
+		middleware(middleware: (req: IncomingMessage, res: http.ServerResponse, next: NextFunction) => void): void
 		route: Route
 	}
-	var Picker: PickerClass
+	const Picker: PickerClass
 }
 
 declare module 'http' {

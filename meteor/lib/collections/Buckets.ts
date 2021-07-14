@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
@@ -29,7 +28,7 @@ export interface Bucket {
 	buttonWidthScale: number
 	buttonHeightScale: number
 }
-export const Buckets: TransformedCollection<Bucket, Bucket> = createMongoCollection<Bucket>('buckets')
+export const Buckets = createMongoCollection<Bucket, Bucket>('buckets')
 registerCollection('Buckets', Buckets)
 
 registerIndex(Buckets, {

@@ -1,5 +1,3 @@
-import * as _ from 'underscore'
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { UserId } from './Users'
@@ -41,7 +39,5 @@ export interface UserRoles {
 
 export type Organization = DBOrganization // to be replaced by a class some time later?
 
-export const Organizations: TransformedCollection<Organization, DBOrganization> = createMongoCollection<DBOrganization>(
-	'organizations'
-)
+export const Organizations = createMongoCollection<Organization, DBOrganization>('organizations')
 registerCollection('Organizations', Organizations)

@@ -11,7 +11,7 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
+import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -212,7 +212,6 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 
 			render() {
 				if (this.props.playlist && this.props.rundownPlaylistId && this.props.segments) {
-					const playlist = this.props.playlist
 					return (
 						<ErrorBoundary>
 							<div className="rundown__overview">

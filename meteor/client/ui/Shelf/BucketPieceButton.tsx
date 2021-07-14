@@ -11,7 +11,6 @@ import {
 	ConnectableElement,
 } from 'react-dnd'
 import { DragDropItemTypes } from '../DragDropItemTypes'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketId } from '../../../lib/collections/Buckets'
@@ -22,7 +21,7 @@ import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integr
 type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps
 
 const buttonSource = {
-	beginDrag(props: IDashboardButtonPropsCombined, monitor: DragSourceMonitor, component: any) {
+	beginDrag(props: IDashboardButtonPropsCombined, _monitor: DragSourceMonitor, _component: any) {
 		return {
 			id: props.piece._id,
 			originalIndex: props.findAdLib(props.piece._id).index,
@@ -50,11 +49,11 @@ const buttonSource = {
 }
 
 const buttonTarget = {
-	canDrop(props: IDashboardButtonPropsCombined, monitor: DropTargetMonitor) {
+	canDrop(_props: IDashboardButtonPropsCombined, _monitor: DropTargetMonitor) {
 		return true
 	},
 
-	hover(props: IDashboardButtonPropsCombined, monitor: DropTargetMonitor, component: any) {
+	hover(props: IDashboardButtonPropsCombined, monitor: DropTargetMonitor, _component: any) {
 		const { id: draggedId } = monitor.getItem()
 		const overId = props.piece._id
 
@@ -64,7 +63,7 @@ const buttonTarget = {
 		}
 	},
 
-	drop(props: IDashboardButtonPropsCombined, monitor: DropTargetMonitor) {
+	drop(props: IDashboardButtonPropsCombined, _monitor: DropTargetMonitor) {
 		const { index } = props.findAdLib(props.piece._id)
 
 		return {
@@ -101,7 +100,7 @@ export class BucketPieceButtonBase extends DashboardPieceButtonBase<
 	}
 
 	render() {
-		const { isDragging, connectDragSource, connectDragPreview, connectDropTarget } = this.props
+		const { connectDragSource, connectDropTarget } = this.props
 
 		return connectDropTarget(connectDragSource(super.render() as ConnectableElement)) as JSX.Element
 	}

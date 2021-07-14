@@ -12,7 +12,7 @@ var ObjectFunctionString = fnToString.call(Object)
 
 var getProto = Object.getPrototypeOf
 
-exports.isPlainObject = function(obj) {
+exports.isPlainObject = function (obj) {
 	var proto, Ctor
 
 	// Detect obvious negatives

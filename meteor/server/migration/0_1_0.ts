@@ -68,11 +68,10 @@ export const addSteps = addMigrationSteps('0.1.0', [
 			return missing
 		},
 		migrate: () => {
-			let studios = Studios.find().fetch()
+			const studios = Studios.find().fetch()
 			if (studios.length === 1) {
 				const studio = studios[0]
 
-				let missing: string | boolean = false
 				PeripheralDevices.find({
 					parentDeviceId: { $exists: false },
 				}).forEach((device) => {
@@ -90,7 +89,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 		canBeRunAutomatically: false,
 		dependOnResultFrom: 'studio exists',
 		validate: () => {
-			let studios = Studios.find().fetch()
+			const studios = Studios.find().fetch()
 			let missing: string | boolean = false
 			_.each(studios, (studio: Studio) => {
 				const dev = PeripheralDevices.findOne({

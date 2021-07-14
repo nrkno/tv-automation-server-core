@@ -86,7 +86,7 @@ export function allowAccessToShowStyleBase(
 		_id: showStyleBaseId,
 	}).fetch()
 	let access: Access<ShowStyleBase | null> = allAccess(null)
-	for (let showStyleBase of showStyleBases) {
+	for (const showStyleBase of showStyleBases) {
 		access = combineAccess(access, AccessRules.accessShowStyleBase(showStyleBase, cred))
 	}
 	return {
@@ -111,7 +111,7 @@ export function allowAccessToShowStyleVariant(
 		_id: { $in: showStyleBaseIds },
 	}).fetch()
 	let access: Access<ShowStyleBase | null> = allAccess(null)
-	for (let showStyleBase of showStyleBases) {
+	for (const showStyleBase of showStyleBases) {
 		access = combineAccess(access, AccessRules.accessShowStyleBase(showStyleBase, cred))
 	}
 	return { ...access, document: _.last(showStyleVariants) || null }
@@ -146,7 +146,7 @@ export function allowAccessToRundownPlaylist(
 		_id: playlistId,
 	}).fetch()
 	let access: Access<RundownPlaylist | null> = allAccess(null)
-	for (let playlist of playlists) {
+	for (const playlist of playlists) {
 		access = combineAccess(access, AccessRules.accessRundownPlaylist(playlist, cred))
 	}
 	return access
@@ -175,7 +175,7 @@ export function allowAccessToRundownContent(
 		_id: rundownId,
 	}).fetch()
 	let access: Access<Rundown | null> = allAccess(null)
-	for (let rundown of rundowns) {
+	for (const rundown of rundowns) {
 		access = combineAccess(access, AccessRules.accessRundown(rundown, cred))
 	}
 	return access
@@ -222,7 +222,7 @@ namespace AccessRules {
 			}
 		}
 	}
-	export function accessCurrentUser(cred0: Credentials | ResolvedCredentials, userId: UserId): Access<null> {
+	export function accessCurrentUser(cred0: Credentials | ResolvedCredentials, _userId: UserId): Access<null> {
 		let userId2: UserId | undefined = undefined
 		if (isResolvedCredentials(cred0) && cred0.user) {
 			userId2 = cred0.user._id
@@ -241,7 +241,7 @@ namespace AccessRules {
 		} else return noAccess('Requested user not found')
 	}
 
-	export function accessSystemStatus(cred0: Credentials | ResolvedCredentials): Access<null> {
+	export function accessSystemStatus(_cred0: Credentials | ResolvedCredentials): Access<null> {
 		// No restrictions on systemStatus
 		return allAccess(null)
 	}

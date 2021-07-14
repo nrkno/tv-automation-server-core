@@ -1,40 +1,44 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, unprotectString, getRandomId, assertNever } from '../../lib/lib'
+import { getCurrentTime, Time, getRandomId, assertNever } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { parseVersion, parseRange } from '../../lib/collections/CoreSystem'
-import { StatusResponse, CheckObj, ExternalStatus, CheckError, SystemInstanceId } from '../../lib/api/systemStatus'
+import {
+	parseVersion,
+	parseCoreIntegrationCompatabilityRange,
+	stripVersion,
+	compareSemverVersions,
+} from '../../lib/collections/CoreSystem'
+import {
+	StatusResponse,
+	CheckObj,
+	ExternalStatus,
+	CheckError,
+	SystemInstanceId,
+	Component,
+	StatusCode,
+} from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
-import * as semver from 'semver'
 import { StudioId } from '../../lib/collections/Studios'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { SystemWriteAccess } from '../security/system'
+
+const PackageInfo = require('../../package.json')
+const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
+
+// Any libraries that if a gateway uses should match a certain version
+const expectedLibraryVersions: { [libName: string]: string } = {
+	'superfly-timeline': stripVersion(require('superfly-timeline/package.json').version),
+	'mos-connection': stripVersion(require('mos-connection/package.json').version),
+}
 
 /**
  * Handling of system statuses
  */
 
-/** Enum for the different status codes in the system  */
-export enum StatusCode {
-	/** Status unknown */
-	UNKNOWN = 0,
-	/** All good and green */
-	GOOD = 1,
-	/** Everything is not OK, operation is not affected */
-	WARNING_MINOR = 2,
-	/** Everything is not OK, operation might be affected */
-	WARNING_MAJOR = 3,
-	/** Operation affected, possible to recover */
-	BAD = 4,
-	/** Operation affected, not possible to recover without manual interference */
-	FATAL = 5,
-}
 export interface StatusObject {
 	studioId?: StudioId
 	statusCode: StatusCode
@@ -51,12 +55,121 @@ export interface StatusObjectInternal {
 		timestamp: Time
 	}>
 }
+
+function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
+	const deviceStatus: StatusCode = device.status.statusCode
+	const deviceStatusMessages: Array<string> = device.status.messages || []
+
+	const checks: Array<CheckObj> = []
+	const pushStatusAsCheck = (name: string, statusCode: StatusCode, messages: string[]) => {
+		checks.push({
+			description: `expectedVersion.${name}`,
+			status: status2ExternalStatus(statusCode),
+			updated: new Date(device.lastSeen).toISOString(),
+			_status: statusCode,
+			errors: messages.map((message: string): CheckError => {
+				return {
+					type: 'version-differ',
+					time: new Date(device.lastSeen).toISOString(),
+					message: message,
+				}
+			}),
+		})
+	}
+
+	if (deviceStatus === StatusCode.GOOD && !device.disableVersionChecks) {
+		if (!device.versions) device.versions = {}
+		const deviceVersions = device.versions
+
+		// Check core-integration version is as expected
+		if (
+			device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS ||
+			deviceVersions['@sofie-automation/server-core-integration']
+		) {
+			const integrationVersion = parseVersion(deviceVersions['@sofie-automation/server-core-integration'])
+			const checkMessage = compareSemverVersions(
+				integrationVersion,
+				integrationVersionRange,
+				`Device has to be updated`,
+				`Device "${device.name}"`,
+				'@sofie-automation/server-core-integration'
+			)
+			pushStatusAsCheck(
+				'@sofie-automation/server-core-integration',
+				checkMessage.statusCode,
+				checkMessage.messages
+			)
+		}
+
+		// Check blueprint-integration version is as expected, if it exposes that
+		if (deviceVersions['@sofie-automation/blueprint-integration']) {
+			const integrationVersion = parseVersion(deviceVersions['@sofie-automation/blueprint-integration'])
+			const checkMessage = compareSemverVersions(
+				integrationVersion,
+				integrationVersionRange,
+				`Device has to be updated`,
+				`Device "${device.name}"`,
+				'@sofie-automation/blueprint-integration'
+			)
+			pushStatusAsCheck('@sofie-automation/blueprint-integration', checkMessage.statusCode, checkMessage.messages)
+		}
+
+		// check for any known libraries
+		for (const [libName, targetVersion] of Object.entries(expectedLibraryVersions)) {
+			if (deviceVersions[libName] && targetVersion !== '0.0.0') {
+				const deviceLibVersion = parseVersion(deviceVersions[libName])
+				const checkMessage = compareSemverVersions(
+					deviceLibVersion,
+					targetVersion,
+					`Device has mismatched library version`,
+					`Device "${device.name}"`,
+					libName
+				)
+				pushStatusAsCheck(libName, checkMessage.statusCode, checkMessage.messages)
+			}
+		}
+	}
+	const so: StatusResponse = {
+		name: device.name,
+		instanceId: device._id,
+		status: 'UNDEFINED',
+		updated: new Date(device.lastSeen).toISOString(),
+		_status: deviceStatus,
+		documentation: '',
+		statusMessage: deviceStatusMessages.length ? deviceStatusMessages.join(', ') : undefined,
+		_internal: {
+			// statusCode: deviceStatus,
+			statusCodeString: StatusCode[deviceStatus],
+			messages: deviceStatusMessages,
+			versions: device.versions || {},
+		},
+		checks: checks,
+	}
+	if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+		so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
+	} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+		so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
+	} else if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) {
+		so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
+	} else if (device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) {
+		so.documentation = 'https://github.com/nrkno/tv-automation-media-management'
+	} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
+		so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
+	} else if (device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER) {
+		so.documentation = 'https://github.com/nrkno/tv-automation-package-manager'
+	} else {
+		assertNever(device.type)
+	}
+
+	return so
+}
+
 /**
  * Returns system status
  * @param studioId (Optional) If provided, limits the status to what's affecting the studio
  */
 export function getSystemStatus(cred0: Credentials, studioId?: StudioId): StatusResponse {
-	let checks: Array<CheckObj> = []
+	const checks: Array<CheckObj> = []
 
 	SystemWriteAccess.systemStatusRead(cred0)
 
@@ -67,20 +180,17 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 			status: status2ExternalStatus(status.statusCode),
 			updated: new Date(status.timestamp).toISOString(),
 			_status: status.statusCode,
-			errors: _.map(
-				status.messages || [],
-				(m): CheckError => {
-					return {
-						type: 'message',
-						time: new Date(m.timestamp).toISOString(),
-						message: m.message,
-					}
+			errors: _.map(status.messages || [], (m): CheckError => {
+				return {
+					type: 'message',
+					time: new Date(m.timestamp).toISOString(),
+					message: m.message,
 				}
-			),
+			}),
 		})
 	})
 
-	let statusObj: StatusResponse = {
+	const statusObj: StatusResponse = {
 		name: 'Sofie Automation system',
 		instanceId: instanceId,
 		updated: new Date(getCurrentTime()).toISOString(),
@@ -114,113 +224,14 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 			devices = PeripheralDevices.find({}).fetch()
 		}
 	}
-	_.each(devices, (device: PeripheralDevice) => {
-		let deviceStatus: StatusCode = device.status.statusCode
-		let deviceStatusMessages: Array<string> = device.status.messages || []
-
-		let checks: Array<CheckObj> = []
-
-		if (deviceStatus === StatusCode.GOOD) {
-			if (device.expectedVersions) {
-				if (!device.versions) device.versions = {}
-				let deviceVersions = device.versions
-				_.each(device.expectedVersions, (expectedVersionStr, libraryName: string) => {
-					let versionStr = deviceVersions[libraryName]
-
-					let version = parseVersion(versionStr || '0.0.0')
-					let expectedVersion = parseRange(expectedVersionStr)
-
-					let statusCode = StatusCode.GOOD
-					let messages: Array<string> = []
-
-					if (semver.satisfies(version, '0.0.0')) {
-						// if the major version is 0.0.0, ignore it
-					} else if (!versionStr) {
-						statusCode = StatusCode.BAD
-						messages.push(`${libraryName}: Expected version ${expectedVersionStr}, got undefined`)
-					} else if (!semver.satisfies(version, expectedVersion)) {
-						statusCode = StatusCode.BAD
-
-						let message = `Version for ${libraryName}: "${versionStr}" does not satisy expected version "${expectedVersionStr}"`
-
-						const version0 = semver.coerce(version)
-						const expectedVersion0 = semver.coerce(expectedVersion)
-
-						if (version0 && expectedVersion0 && version0.major !== expectedVersion0.major) {
-							statusCode = StatusCode.BAD
-							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (major version differ)`
-						} else if (version0 && expectedVersion0 && version0.minor < expectedVersion0.minor) {
-							statusCode = StatusCode.WARNING_MAJOR
-							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (minor version differ)`
-						} else if (
-							version0 &&
-							expectedVersion0 &&
-							version0.minor <= expectedVersion0.minor &&
-							version0.patch < expectedVersion0.patch
-						) {
-							statusCode = StatusCode.WARNING_MINOR
-							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (patch version differ)`
-						}
-
-						messages.push(message)
-					}
-
-					checks.push({
-						description: `expectedVersion.${libraryName}`,
-						status: status2ExternalStatus(statusCode),
-						updated: new Date(device.lastSeen).toISOString(),
-						_status: statusCode,
-						errors: _.map(
-							messages,
-							(message: string): CheckError => {
-								return {
-									type: 'version-differ',
-									time: new Date(device.lastSeen).toISOString(),
-									message: message,
-								}
-							}
-						),
-					})
-				})
-			}
-		}
-		let so: StatusResponse = {
-			name: device.name,
-			instanceId: device._id,
-			status: 'UNDEFINED',
-			updated: new Date(device.lastSeen).toISOString(),
-			_status: deviceStatus,
-			documentation: '',
-			statusMessage: deviceStatusMessages.length ? deviceStatusMessages.join(', ') : undefined,
-			_internal: {
-				// statusCode: deviceStatus,
-				statusCodeString: StatusCode[deviceStatus],
-				messages: deviceStatusMessages,
-				versions: device.versions || {},
-			},
-			checks: checks,
-		}
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
-			so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
-			so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) {
-			so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) {
-			so.documentation = 'https://github.com/nrkno/tv-automation-media-management'
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
-			so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER) {
-			so.documentation = 'https://github.com/nrkno/tv-automation-package-manager'
-		} else {
-			assertNever(device.type)
-		}
+	for (const device of devices) {
+		const so = getSystemStatusForDevice(device)
 
 		if (!statusObj.components) statusObj.components = []
 		statusObj.components.push(so)
-	})
+	}
 
-	let systemStatus: StatusCode = setStatus(statusObj)
+	const systemStatus: StatusCode = setStatus(statusObj)
 	statusObj._internal = {
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
@@ -247,13 +258,13 @@ export function setSystemStatus(type: string, status: StatusObject) {
 		systemStatus.timestamp = getCurrentTime()
 	}
 
-	let messages: Array<{
+	const messages: Array<{
 		message: string
 		timestamp: Time
 	}> = []
 	if (status.messages) {
 		_.each(status.messages, (message) => {
-			let m = _.find(systemStatus.messages, (m) => m.message === message)
+			const m = _.find(systemStatus.messages, (m) => m.message === message)
 			if (m) {
 				messages.push(m)
 			} else {
@@ -273,7 +284,7 @@ export function removeSystemStatus(type: string) {
 const instanceId: SystemInstanceId = getRandomId()
 /** Map of surrent system statuses */
 const systemStatuses: { [key: string]: StatusObjectInternal } = {}
-function setStatus(statusObj: StatusResponse): StatusCode {
+function setStatus(statusObj: StatusResponse | Component): StatusCode {
 	let s: StatusCode = statusObj._status
 
 	if (statusObj.checks) {
@@ -282,8 +293,8 @@ function setStatus(statusObj: StatusResponse): StatusCode {
 		})
 	}
 	if (statusObj.components) {
-		_.each(statusObj.components, (component: StatusResponse) => {
-			let s2: StatusCode = setStatus(component)
+		_.each(statusObj.components, (component: Component) => {
+			const s2: StatusCode = setStatus(component)
 			if (s2 > s) s = s2
 		})
 	}
@@ -291,8 +302,8 @@ function setStatus(statusObj: StatusResponse): StatusCode {
 	statusObj._status = s
 	return s
 }
-function collectMesages(statusObj: StatusResponse): Array<string> {
-	let allMessages: Array<string> = []
+function collectMesages(statusObj: StatusResponse | Component): Array<string> {
+	const allMessages: Array<string> = []
 
 	if (statusObj._internal) {
 		_.each(statusObj._internal.messages, (msg) => {
@@ -309,8 +320,8 @@ function collectMesages(statusObj: StatusResponse): Array<string> {
 		})
 	}
 	if (statusObj.components) {
-		_.each(statusObj.components, (component: StatusResponse) => {
-			let messages = collectMesages(component)
+		_.each(statusObj.components, (component: Component) => {
+			const messages = collectMesages(component)
 
 			_.each(messages, (msg) => {
 				allMessages.push(`${component.name}: ${msg}`)

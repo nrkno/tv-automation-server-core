@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { TransformedCollection, MongoQuery, MongoModifier, FindOptions } from './typings/meteor'
+import { MongoQuery, MongoModifier, FindOptions } from './typings/meteor'
 import { logger } from './logging'
 import { Timecode } from 'timecode'
 import { Settings } from './Settings'
@@ -10,6 +10,7 @@ import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-i
 import * as crypto from 'crypto'
 import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { ITranslatableMessage } from './api/TranslatableMessage'
+import { AsyncTransformedCollection } from './collections/lib'
 
 const cloneOrg = require('fast-clone')
 
@@ -119,6 +120,8 @@ const systemTime = {
 }
 /**
  * Returns the current (synced) time
+ * The synced time differs from Date.now() in that it uses a time synced with the Sofie server,
+ * so it is unaffected of whether the client has a well-synced computer time or not.
  * @return {Time}
  */
 export function getCurrentTime(): Time {
@@ -182,9 +185,9 @@ export function formatDurationAsTimecode(duration: Time) {
  * @param time
  */
 export function formatDateTime(time: Time) {
-	let d = new Date(time)
+	const d = new Date(time)
 
-	let yyyy: any = d.getFullYear()
+	const yyyy: any = d.getFullYear()
 	let mm: any = d.getMonth() + 1
 	let dd: any = d.getDate()
 
@@ -205,7 +208,7 @@ export function formatDateTime(time: Time) {
  * @param obj
  */
 export function removeNullyProperties<T>(obj: T): T {
-	iterateDeeply(obj, (val, key) => {
+	iterateDeeply(obj, (val, _key) => {
 		if (_.isArray(val)) {
 			return iterateDeeplyEnum.CONTINUE
 		} else if (_.isObject(val)) {
@@ -222,7 +225,7 @@ export function removeNullyProperties<T>(obj: T): T {
 	return obj
 }
 export function objectPathGet(obj: any, path: string, defaultValue?: any) {
-	let v = objectPath.get(obj, path)
+	const v = objectPath.get(obj, path)
 	if (v === undefined && defaultValue !== undefined) return defaultValue
 	return v
 }
@@ -244,7 +247,7 @@ export function stringifyObjects(objs: any): string {
 	} else if (_.isFunction(objs)) {
 		return ''
 	} else if (_.isObject(objs)) {
-		let keys = _.sortBy(_.keys(objs), (k) => k)
+		const keys = _.sortBy(_.keys(objs), (k) => k)
 
 		return _.compact(
 			_.map(keys, (key) => {
@@ -259,8 +262,8 @@ export function stringifyObjects(objs: any): string {
 		return objs + ''
 	}
 }
-export const Collections: { [name: string]: TransformedCollection<any, any> } = {}
-export function registerCollection(name: string, collection: TransformedCollection<any, any>) {
+export const Collections: { [name: string]: AsyncTransformedCollection<any, any> } = {}
+export function registerCollection(name: string, collection: AsyncTransformedCollection<any, any>) {
 	Collections[name] = collection
 }
 // export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
@@ -269,9 +272,9 @@ export function registerCollection(name: string, collection: TransformedCollecti
 // 		raw.indexes(cb) // TODO - invalid
 // 	}
 // )
-export const getCollectionStats: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
-	function getCollectionStats(collection: TransformedCollection<any, any>, cb) {
-		let raw = collection.rawCollection()
+export const getCollectionStats: (collection: AsyncTransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
+	function getCollectionStats(collection: AsyncTransformedCollection<any, any>, cb) {
+		const raw = collection.rawCollection()
 		raw.stats(cb)
 	}
 )
@@ -406,20 +409,20 @@ export function lazyIgnore(name: string, f1: () => void, t: number): void {
 export function escapeHtml(text: string): string {
 	// Escape strings, so they are XML-compatible:
 
-	let map = {
+	const map = {
 		'&': '&amp;',
 		'<': '&lt;',
 		'>': '&gt;',
 		'"': '&quot;',
 		"'": '&#039;',
 	}
-	let nbsp = String.fromCharCode(160) // non-breaking space (160)
+	const nbsp = String.fromCharCode(160) // non-breaking space (160)
 	map[nbsp] = ' ' // regular space
 
 	const textLength = text.length
 	let outText = ''
 	for (let i = 0; i < textLength; i++) {
-		let c = text[i]
+		const c = text[i]
 		if (map[c]) {
 			outText += map[c]
 		} else {
@@ -449,21 +452,11 @@ export function toc(name: string = 'default', logStr?: string | Promise<any>[]) 
 				})
 		})
 	} else {
-		let t: number = Date.now() - ticCache[name]
+		const t: number = Date.now() - ticCache[name]
 		if (logStr) logger.info('toc: ' + name + ': ' + logStr + ': ' + t)
 		return t
 	}
 }
-
-/**
- * Supresses the "UnhandledPromiseRejectionWarning" warning
- * ref: https://stackoverflow.com/questions/40920179/should-i-refrain-from-handling-promise-rejection-asynchronously
- *
- * creds: https://github.com/rsp/node-caught/blob/master/index.js
- */
-export const caught: <T>(v: Promise<T>) => Promise<T> = ((f) => (p) => (p.catch(f), p))(() => {
-	// nothing
-})
 
 /**
  * Blocks the fiber until all the Promises have resolved
@@ -551,11 +544,11 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 		if (!ok) return
 
 		try {
-			let keyWords = key.split('.')
+			const keyWords = key.split('.')
 			if (keyWords.length > 1) {
-				let oAttr = o[keyWords[0]]
+				const oAttr = o[keyWords[0]]
 				if (_.isObject(oAttr) || oAttr === undefined) {
-					let innerSelector: any = {}
+					const innerSelector: any = {}
 					innerSelector[keyWords.slice(1).join('.')] = s
 					ok = mongoWhere(oAttr || {}, innerSelector)
 				} else {
@@ -572,7 +565,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 					throw new Error('An $or filter must be an array')
 				}
 			} else {
-				let oAttr = o[key]
+				const oAttr = o[key]
 
 				if (_.isObject(s)) {
 					if (_.has(s, '$gt')) {
@@ -594,7 +587,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 					} else if (_.has(s, '$exists')) {
 						ok = (o[key] !== undefined) === !!s.$exists
 					} else if (_.has(s, '$not')) {
-						let innerSelector: any = {}
+						const innerSelector: any = {}
 						innerSelector[key] = s.$not
 						ok = !mongoWhere(o, innerSelector)
 					} else {
@@ -605,7 +598,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 						}
 					}
 				} else {
-					let innerSelector: any = {}
+					const innerSelector: any = {}
 					innerSelector[key] = { $eq: s }
 					ok = mongoWhere(o, innerSelector)
 				}
@@ -623,18 +616,19 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 ): Class[] {
 	let docs = [...docs0] // Shallow clone it
 	if (options) {
-		if (options.sort) {
+		const sortOptions = options.sort
+		if (sortOptions) {
 			// Underscore doesnt support desc order, or multiple fields, so we have to do it manually
-			const keys = _.keys(options.sort).filter((k) => options.sort)
+			const keys = Object.keys(sortOptions).filter((k) => sortOptions[k])
 			const doSort = (a: any, b: any, i: number): number => {
 				if (i >= keys.length) return 0
 
 				const key = keys[i]
-				const order = options!.sort![key]
+				const order = sortOptions[key]
 
 				// Get the values, and handle asc vs desc
-				const val1 = objectPath.get(order! > 0 ? a : b, key)
-				const val2 = objectPath.get(order! > 0 ? b : a, key)
+				const val1 = objectPath.get(order > 0 ? a : b, key)
+				const val2 = objectPath.get(order > 0 ? b : a, key)
 
 				if (_.isEqual(val1, val2)) {
 					return doSort(a, b, i + 1)
@@ -659,9 +653,9 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 
 		if (options.fields !== undefined) {
 			const idVal = options.fields['_id']
-			const includeKeys = (_.keys(options.fields).filter(
+			const includeKeys = _.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] !== 0
-			) as any) as (keyof DBInterface)[]
+			) as any as (keyof DBInterface)[]
 			const excludeKeys: string[] = _.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] === 0
 			)
@@ -694,7 +688,7 @@ export function mongoModify<DBInterface extends { _id: ProtectedString<any> }>(
 	modifier: MongoModifier<DBInterface>
 ): DBInterface {
 	let replace = false
-	_.each(modifier, (value: any, key: string) => {
+	for (const [key, value] of Object.entries(modifier)) {
 		if (key === '$set') {
 			_.each(value, (value: any, key: string) => {
 				setOntoPath(doc, key, selector, value)
@@ -722,7 +716,7 @@ export function mongoModify<DBInterface extends { _id: ProtectedString<any> }>(
 				replace = true
 			}
 		}
-	})
+	}
 	if (replace) {
 		const newDoc = modifier as any
 		if (!newDoc._id) newDoc._id = doc._id
@@ -746,10 +740,10 @@ export function mutatePath<T>(
 ): void {
 	if (!path) throw new Meteor.Error(500, 'parameter path missing')
 
-	let attrs = path.split('.')
+	const attrs = path.split('.')
 
-	let lastAttr = _.last(attrs)
-	let attrsExceptLast = attrs.slice(0, -1)
+	const lastAttr = _.last(attrs)
+	const attrsExceptLast = attrs.slice(0, -1)
 
 	const generateWildcardAttrInfo = () => {
 		const keys = _.filter(_.keys(substitutions), (k) => k.indexOf(currentPath) === 0)
@@ -837,7 +831,7 @@ export function mutatePath<T>(
  * @param valueToPush Value to push onto array
  */
 export function pushOntoPath<T>(obj: Object, path: string, valueToPush: T) {
-	let mutator = (o: Object, lastAttr: string) => {
+	const mutator = (o: Object, lastAttr: string) => {
 		if (!_.has(o, lastAttr)) {
 			o[lastAttr] = []
 		} else {
@@ -847,7 +841,7 @@ export function pushOntoPath<T>(obj: Object, path: string, valueToPush: T) {
 					'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")'
 				)
 		}
-		let arr = o[lastAttr]
+		const arr = o[lastAttr]
 
 		arr.push(valueToPush)
 		return arr
@@ -861,7 +855,7 @@ export function pushOntoPath<T>(obj: Object, path: string, valueToPush: T) {
  * @param valueToPush Value to push onto array
  */
 export function pullFromPath<T>(obj: Object, path: string, matchValue: T) {
-	let mutator = (o: Object, lastAttr: string) => {
+	const mutator = (o: Object, lastAttr: string) => {
 		if (_.has(o, lastAttr)) {
 			if (!_.isArray(o[lastAttr]))
 				throw new Meteor.Error(
@@ -986,24 +980,24 @@ export function protectString<T extends ProtectedString<any>>(str: string): T
 export function protectString<T extends ProtectedString<any>>(str: string | null): T | null
 export function protectString<T extends ProtectedString<any>>(str: string | undefined): T | undefined
 export function protectString<T extends ProtectedString<any>>(str: string | undefined | null): T | undefined | null {
-	return (str as any) as T
+	return str as any as T
 }
 export function protectStringArray<T extends ProtectedString<any>>(arr: string[]): T[] {
-	return (arr as any) as T[]
+	return arr as any as T[]
 }
 export function protectStringObject<O extends object, Props extends keyof O>(
 	obj: O
 ): ProtectedStringProperties<O, Props> {
-	return (obj as any) as ProtectedStringProperties<O, Props>
+	return obj as any as ProtectedStringProperties<O, Props>
 }
 export function unprotectString(protectedStr: ProtectedString<any>): string
 export function unprotectString(protectedStr: ProtectedString<any> | null): string | null
 export function unprotectString(protectedStr: ProtectedString<any> | undefined): string | undefined
 export function unprotectString(protectedStr: ProtectedString<any> | undefined | null): string | undefined | null {
-	return (protectedStr as any) as string
+	return protectedStr as any as string
 }
 export function unprotectStringArray(protectedStrs: Array<ProtectedString<any>>): string[] {
-	return (protectedStrs as any) as string[]
+	return protectedStrs as any as string[]
 }
 export function unDeepString<T extends ProtectedString<any>>(str: ReadonlyDeep<T> | PartialDeep<T>): T {
 	return str as T
@@ -1062,7 +1056,7 @@ export function assertNever(_never: never): void {
 export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 	if (a === b) return true
 	if (a.size !== b.size) return false
-	for (let val of a.values()) {
+	for (const val of a.values()) {
 		if (!b.has(val)) return false
 	}
 	return true

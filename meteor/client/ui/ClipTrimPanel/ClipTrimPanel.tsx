@@ -81,7 +81,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 			}
 		}
 
-		static getDerivedStateFromProps(props: Translated<IProps> & ITrackedProps, state: IState) {
+		static getDerivedStateFromProps(props: Translated<IProps> & ITrackedProps, _prevState: IState) {
 			return {
 				inPoint: (props.inPoint * Settings.frameRate) / 1000,
 				duration: (props.duration * Settings.frameRate) / 1000,

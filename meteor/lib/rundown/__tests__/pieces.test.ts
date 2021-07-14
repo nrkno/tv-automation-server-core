@@ -49,7 +49,7 @@ describe('Pieces', () => {
 			partInstanceId: 'randomId9002',
 			priority: 123,
 		}
-		const partGroup = ({ id: getRandomId() } as any) as TimelineObjRundown
+		const partGroup = { id: getRandomId() } as any as TimelineObjRundown
 
 		test('Basic piece', () => {
 			const res = createPieceGroupAndCap(simplePieceInstance)

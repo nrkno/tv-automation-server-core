@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, Studio, StudioId } from '../../lib/collections/Studios'
+import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, StudioId } from '../../lib/collections/Studios'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
@@ -13,7 +13,7 @@ import { FindOptions, MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
-import { ExpectedPackageDB, ExpectedPackageDBBase, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDBBase, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
@@ -40,7 +40,7 @@ meteorPublish(PubSub.studios, function (selector0, token) {
 })
 meteorPublish(PubSub.studioOfDevice, function (deviceId: PeripheralDeviceId, token) {
 	if (PeripheralDeviceReadAccess.peripheralDevice({ _id: deviceId }, { userId: this.userId, token })) {
-		let peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -134,7 +134,7 @@ meteorCustomPublishArray(
 		if (
 			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
 		) {
-			let peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 

@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { getCurrentTime, getRandomId, makePromise, waitForPromise } from '../../../lib/lib'
+import { getCurrentTime, getRandomId, makePromise } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownEventContext } from '../blueprints/context'
 import { setNextPart, onPartHasStoppedPlaying, selectNextPart, LOW_PRIO_DEFER_TIME, resetRundownPlaylist } from './lib'
@@ -92,28 +92,28 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 		}
 	}
 
-	updateTimeline(cache)
+	await updateTimeline(cache)
 
-	cache.defer((cache) => {
+	cache.defer(async (cache) => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
-		const { blueprint } = loadShowStyleBlueprint(showStyle)
+		const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
+		const { blueprint } = await loadShowStyleBlueprint(showStyle)
 		const context = new RundownEventContext(cache.Studio.doc, showStyle, rundown)
-		context.wipeCache()
+		await context.wipeCache()
 		if (blueprint.onRundownActivate) {
 			Promise.resolve(blueprint.onRundownActivate(context)).catch(logger.error)
 		}
 	})
 }
-export function deactivateRundownPlaylist(cache: CacheForPlayout): void {
+export async function deactivateRundownPlaylist(cache: CacheForPlayout): Promise<void> {
 	const rundown = deactivateRundownPlaylistInner(cache)
 
-	updateStudioTimeline(cache)
+	await updateStudioTimeline(cache)
 
-	cache.defer((cache) => {
+	cache.defer(async (cache) => {
 		if (rundown) {
-			const showStyle = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
-			const { blueprint } = loadShowStyleBlueprint(showStyle)
+			const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
+			const { blueprint } = await loadShowStyleBlueprint(showStyle)
 			if (blueprint.onRundownDeActivate) {
 				Promise.resolve(
 					blueprint.onRundownDeActivate(new RundownEventContext(cache.Studio.doc, showStyle, rundown))

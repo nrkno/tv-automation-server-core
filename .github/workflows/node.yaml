@@ -338,16 +338,10 @@ jobs:
           CI: true
 
   typedoc-libs:
-    name: Publish Libs Typedoc
+    name: Generate Libs Typedoc
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
-
-    # only run for release tags
-    # TODO - we should only do this if the latest release
-    if: contains(github.ref, 'refs/tags/')
-
-    needs: release-libs
 
     steps:
       - uses: actions/checkout@v2
@@ -359,15 +353,19 @@ jobs:
         run: |
           cd packages 
           yarn install
+          yarn build
         env:
           CI: true
-      - name: Run typecheck and linter
+      - name: Run typedoc
         run: |
           cd packages
           yarn docs
         env:
           CI: true
       - name: Publish
+        # only run for release tags
+        # TODO - we should only do this if the latest release
+        if: contains(github.ref, 'refs/tags/')
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

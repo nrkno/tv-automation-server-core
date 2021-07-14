@@ -1,13 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection, MongoQuery, FindOptions } from '../typings/meteor'
+import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
 import {
 	Time,
 	applyClassToDocument,
 	registerCollection,
 	normalizeArray,
-	getCurrentTime,
 	normalizeArrayFunc,
 	ProtectedString,
 	unprotectString,
@@ -141,7 +140,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public trackedAbSessions?: ABSessionInfo[]
 
 	constructor(document: DBRundownPlaylist) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}
@@ -191,18 +190,10 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			},
 		}).map((i) => i._id)
 	}
-	touch() {
-		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-		if (getCurrentTime() - this.modified > 3600 * 1000) {
-			const m = getCurrentTime()
-			this.modified = m
-			RundownPlaylists.update(this._id, { $set: { modified: m } })
-		}
-	}
 	/** Return the studio for this RundownPlaylist */
 	getStudio(): Studio {
 		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-		let studio = Studios.findOne(this.studioId)
+		const studio = Studios.findOne(this.studioId)
 		if (studio) {
 			return studio
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
@@ -477,10 +468,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 }
 
-export const RundownPlaylists: TransformedCollection<
-	RundownPlaylist,
-	DBRundownPlaylist
-> = createMongoCollection<RundownPlaylist>('rundownPlaylists', {
+export const RundownPlaylists = createMongoCollection<RundownPlaylist, DBRundownPlaylist>('rundownPlaylists', {
 	transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
 })
 registerCollection('RundownPlaylists', RundownPlaylists)

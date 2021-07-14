@@ -1,5 +1,5 @@
 import '../../../../__mocks__/_extendJest'
-import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
@@ -13,11 +13,9 @@ import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { protectString, waitForPromise } from '../../../../lib/lib'
+import { protectString } from '../../../../lib/lib'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
-
-// const Timeline = mockupCollection(OrgTimeline)
 
 describe('Playout Actions', () => {
 	let env: DefaultEnvironment
@@ -26,12 +24,9 @@ describe('Playout Actions', () => {
 	function getPeripheralDeviceCommands(device: PeripheralDevice) {
 		return PeripheralDeviceCommands.find({ deviceId: device._id }, { sort: { time: 1 } }).fetch()
 	}
-	function clearPeripheralDeviceCommands(device: PeripheralDevice) {
-		return PeripheralDeviceCommands.remove({ deviceId: device._id })
-	}
 
-	beforeEachInFiber(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 
 		playoutDevice = setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -40,12 +35,10 @@ describe('Playout Actions', () => {
 			env.studio
 		)
 
-		waitForPromise(
-			removeRundownsFromDb(
-				Rundowns.find()
-					.fetch()
-					.map((r) => r._id)
-			)
+		await removeRundownsFromDb(
+			Rundowns.find()
+				.fetch()
+				.map((r) => r._id)
 		)
 	})
 	testInFiber('activateRundown', () => {

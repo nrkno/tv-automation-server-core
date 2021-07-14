@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import {
@@ -23,8 +22,8 @@ describe('updatePartInstanceRanks', () => {
 	let rundownId!: RundownId
 	let segmentId!: SegmentId
 
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 
 		// Set up a playlist:
 		const info = setupDefaultRundownPlaylist(env, protectString('rundown00'))

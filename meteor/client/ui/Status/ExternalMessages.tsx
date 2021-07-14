@@ -4,7 +4,6 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { getCurrentTime, Time, unprotectString } from '../../../lib/lib'
 import { MomentFromNow } from '../../lib/Moment'
 import { getAllowConfigure } from '../../lib/localStorage'
-import { ClientAPI } from '../../../lib/api/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
@@ -30,7 +29,7 @@ const ExternalMessages = translateWithTracker<
 	IExternalMessagesProps,
 	IExternalMessagesState,
 	IExternalMessagesTrackedProps
->((props: IExternalMessagesProps) => {
+>((_props: IExternalMessagesProps) => {
 	return {
 		studios: Studios.find({}).fetch(),
 	}
@@ -151,7 +150,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 			this.updateSubscription()
 		}
 		updateSubscription() {
-			let h = this.state.dateFrom + '_' + this.state.dateTo
+			const h = this.state.dateFrom + '_' + this.state.dateTo
 			if (h !== this._currentsub) {
 				this._currentsub = h
 				if (this._sub) {
@@ -182,7 +181,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 			MeteorCall.externalMessages.retry(msg._id).catch(console.error)
 		}
 		renderMessageRow(msg: ExternalMessageQueueObj) {
-			let classes: string[] = ['message-row']
+			const classes: string[] = ['message-row']
 			let info: JSX.Element | null = null
 			if (msg.sent) {
 				classes.push('sent')
@@ -244,13 +243,13 @@ const ExternalMessagesInStudio = translateWithTracker<
 					<td className="c2">
 						{getAllowConfigure() ? (
 							<React.Fragment>
-								<button className="action-btn" onClick={(e) => this.removeMessage(msg)}>
+								<button className="action-btn" onClick={() => this.removeMessage(msg)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
-								<button className="action-btn" onClick={(e) => this.toggleHoldMessage(msg)}>
+								<button className="action-btn" onClick={() => this.toggleHoldMessage(msg)}>
 									{msg.hold ? <FontAwesomeIcon icon={faPlay} /> : <FontAwesomeIcon icon={faPause} />}
 								</button>
-								<button className="action-btn" onClick={(e) => this.retryMessage(msg)}>
+								<button className="action-btn" onClick={() => this.retryMessage(msg)}>
 									<FontAwesomeIcon icon={faRedo} />
 								</button>
 								<br />

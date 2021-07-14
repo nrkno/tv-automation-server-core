@@ -9,31 +9,19 @@ import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
-import { FindOptions, UserId } from '../../lib/typings/meteor'
+import { FindOptions } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
-import {
-	getActiveRoutes,
-	getRoutedMappings,
-	MappingExt,
-	MappingsExt,
-	MappingsExtWithPackage,
-	routeExpectedPackages,
-	Studio,
-	StudioId,
-	StudioPackageContainer,
-	Studios,
-} from '../../lib/collections/Studios'
+import { MappingsExtWithPackage, routeExpectedPackages, Studio, StudioId, Studios } from '../../lib/collections/Studios'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import {
 	ExpectedPackageDB,
-	ExpectedPackageId,
 	ExpectedPackages,
 	getPreviewPackageSettings,
 	getThumbnailPackageSettings,
 } from '../../lib/collections/ExpectedPackages'
-import _, { map } from 'underscore'
+import _ from 'underscore'
 import {
 	ExpectedPackage,
 	PackageContainer,
@@ -41,11 +29,9 @@ import {
 	PackageContainerOnPackage,
 	AccessorOnPackage,
 } from '@sofie-automation/blueprints-integration'
-import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { clone, DBObj, literal, omit, protectString, unprotectObject, unprotectString } from '../../lib/lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import deepExtend from 'deep-extend'
 import { logger } from '../logging'
 import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedPackages'
@@ -145,7 +131,7 @@ meteorCustomPublishArray(
 		if (
 			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
 		) {
-			let peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -543,9 +529,10 @@ function generateExpectedPackages(
 						// Todo: should the be any combination of properties here?
 						combinedTargets.push({
 							...omit(clone(lookedUpTarget.container), 'accessors'),
-							accessors: lookedUpTarget.container.accessors as {
-								[accessorId: string]: AccessorOnPackage.Any
-							},
+							accessors:
+								(lookedUpTarget.container.accessors as {
+									[accessorId: string]: AccessorOnPackage.Any
+								}) || {},
 							containerId: packageContainerId,
 						})
 					}

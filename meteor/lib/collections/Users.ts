@@ -1,9 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, unprotectString } from '../lib'
 import { OrganizationId, UserRoles, Organizations, Organization } from './Organization'
 import { registerIndex } from '../database'
+import { wrapMongoCollection } from './lib'
 
 /** A string, identifying a User */
 export type UserId = ProtectedString<'UserId'>
@@ -37,7 +36,7 @@ export interface DBUser {
 export type User = DBUser // to be replaced by a class somet ime later?
 
 // This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
-export const Users: TransformedCollection<User, DBUser> = Meteor.users as any
+export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, 'users')
 registerCollection('Users', Users)
 
 registerIndex(Users, {

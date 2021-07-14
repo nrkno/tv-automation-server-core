@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { ExpectedPackageDBType, ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -9,7 +8,7 @@ import { runIngestOperationWithCache } from './lockFunction'
 import { Meteor } from 'meteor/meteor'
 import { regenerateSegmentsFromIngestData } from './generation'
 
-export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageInfoDB | null) {
+export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null) {
 	logger.info(`PackageInfo updated "${packageId}"`)
 
 	const pkg = ExpectedPackages.findOne(packageId)
@@ -18,40 +17,44 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, doc: PackageI
 		return
 	}
 
-	switch (pkg.fromPieceType) {
-		case ExpectedPackageDBType.PIECE:
-		case ExpectedPackageDBType.ADLIB_ACTION:
-		case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
-		case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
-			const existingEntry = pendingPackageUpdates.get(pkg.rundownId)
-			if (existingEntry) {
-				// already queued, add to the batch
-				existingEntry.push(pkg._id)
-			} else {
-				pendingPackageUpdates.set(pkg.rundownId, [pkg._id])
-			}
+	if (pkg.listenToPackageInfoUpdates) {
+		switch (pkg.fromPieceType) {
+			case ExpectedPackageDBType.PIECE:
+			case ExpectedPackageDBType.ADLIB_PIECE:
+			case ExpectedPackageDBType.ADLIB_ACTION:
+			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
+			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
+			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
+				const existingEntry = pendingPackageUpdates.get(pkg.rundownId)
+				if (existingEntry) {
+					// already queued, add to the batch
+					existingEntry.push(pkg._id)
+				} else {
+					pendingPackageUpdates.set(pkg.rundownId, [pkg._id])
+				}
 
-			lazyIgnore(
-				`onUpdatedPackageInfoForRundown${pkg.rundownId}`,
-				() => {
-					const packageIds = pendingPackageUpdates.get(pkg.rundownId)
-					if (packageIds) {
-						pendingPackageUpdates.delete(pkg.rundownId)
-						onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds)
-					}
-				},
-				1000
-			)
-			break
+				lazyIgnore(
+					`onUpdatedPackageInfoForRundown_${pkg.rundownId}`,
+					() => {
+						const packageIds = pendingPackageUpdates.get(pkg.rundownId)
+						if (packageIds) {
+							pendingPackageUpdates.delete(pkg.rundownId)
+							onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds)
+						}
+					},
+					1000
+				)
+				break
+			}
+			case ExpectedPackageDBType.BUCKET_ADLIB:
+			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
+			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
+				// Ignore, as we can't handle that for now
+				break
+			default:
+				assertNever(pkg)
+				break
 		}
-		case ExpectedPackageDBType.BUCKET_ADLIB:
-		case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
-		case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
-			// Ignore, as we can't handle that for now
-			break
-		default:
-			assertNever(pkg)
-			break
 	}
 }
 
@@ -70,10 +73,6 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 		return
 	}
 
-	// TODO - can we avoid loading the cache for package info we know doesnt affect anything?
-
-	// TODO - what if type was BASELINE_ADLIB_ACTION?
-
 	return runIngestOperationWithCache(
 		'onUpdatedPackageInfoForRundown',
 		tmpRundown.studioId,
@@ -89,27 +88,22 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 
 			/** All segments that need updating */
 			const segmentsToUpdate = new Set<SegmentId>()
+			let regenerateRundownBaseline = false
 
 			for (const packageId of packageIds) {
 				const pkg = cache.ExpectedPackages.findOne(packageId)
-				if (pkg && pkg.fromPieceType === ExpectedPackageDBType.PIECE) {
-					const piece = cache.Pieces.findOne(pkg.pieceId)
-					if (piece) {
-						const segmentId = piece.startSegmentId
-
-						const listeningPieces = cache.Pieces.findFetch(
-							(p) =>
-								p.startSegmentId === segmentId &&
-								p.listenToPackageInfoUpdates &&
-								p.listenToPackageInfoUpdates.find((u) => u.packageId === pkg.blueprintPackageId)
-						)
-						if (listeningPieces.length > 0) {
-							segmentsToUpdate.add(segmentId)
-						}
-					} else {
-						logger.warn(
-							`onUpdatedPackageInfoForRundown: Missing raw piece: "${pkg.pieceId}" for package "${packageId}"`
-						)
+				if (pkg) {
+					if (
+						pkg.fromPieceType === ExpectedPackageDBType.PIECE ||
+						pkg.fromPieceType === ExpectedPackageDBType.ADLIB_PIECE
+					) {
+						segmentsToUpdate.add(pkg.segmentId)
+					} else if (
+						pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||
+						pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_PIECE ||
+						pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
+					) {
+						regenerateRundownBaseline = true
 					}
 				} else {
 					logger.warn(`onUpdatedPackageInfoForRundown: Missing package: "${packageId}"`)
@@ -121,6 +115,11 @@ function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<
 					', '
 				)}" will trigger update of segments: ${Array.from(segmentsToUpdate).join(', ')}`
 			)
+
+			if (regenerateRundownBaseline) {
+				// trigger a re-generation of the rundown baseline
+				// TODO - to be implemented.
+			}
 
 			const { result, skippedSegments } = await regenerateSegmentsFromIngestData(
 				cache,

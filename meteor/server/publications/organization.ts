@@ -1,5 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'

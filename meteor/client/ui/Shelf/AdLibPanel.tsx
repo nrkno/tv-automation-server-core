@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import * as mousetrap from 'mousetrap'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { withTranslation } from 'react-i18next'
+import { useTranslation, withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
@@ -64,6 +64,7 @@ import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../R
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
+import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -213,11 +214,11 @@ const AdLibListView = withTranslation()(
 			}
 		}
 
-		static getDerivedStateFromProps(props: IListViewPropsHeader, state) {
-			let tOLayers: {
+		static getDerivedStateFromProps(props: IListViewPropsHeader) {
+			const tOLayers: {
 				[key: string]: IOutputLayer
 			} = {}
-			let tSLayers: {
+			const tSLayers: {
 				[key: string]: ISourceLayer
 			} = {}
 
@@ -262,8 +263,6 @@ const AdLibListView = withTranslation()(
 		}
 
 		renderRundownAdLibs(uniquenessIds: Set<string>) {
-			const { t } = this.props
-
 			return (
 				<tbody className="adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline">
 					{this.props.rundownAdLibs &&
@@ -363,7 +362,6 @@ const AdLibListView = withTranslation()(
 		}
 
 		render() {
-			const selected = this.props.selectedPiece
 			const uniquenessIds = new Set<string>()
 
 			return (
@@ -389,81 +387,61 @@ const AdLibListView = withTranslation()(
 interface IToolbarPropsHeader {
 	onFilterChange?: (newFilter: string | undefined) => void
 	noSegments?: boolean
+	searchFilter: string | undefined
 }
 
-interface IToolbarStateHader {
-	searchInputValue: string
-}
+export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
+	const { t } = useTranslation()
 
-export const AdLibPanelToolbar = withTranslation()(
-	class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
-		constructor(props: Translated<IToolbarPropsHeader>) {
-			super(props)
+	function searchInputChanged(e?: React.ChangeEvent<HTMLInputElement>) {
+		const newValue = e?.target.value || ''
+		props.onFilterChange && typeof props.onFilterChange === 'function' && props.onFilterChange(newValue)
+	}
 
-			this.state = {
-				searchInputValue: '',
-			}
-		}
-
-		searchInputChanged = (e?: React.ChangeEvent<HTMLInputElement>) => {
-			const newValue = e?.target.value || ''
-			this.setState({
-				searchInputValue: newValue,
-			})
-
-			this.props.onFilterChange &&
-				typeof this.props.onFilterChange === 'function' &&
-				this.props.onFilterChange(newValue)
-		}
-
-		searchInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-			if (e.key === 'Escape' || e.key === 'Enter') {
-				document.querySelector('button')?.focus()
-			} else if (e.key.match(/^F\d+$/)) {
-				e.preventDefault()
-			}
-		}
-
-		clearSearchInput = () => {
-			this.searchInputChanged()
-		}
-
-		render() {
-			const { t } = this.props
-			return (
-				<div
-					className={ClassNames('adlib-panel__list-view__toolbar', {
-						'adlib-panel__list-view__toolbar--no-segments': this.props.noSegments,
-					})}
-				>
-					<div className="adlib-panel__list-view__toolbar__filter">
-						<input
-							className="adlib-panel__list-view__toolbar__filter__input"
-							type="text"
-							placeholder={t('Search...')}
-							onChange={this.searchInputChanged}
-							onKeyDown={this.searchInputKeyDown}
-							value={this.state.searchInputValue}
-						/>
-						{this.state.searchInputValue !== '' && (
-							<div className="adlib-panel__list-view__toolbar__filter__clear" onClick={this.clearSearchInput}>
-								<FontAwesomeIcon icon={faTimes} />
-							</div>
-						)}
-					</div>
-					<div className="adlib-panel__list-view__toolbar__buttons" style={{ display: 'none' }}>
-						<button className="action-btn">
-							<FontAwesomeIcon icon={faList} />
-						</button>
-						<button className="action-btn">
-							<FontAwesomeIcon icon={faTh} />
-						</button>
-					</div>
-				</div>
-			)
+	function searchInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+		if (e.key === 'Escape' || e.key === 'Enter') {
+			document.querySelector('button')?.focus()
+		} else if (e.key.match(/^F\d+$/)) {
+			e.preventDefault()
 		}
 	}
-)
+
+	function clearSearchInput() {
+		searchInputChanged()
+	}
+
+	return (
+		<div
+			className={ClassNames('adlib-panel__list-view__toolbar', {
+				'adlib-panel__list-view__toolbar--no-segments': props.noSegments,
+			})}
+		>
+			<div className="adlib-panel__list-view__toolbar__filter">
+				<input
+					className="adlib-panel__list-view__toolbar__filter__input"
+					type="text"
+					placeholder={t('Search...')}
+					onChange={searchInputChanged}
+					onKeyDown={searchInputKeyDown}
+					value={props.searchFilter || ''}
+				/>
+				{props.searchFilter !== '' && (
+					<div className="adlib-panel__list-view__toolbar__filter__clear" onClick={clearSearchInput}>
+						<FontAwesomeIcon icon={faTimes} />
+					</div>
+				)}
+			</div>
+			<div className="adlib-panel__list-view__toolbar__buttons" style={{ display: 'none' }}>
+				<button className="action-btn">
+					<FontAwesomeIcon icon={faList} />
+				</button>
+				<button className="action-btn">
+					<FontAwesomeIcon icon={faTh} />
+				</button>
+			</div>
+		</div>
+	)
+}
 
 export interface AdLibPieceUi extends AdLibPiece {
 	hotkey?: string
@@ -565,13 +543,11 @@ function actionToAdLibPieceUi(
 }
 
 export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchAndFilterProps {
-	const { t } = props
-
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
-	let sourceHotKeyUse: { [key: string]: number } = GlobalAdLibHotkeyUseMap.getAll()
+	const sourceHotKeyUse: { [key: string]: number } = GlobalAdLibHotkeyUseMap.getAll()
 
 	if (!props.playlist || !props.showStyleBase) {
 		return {
@@ -737,10 +713,10 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	if (liveSegment) {
 		liveSegment.pieces = liveSegment.pieces.map((piece) => {
-			let sourceLayer = piece.sourceLayerId && sourceLayerLookup[piece.sourceLayerId]
+			const sourceLayer = piece.sourceLayerId && sourceLayerLookup[piece.sourceLayerId]
 
 			if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
-				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+				const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 				const sourceHotKeyUseLayerId =
 					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || piece.sourceLayerId
 				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
@@ -796,7 +772,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					sourceLayers: ISourceLayer[],
 					sourceHotKeyUse: { [key: string]: number }
 				) => {
-					let rundownAdLibItems: RundownBaselineAdLibItem[] = RundownBaselineAdLibPieces.find(
+					const rundownAdLibItems: RundownBaselineAdLibItem[] = RundownBaselineAdLibPieces.find(
 						{
 							rundownId: currentRundownId,
 						},
@@ -850,6 +826,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 						currentRundownId
 					)
 
+					const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 					rundownBaselineAdLibs = rundownBaselineAdLibs
 						.concat(globalAdLibActions)
 						.sort((a, b) => a._rank - b._rank)
@@ -858,11 +836,11 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 							const uiAdLib: AdLibPieceUi = _.clone(item)
 							uiAdLib.isGlobal = true
 
-							let sourceLayer = (uiAdLib.sourceLayer =
+							const sourceLayer = (uiAdLib.sourceLayer =
 								(item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]) || undefined)
 							uiAdLib.outputLayer = (item.outputLayerId && outputLayerLookup[item.outputLayerId]) || undefined
 							if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
-								let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+								const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 								const sourceHotKeyUseLayerId =
 									sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
 								if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
@@ -872,7 +850,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 								}
 							}
 
-							if (sourceLayer && sourceLayer.isHidden) {
+							if (sourceLayer && sourceLayer.isHidden && !showHiddenSourceLayers) {
 								uiAdLib.isHidden = true
 							}
 
@@ -1071,7 +1049,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			}
 		}
 
-		onFilterChange = (filter: string) => {
+		onFilterChange = (filter: string | undefined) => {
 			this.setState({
 				searchFilter: filter,
 			})
@@ -1124,6 +1102,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						MeteorCall.userAction.executeAction(
 							e,
 							this.props.playlist._id,
+							action._id,
 							action.actionId,
 							action.userData,
 							mode?.data
@@ -1191,7 +1170,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 									return part.timings?.startedPlayback && part.timings?.duration ? memo : false
 								}, true) === true,
 						})}
-						onClick={(e) => this.onSelectSegment(item)}
+						onClick={() => this.onSelectSegment(item)}
 						key={unprotectString(item._id)}
 						tabIndex={0}
 					>
@@ -1204,7 +1183,11 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		renderListView(withSegments?: boolean) {
 			return (
 				<React.Fragment>
-					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={!withSegments} />
+					<AdLibPanelToolbar
+						onFilterChange={this.onFilterChange}
+						noSegments={!withSegments}
+						searchFilter={this.state.searchFilter}
+					/>
 					<AdLibListView
 						uiSegments={this.props.uiSegments}
 						rundownAdLibs={this.props.rundownBaselineAdLibs}

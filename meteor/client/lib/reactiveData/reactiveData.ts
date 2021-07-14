@@ -6,7 +6,6 @@ import { StudioId } from '../../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 import { getCurrentTime } from '../../../lib/lib'
-import * as _ from 'underscore'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { FindOptions } from '../../../lib/typings/meteor'
 
@@ -159,7 +158,7 @@ export namespace reactiveData {
 
 		Tracker.autorun(() => {
 			const rundowns = Rundowns.find({ playlistId }).fetch()
-			let now = getCurrentTime()
+			const now = getCurrentTime()
 			const unsentMessages = ExternalMessageQueue.find(
 				{
 					expires: { $gt: now },

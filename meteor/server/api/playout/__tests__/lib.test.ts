@@ -17,10 +17,10 @@ class MockPart {
 	}
 
 	toPartInstance() {
-		return ({
+		return {
 			part: this,
 			segmentId: this.segmentId,
-		} as unknown) as PartInstance
+		} as unknown as PartInstance
 	}
 }
 class MockSegment {
@@ -59,8 +59,8 @@ describe('selectNextPart', () => {
 
 	function getSegmentsAndParts(): PartsAndSegments {
 		return {
-			parts: [...((defaultParts as unknown) as Part[])],
-			segments: [...((defaultSegments as unknown) as DBSegment[])],
+			parts: [...(defaultParts as unknown as Part[])],
+			segments: [...(defaultSegments as unknown as DBSegment[])],
 		}
 	}
 

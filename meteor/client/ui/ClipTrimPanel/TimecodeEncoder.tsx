@@ -81,13 +81,13 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		})
 	}
 
-	handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+	handleFocus = (_e: React.FocusEvent<HTMLInputElement>) => {
 		this.setState({
 			isEdited: true,
 		})
 	}
 
-	handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+	handleBlur = (_e: React.FocusEvent<HTMLInputElement>) => {
 		const input = this.validate()
 		if (input !== null) {
 			const valid = Timecode.init({

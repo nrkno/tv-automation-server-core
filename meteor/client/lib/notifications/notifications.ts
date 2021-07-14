@@ -89,12 +89,12 @@ export class NotifierHandle {
 	constructor(notifierId: string, source: Notifier) {
 		this.id = notifierId
 		this.source = source
-		this.handle = (Tracker.nonreactive(() => {
+		this.handle = Tracker.nonreactive(() => {
 			return Tracker.autorun(() => {
 				this.result = source().get()
 				notificationsDep.changed()
 			})
-		}) as any) as Tracker.Computation
+		}) as any as Tracker.Computation
 
 		notifiers[notifierId] = this
 	}
@@ -244,8 +244,8 @@ class NotificationCenter0 {
 
 		return _.flatten(
 			Object.values(notifiers)
-				.map((item, key) => {
-					item.result.forEach((i, itemKey) => {
+				.map((item) => {
+					item.result.forEach((i) => {
 						if (this._isOpen && !i.snoozed) i.snooze()
 						if (
 							this._isConcentrationMode &&
@@ -302,7 +302,7 @@ class NotificationCenter0 {
 		if (filters && filters.length) {
 			const matchers = filters.map((filter) => _.matches(filter))
 			n = n.filter((v, _index, _array) =>
-				_.reduce(
+				_.reduce<boolean, boolean>(
 					matchers.map((m) => m(v)),
 					(value, memo) => value || memo,
 					false

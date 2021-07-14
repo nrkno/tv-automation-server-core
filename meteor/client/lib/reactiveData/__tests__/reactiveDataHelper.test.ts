@@ -62,7 +62,7 @@ describe('client/lib/reactiveData/reactiveDataHelper', () => {
 				Tracker.autorun(() => {
 					runCount0++
 					dep0.depend()
-					let result = memoizedIsolatedAutorun(() => {
+					memoizedIsolatedAutorun(() => {
 						runCount1++
 						dep1.depend()
 						return 'result3'
@@ -85,7 +85,7 @@ describe('client/lib/reactiveData/reactiveDataHelper', () => {
 				Tracker.autorun(() => {
 					runCount0++
 					dep0.depend()
-					let result = memoizedIsolatedAutorun(() => {
+					memoizedIsolatedAutorun(() => {
 						runCount1++
 						dep1.depend()
 						return 'result4'

@@ -47,7 +47,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 						className={ClassNames('rundown-view__shelf__tabs__tab', {
 							selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.ADLIB,
 						})}
-						onClick={(e) => onSwitchTab(ShelfTabs.ADLIB)}
+						onClick={() => onSwitchTab(ShelfTabs.ADLIB)}
 						tabIndex={0}
 					>
 						{t('AdLib')}
@@ -62,7 +62,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 											(props.selectedTab || SHELF_DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`,
 									})}
 									key={panel._id}
-									onClick={(e) => onSwitchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`)}
+									onClick={() => onSwitchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`)}
 									tabIndex={0}
 								>
 									{panel.name}
@@ -73,7 +73,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 					className={ClassNames('rundown-view__shelf__tabs__tab', {
 						selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB,
 					})}
-					onClick={(e) => onSwitchTab(ShelfTabs.GLOBAL_ADLIB)}
+					onClick={() => onSwitchTab(ShelfTabs.GLOBAL_ADLIB)}
 					tabIndex={0}
 				>
 					{t('Global AdLib')}
@@ -82,7 +82,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 					className={ClassNames('rundown-view__shelf__tabs__tab', {
 						selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS,
 					})}
-					onClick={(e) => onSwitchTab(ShelfTabs.SYSTEM_HOTKEYS)}
+					onClick={() => onSwitchTab(ShelfTabs.SYSTEM_HOTKEYS)}
 					tabIndex={0}
 				>
 					{t('Shortcuts')}

@@ -2,8 +2,8 @@ import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import * as _ from 'underscore'
 import * as mousetrap from 'mousetrap'
+import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -149,7 +149,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	componentDidMount() {
-		let preventDefault = (e) => {
+		const preventDefault = (e) => {
 			e.preventDefault()
 			e.stopImmediatePropagation()
 			e.stopPropagation()
@@ -430,7 +430,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 	}
 
-	changeQueueAdLib = (shouldQueue: boolean, e: any) => {
+	changeQueueAdLib = (shouldQueue: boolean) => {
 		this.setState({
 			shouldQueue,
 		})
@@ -456,7 +456,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	render() {
-		const { t, fullViewport } = this.props
+		const { fullViewport } = this.props
 		return (
 			<div
 				className={ClassNames('rundown-view__shelf dark scroll-sink', {
@@ -504,7 +504,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									<ShelfDashboardLayout
 										playlist={this.props.playlist}
 										showStyleBase={this.props.showStyleBase}
-										buckets={this.props.buckets}
+										// buckets={this.props.buckets}
 										studioMode={this.props.studioMode}
 										rundownLayout={this.props.rundownLayout}
 										shouldQueue={this.state.shouldQueue}

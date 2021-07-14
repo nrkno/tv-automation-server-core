@@ -1,8 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import _ from 'underscore'
 
 // Release 23
 export const addSteps = addMigrationSteps('1.11.0', [
@@ -12,7 +9,7 @@ export const addSteps = addMigrationSteps('1.11.0', [
 		validate: () => {
 			const core = CoreSystem.findOne()
 			if (core) {
-				for (let [key, message] of Object.entries(core.serviceMessages)) {
+				for (const message of Object.values(core.serviceMessages)) {
 					if (typeof message.timestamp === 'string') {
 						return `Message "${message.message}" has string timestamp.`
 					}
@@ -25,7 +22,7 @@ export const addSteps = addMigrationSteps('1.11.0', [
 			const core = CoreSystem.findOne()
 			const updateObj = {}
 			if (core) {
-				for (let [key, message] of Object.entries(core.serviceMessages)) {
+				for (const [key, message] of Object.entries(core.serviceMessages)) {
 					if (typeof message.timestamp !== 'number') {
 						updateObj[`serviceMessages.${key}.timestamp`] = new Date(message.timestamp).getTime()
 					}
@@ -36,6 +33,4 @@ export const addSteps = addMigrationSteps('1.11.0', [
 			}
 		},
 	},
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.10.0'),
-	// setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.4.3'),
 ])

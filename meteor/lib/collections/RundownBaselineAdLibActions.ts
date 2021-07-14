@@ -1,5 +1,4 @@
 import { AdLibActionCommon } from './AdLibActions'
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -11,10 +10,10 @@ export interface RundownBaselineAdLibAction extends AdLibActionCommon {
 	_id: RundownBaselineAdLibActionId
 }
 
-export const RundownBaselineAdLibActions: TransformedCollection<
+export const RundownBaselineAdLibActions = createMongoCollection<
 	RundownBaselineAdLibAction,
 	RundownBaselineAdLibAction
-> = createMongoCollection<RundownBaselineAdLibAction>('rundownBaselineAdLibActions')
+>('rundownBaselineAdLibActions')
 registerCollection('RundownBaselineAdLibActions', RundownBaselineAdLibActions)
 registerIndex(RundownBaselineAdLibActions, {
 	rundownId: 1,

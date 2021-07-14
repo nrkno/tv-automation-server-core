@@ -53,6 +53,8 @@ import { PackageManagerAPI } from './packageManager'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 import { getShowStyleCompound } from './showStyles'
+import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
+import { SnapshotId } from '../../lib/collections/Snapshots'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -172,7 +174,10 @@ export function setNextSegment(
 			)
 		}
 
-		const partsInSegment = nextSegment.getParts()
+		const partsInSegment = Parts.find({
+			rundownId: nextSegment.rundownId,
+			segmentId: nextSegment._id,
+		}).fetch()
 		const firstValidPartInSegment = _.find(partsInSegment, (p) => p.isPlayable())
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
@@ -381,12 +386,12 @@ export function pieceTakeNow(
 	})
 	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
-	let showStyleBase = rundown.getShowStyleBase()
+	const showStyleBase = rundown.getShowStyleBase()
 	const sourceLayerId = pieceToCopy.sourceLayerId
 	const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-	if (sourceL && (sourceL.type !== SourceLayerType.GRAPHICS || sourceL.exclusiveGroup))
+	if (sourceL && (sourceL.type !== SourceLayerType.LOWER_THIRD || sourceL.exclusiveGroup))
 		return ClientAPI.responseError(
-			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS piece!`
+			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a LOWER_THIRD piece!`
 		)
 
 	return ClientAPI.responseSuccess(
@@ -441,11 +446,13 @@ export function pieceSetInOutPoints(
 export function executeAction(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
+	actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 	actionId: string,
 	userData: any,
 	triggerMode?: string
 ) {
 	check(rundownPlaylistId, String)
+	check(actionDocId, String)
 	check(actionId, String)
 	check(userData, Match.Any)
 	check(triggerMode, Match.Maybe(String))
@@ -459,7 +466,7 @@ export function executeAction(
 		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionId, userData, triggerMode)
+		ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionDocId, actionId, userData, triggerMode)
 	)
 }
 export function segmentAdLibPieceStart(
@@ -587,32 +594,36 @@ export function activateHold(
 export function userSaveEvaluation(context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {
 	return ClientAPI.responseSuccess(saveEvaluation(context, evaluation))
 }
-export function userStoreRundownSnapshot(context: MethodContext, playlistId: RundownPlaylistId, reason: string) {
-	return ClientAPI.responseSuccess(storeRundownPlaylistSnapshot(context, playlistId, reason))
+export function userStoreRundownSnapshot(
+	context: MethodContext,
+	playlistId: RundownPlaylistId,
+	reason: string
+): ClientAPI.ClientResponse<SnapshotId> {
+	return ClientAPI.responseSuccess(waitForPromise(storeRundownPlaylistSnapshot(context, playlistId, reason)))
 }
 export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
-	let playlist = checkAccessAndGetPlaylist(context, playlistId)
+	const playlist = checkAccessAndGetPlaylist(context, playlistId)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.removeRundownPlaylist(context, playlist._id))
 }
 export function resyncRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
-	let playlist = checkAccessAndGetPlaylist(context, playlistId)
+	const playlist = checkAccessAndGetPlaylist(context, playlistId)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundownPlaylist(context, playlist._id))
 }
 export function removeRundown(context: MethodContext, rundownId: RundownId) {
-	let rundown = checkAccessAndGetRundown(context, rundownId)
+	const rundown = checkAccessAndGetRundown(context, rundownId)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.removeRundown(context, rundown._id))
 }
 export function resyncRundown(context: MethodContext, rundownId: RundownId) {
-	let rundown = checkAccessAndGetRundown(context, rundownId)
+	const rundown = checkAccessAndGetRundown(context, rundownId)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundown(context, rundown._id))
 }
 export function resyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId) {
 	rundownContentAllowWrite(context.userId, { rundownId })
-	let segment = Segments.findOne(segmentId)
+	const segment = Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, `Rundown "${segmentId}" not found!`)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, segment.rundownId, segmentId))
@@ -728,7 +739,7 @@ export function bucketAdlibImport(
 	// TODO - validate IngestAdlib
 
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
-	const showStyleCompound = getShowStyleCompound(showStyleVariantId)
+	const showStyleCompound = waitForPromise(getShowStyleCompound(showStyleVariantId))
 	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
 
 	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
@@ -806,12 +817,13 @@ export function restartCore(
 	}
 
 	setTimeout(() => {
+		// eslint-disable-next-line no-process-exit
 		process.exit(0)
 	}, 3000)
 	return ClientAPI.responseSuccess(`Restarting Core in 3s.`)
 }
 
-export function noop(context: MethodContext) {
+export function noop(_context: MethodContext) {
 	triggerWriteAccessBecauseNoCheckNecessary()
 	return ClientAPI.responseSuccess(undefined)
 }
@@ -942,6 +954,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	executeAction(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
@@ -951,6 +964,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			executeAction,
 			this,
 			rundownPlaylistId,
+			actionDocId,
 			actionId,
 			userData,
 			triggerMode

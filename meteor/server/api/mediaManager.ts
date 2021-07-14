@@ -37,7 +37,7 @@ export namespace MediaManagerAPI {
 					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,
-							(err, res) => {
+							(err, _res) => {
 								if (err) reject(err)
 								else resolve()
 							},
@@ -73,7 +73,7 @@ export namespace MediaManagerAPI {
 					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,
-							(err, res) => {
+							(err, _res) => {
 								if (err) reject(err)
 								else resolve()
 							},
@@ -96,7 +96,7 @@ export namespace MediaManagerAPI {
 			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
-					(err, res) => {
+					(err, _res) => {
 						if (err) reject(err)
 						else resolve()
 					},
@@ -117,7 +117,7 @@ export namespace MediaManagerAPI {
 			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
-					(err, res) => {
+					(err, _res) => {
 						if (err) reject(err)
 						else resolve()
 					},
@@ -138,7 +138,7 @@ export namespace MediaManagerAPI {
 			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
-					(err, res) => {
+					(err, _res) => {
 						if (err) reject(err)
 						else resolve()
 					},

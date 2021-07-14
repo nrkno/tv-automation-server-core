@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
-import { IOutputLayer, ISourceLayer, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DBSegment, Segment, SegmentId } from './collections/Segments'
 import { PartId, DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'

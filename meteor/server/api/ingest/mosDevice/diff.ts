@@ -70,7 +70,8 @@ export async function diffAndApplyChanges(
 	// Create/Update segments
 	const segmentChanges = await calculateSegmentsFromIngestData(
 		cache,
-		_.sortBy([...Object.values(segmentDiff.added), ...Object.values(segmentDiff.changed)], (se) => se.rank)
+		_.sortBy([...Object.values(segmentDiff.added), ...Object.values(segmentDiff.changed)], (se) => se.rank),
+		null
 	)
 
 	// Remove/orphan old segments

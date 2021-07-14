@@ -6,13 +6,14 @@ import {
 	clone,
 	deleteAllUndefinedProperties,
 } from '../../lib/lib'
-import { TransformedCollection, MongoModifier } from '../../lib/typings/meteor'
+import { MongoModifier } from '../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { profiler } from '../api/profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
-import { asyncCollectionFindOne, Changes, asyncCollectionUpdate, asyncCollectionUpsert } from '../lib/database'
+import { Changes } from '../lib/database'
+import { AsyncTransformedCollection } from '../../lib/collections/lib'
 
 /**
  * Caches a single object, allowing reads from cache, but not writes
@@ -25,51 +26,64 @@ export class DbCacheReadObject<
 > {
 	protected _document: Class
 	protected _rawDocument: Class
-	private _initialized = false
 
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
-	constructor(
-		protected readonly _collection: TransformedCollection<Class, DBInterface>,
-		private readonly _optional: DocOptional
+	protected constructor(
+		protected readonly _collection: AsyncTransformedCollection<Class, DBInterface>,
+		private readonly _optional: DocOptional,
+		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
 	) {
-		//
+		this._document = (doc ? this._transform(clone(doc as any)) : doc) as any
+		this._rawDocument = clone(doc as any)
 	}
-	get name(): string | undefined {
-		return this._collection['name']
+	get name(): string | null {
+		return this._collection.name
 	}
 
-	async _initialize(id: DBInterface['_id']): Promise<void> {
-		if (!this._initialized) {
-			const doc = await asyncCollectionFindOne<Class, DBInterface>(this._collection, id)
-			if (!doc) {
-				if (!this._optional) {
-					throw new Meteor.Error(
-						404,
-						`DbCacheReadObject population for "${this.name}" failed. Document "${id}" was not found`
-					)
-				}
-			} else {
-				this._document = doc
-				this._rawDocument = clone(doc)
-			}
-			this._initialized = true
+	public static createFromDoc<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> },
+		DocOptional extends boolean = false
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
+	): DbCacheReadObject<Class, DBInterface, DocOptional> {
+		return new DbCacheReadObject<Class, DBInterface, DocOptional>(collection, optional, doc)
+	}
+
+	public static async createFromDatabase<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> },
+		DocOptional extends boolean = false
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		id: DBInterface['_id']
+	): Promise<DbCacheReadObject<Class, DBInterface, DocOptional>> {
+		const doc = await collection.findOneAsync(id)
+		if (!doc && !optional) {
+			throw new Meteor.Error(
+				404,
+				`DbCacheReadObject population for "${collection['name']}" failed. Document "${id}" was not found`
+			)
 		}
-	}
 
-	_fromDoc(doc: ReadonlyDeep<Class>) {
-		if (this._initialized) {
-			throw new Meteor.Error(500, `DbCacheReadObject population for "${this.name}" failed. Already initialized`)
-		}
-
-		this._document = clone(doc)
-		this._rawDocument = clone(doc)
-		this._initialized = true
+		return DbCacheReadObject.createFromDoc<Class, DBInterface, DocOptional>(collection, optional, doc as any)
 	}
 
 	get doc(): DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class> {
 		return this._document as any
+	}
+
+	protected _transform(doc: DBInterface): Class {
+		// @ts-ignore hack: using internal function in collection
+		const transform = this._collection._transform
+		if (transform) {
+			return transform(doc)
+		} else return doc as Class
 	}
 
 	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
@@ -89,8 +103,44 @@ export class DbCacheWriteObject<
 > extends DbCacheReadObject<Class, DBInterface, DocOptional> {
 	private _updated = false
 
-	constructor(collection: TransformedCollection<Class, DBInterface>, optional: DocOptional) {
-		super(collection, optional)
+	constructor(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
+	) {
+		super(collection, optional, doc)
+	}
+
+	public static createFromDoc<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> },
+		DocOptional extends boolean = false
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
+	): DbCacheWriteObject<Class, DBInterface, DocOptional> {
+		return new DbCacheWriteObject<Class, DBInterface, DocOptional>(collection, optional, doc)
+	}
+
+	public static async createFromDatabase<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> },
+		DocOptional extends boolean = false
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		optional: DocOptional,
+		id: DBInterface['_id']
+	): Promise<DbCacheWriteObject<Class, DBInterface, DocOptional>> {
+		const doc = await collection.findOneAsync(id)
+		if (!doc && !optional) {
+			throw new Meteor.Error(
+				404,
+				`DbCacheWriteObject population for "${collection['name']}" failed. Document "${id}" was not found`
+			)
+		}
+
+		return DbCacheWriteObject.createFromDoc<Class, DBInterface, DocOptional>(collection, optional, doc as any)
 	}
 
 	protected assertNotToBeRemoved(methodName: string): void {
@@ -110,7 +160,7 @@ export class DbCacheWriteObject<
 		const localDoc: ReadonlyDeep<Class> | undefined = this.doc
 		if (!localDoc) throw new Meteor.Error(404, `Error: The document does not yet exist`)
 
-		let newDoc: DBInterface = _.isFunction(modifier)
+		const newDoc: DBInterface = _.isFunction(modifier)
 			? modifier(clone(localDoc))
 			: mongoModify({}, clone(localDoc), modifier)
 
@@ -138,7 +188,7 @@ export class DbCacheWriteObject<
 		if (this._updated && !this.isToBeRemoved) {
 			const span = profiler.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
 
-			const pUpdate = await asyncCollectionUpdate(this._collection, this._document._id, this._document)
+			const pUpdate = await this._collection.updateAsync(this._document._id, this._document)
 			if (pUpdate < 1) {
 				throw new Meteor.Error(500, `Failed to update`)
 			}
@@ -162,17 +212,10 @@ export class DbCacheWriteObject<
 	discardChanges() {
 		if (this.isModified()) {
 			this._updated = false
-			this._document = clone(this._rawDocument)
+			this._document = this._rawDocument ? this._transform(clone(this._rawDocument)) : this._rawDocument
 		}
 	}
 
-	protected _transform(doc: DBInterface): Class {
-		// @ts-ignore hack: using internal function in collection
-		const transform = this._collection._transform
-		if (transform) {
-			return transform(doc)
-		} else return doc as Class
-	}
 	isModified(): boolean {
 		return this._updated
 	}
@@ -188,8 +231,30 @@ export class DbCacheWriteOptionalObject<
 > extends DbCacheWriteObject<Class, DBInterface, true> {
 	private _inserted = false
 
-	constructor(collection: TransformedCollection<Class, DBInterface>) {
-		super(collection, true)
+	constructor(collection: AsyncTransformedCollection<Class, DBInterface>, doc: ReadonlyDeep<Class> | undefined) {
+		super(collection, true, doc)
+	}
+
+	public static createOptionalFromDoc<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		doc: ReadonlyDeep<Class> | undefined
+	): DbCacheWriteOptionalObject<Class, DBInterface> {
+		return new DbCacheWriteOptionalObject<Class, DBInterface>(collection, doc)
+	}
+
+	public static async createOptionalFromDatabase<
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any> }
+	>(
+		collection: AsyncTransformedCollection<Class, DBInterface>,
+		id: DBInterface['_id']
+	): Promise<DbCacheWriteOptionalObject<Class, DBInterface>> {
+		const doc = await collection.findOneAsync(id)
+
+		return DbCacheWriteOptionalObject.createOptionalFromDoc<Class, DBInterface>(
+			collection,
+			doc as ReadonlyDeep<Class> | undefined
+		)
 	}
 
 	replace(doc: DBInterface): ReadonlyDeep<Class> {
@@ -213,7 +278,7 @@ export class DbCacheWriteOptionalObject<
 		if (this._inserted && !this.isToBeRemoved) {
 			const span = profiler.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
 
-			await asyncCollectionUpsert(this._collection, this._document._id, this._document)
+			await this._collection.upsertAsync(this._document._id, this._document)
 
 			if (span) span.end()
 

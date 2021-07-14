@@ -10,6 +10,7 @@ import { Queue } from './queue'
 import { DeviceConfigManifest } from './configManifest'
 import { Random } from './random'
 
+const PkgInfo = require('../../package.json')
 const DataStore = require('data-store')
 
 // low-prio calls:
@@ -17,7 +18,7 @@ const TIMEOUTCALL = 200 // ms, time to wait after a call
 const TIMEOUTREPLY = 50 // ms, time to wait after a reply
 
 export interface CoreCredentials {
-	deviceId: string,
+	deviceId: string
 	deviceToken: string
 }
 
@@ -26,10 +27,10 @@ export interface CoreOptions extends CoreCredentials {
 	deviceType?: P.DeviceType | string //  deprecated
 	deviceSubType?: P.DeviceSubType // deprecated
 
-	deviceName: string,
+	deviceName: string
 	versions?: {
 		[libraryName: string]: string
-	},
+	}
 	watchDog?: boolean
 
 	configManifest?: DeviceConfigManifest
@@ -43,12 +44,11 @@ export interface Collection {
 	findOne: (selector: any) => CollectionObj
 }
 interface QueuedMethodCall {
-	f: () => Promise<any>,
-	resolve: (r: any) => void,
+	f: () => Promise<any>
+	resolve: (r: any) => void
 	reject: (e: Error) => void
 }
 export class CoreConnection extends EventEmitter {
-
 	private _ddp: DDPConnector
 	private _parent: CoreConnection | null = null
 	private _children: Array<CoreConnection> = []
@@ -57,10 +57,12 @@ export class CoreConnection extends EventEmitter {
 	private _watchDog?: WatchDog
 	private _watchDogPingResponse: string = ''
 	private _connected: boolean = false
-	private _autoSubscriptions: { [subscriptionId: string]: {
-		publicationName: string,
-		params: Array<any>
-	}} = {}
+	private _autoSubscriptions: {
+		[subscriptionId: string]: {
+			publicationName: string
+			params: Array<any>
+		}
+	} = {}
 	private _sentConnectionId: string = ''
 	private _pingTimeout: NodeJS.Timer | null = null
 	private queuedMethodCalls: Array<QueuedMethodCall> = []
@@ -68,7 +70,7 @@ export class CoreConnection extends EventEmitter {
 	private _timeLastMethodCall: number = 0
 	private _timeLastMethodReply: number = 0
 	private _destroyed: boolean = false
-	_queues: {[queueName: string]: Queue} = {}
+	_queues: { [queueName: string]: Queue } = {}
 
 	constructor (coreOptions: CoreOptions) {
 		super()
@@ -77,7 +79,7 @@ export class CoreConnection extends EventEmitter {
 
 		if (this._coreOptions.watchDog) {
 			this._watchDog = new WatchDog()
-			this._watchDog.on('message', msg => this._emitError('msg ' + msg))
+			this._watchDog.on('message', (msg) => this._emitError('msg ' + msg))
 			this._watchDog.startWatching()
 		}
 	}
@@ -119,8 +121,8 @@ export class CoreConnection extends EventEmitter {
 				port: 3000
 			}
 			// TODO: The following line is ignored - autoReconnect ends up as false - which is what the tests want. Why?
-			if (!_.has(ddpOptions, 'autoReconnect')) 		ddpOptions.autoReconnect = true
-			if (!_.has(ddpOptions, 'autoReconnectTimer')) 	ddpOptions.autoReconnectTimer = 1000
+			if (!_.has(ddpOptions, 'autoReconnect')) ddpOptions.autoReconnect = true
+			if (!_.has(ddpOptions, 'autoReconnectTimer')) ddpOptions.autoReconnectTimer = 1000
 			this._ddp = new DDPConnector(ddpOptions)
 
 			this._ddp.on('error', (err) => {
@@ -151,19 +153,21 @@ export class CoreConnection extends EventEmitter {
 			this._ddp.on('connectionChanged', (connected: boolean) => {
 				this._setConnected(connected)
 
-				this._maybeSendInit()
-				.catch((err) => {
+				this._maybeSendInit().catch((err) => {
 					this._emitError('_maybesendInit ' + JSON.stringify(err))
 				})
 			})
 
 			let deviceId = await this._sendInit()
-			this._timeSync = new TimeSync({
-				serverDelayTime: 0
-			}, async () => {
-				let stat = await this.callMethod(PeripheralDeviceAPI.methods.getTimeDiff)
-				return stat.currentTime
-			})
+			this._timeSync = new TimeSync(
+				{
+					serverDelayTime: 0
+				},
+				async () => {
+					let stat = await this.callMethod(PeripheralDeviceAPI.methods.getTimeDiff)
+					return stat.currentTime
+				}
+			)
 
 			await this._timeSync.init()
 			this._triggerPing()
@@ -263,10 +267,7 @@ export class CoreConnection extends EventEmitter {
 				return
 			}
 
-			let fullAttrs = [
-				this._coreOptions.deviceId,
-				this._coreOptions.deviceToken
-			].concat(attrs || [])
+			let fullAttrs = [this._coreOptions.deviceId, this._coreOptions.deviceToken].concat(attrs || [])
 
 			this._timeLastMethodCall = Date.now()
 			if (!this.ddp.ddpClient) {
@@ -337,9 +338,10 @@ export class CoreConnection extends EventEmitter {
 			}
 			try {
 				let subscriptionId = this.ddp.ddpClient.subscribe(
-					publicationName,	// name of Meteor Publish function to subscribe to
+					publicationName, // name of Meteor Publish function to subscribe to
 					params.concat([this._coreOptions.deviceToken]), // parameters used by the Publish function
-					() => { 		// callback when the subscription is complete
+					() => {
+						// callback when the subscription is complete
 						resolve(subscriptionId)
 					}
 				)
@@ -422,11 +424,17 @@ export class CoreConnection extends EventEmitter {
 
 			name: this._coreOptions.deviceName,
 			connectionId: this.ddp.connectionId,
-			parentDeviceId: (this._parent?.deviceId) || undefined,
+			parentDeviceId: this._parent?.deviceId || undefined,
 			versions: this._coreOptions.versions,
 
 			configManifest: this._coreOptions.configManifest
 		}
+
+		if (options.subType === P.SUBTYPE_PROCESS) {
+			if (!options.versions) options.versions = {}
+			options.versions['@sofie-automation/server-core-integration'] = PkgInfo.version
+		}
+
 		this._sentConnectionId = options.connectionId
 		return this.callMethod(P.methods.initialize, [options])
 	}
@@ -439,7 +447,9 @@ export class CoreConnection extends EventEmitter {
 		this._parent = parent
 		parent.addChild(this)
 
-		parent.on('connectionChanged', (connected) => { this._setConnected(connected) })
+		parent.on('connectionChanged', (connected) => {
+			this._setConnected(connected)
+		})
 		this._setConnected(parent.connected)
 	}
 	private _watchDogCheck () {
@@ -448,8 +458,9 @@ export class CoreConnection extends EventEmitter {
 			Core should then reply with triggering executeFunction with the "pingResponse" method.
 		*/
 		let message = 'watchdogPing_' + Math.round(Math.random() * 100000)
-		this.callMethod(PeripheralDeviceAPI.methods.pingWithCommand, [message])
-		.catch(e => this._emitError('watchdogPing' + e))
+		this.callMethod(PeripheralDeviceAPI.methods.pingWithCommand, [message]).catch((e) =>
+			this._emitError('watchdogPing' + e)
+		)
 
 		return new Promise<void>((resolve, reject) => {
 			let i = 0
@@ -475,8 +486,9 @@ export class CoreConnection extends EventEmitter {
 	}
 	private _renewAutoSubscriptions () {
 		_.each(this._autoSubscriptions, (sub) => {
-			this.subscribe(sub.publicationName, ...sub.params)
-			.catch(e => this._emitError('renewSubscr ' + sub.publicationName + ': ' + e))
+			this.subscribe(sub.publicationName, ...sub.params).catch((e) =>
+				this._emitError('renewSubscr ' + sub.publicationName + ': ' + e)
+			)
 		})
 	}
 	private _triggerPing () {
@@ -498,8 +510,7 @@ export class CoreConnection extends EventEmitter {
 	private _ping () {
 		try {
 			if (this.connected) {
-				this.callMethod(PeripheralDeviceAPI.methods.ping)
-				.catch(e => this._emitError('_ping' + e))
+				this.callMethod(PeripheralDeviceAPI.methods.ping).catch((e) => this._emitError('_ping' + e))
 			}
 		} catch (e) {
 			this._emitError('_ping2 ' + e)
@@ -514,12 +525,10 @@ export class CoreConnection extends EventEmitter {
 				this._triggerDoQueueTimer = null
 
 				this._doQueue()
-
 			}, time)
 		}
 	}
 	private _doQueue () {
-
 		// check if we can send a call?
 		let timeSinceLastMethodCall = Date.now() - this._timeLastMethodCall
 		let timeSinceLastMethodReply = Date.now() - this._timeLastMethodReply
@@ -536,21 +545,20 @@ export class CoreConnection extends EventEmitter {
 			let c = this.queuedMethodCalls.shift()
 			if (c) {
 				c.f()
-				.then((result) => {
-					this._triggerDoQueue()
-					c!.resolve(result)
-				})
-				.catch((err) => {
-					this._triggerDoQueue()
-					c!.reject(err)
-				})
+					.then((result) => {
+						this._triggerDoQueue()
+						c!.resolve(result)
+					})
+					.catch((err) => {
+						this._triggerDoQueue()
+						c!.reject(err)
+					})
 			}
 		}
 	}
 	private _updateMaxListeners () {
 		this.setMaxListeners(
-			10 +
-			this._children.length * 10 // allow 10 listeners per child
+			10 + this._children.length * 10 // allow 10 listeners per child
 		)
 	}
 }

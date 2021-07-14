@@ -22,7 +22,7 @@ if (!Settings.enableUserAccounts) {
 	// Temporary methods
 	Meteor.methods({
 		debug__printTime: () => {
-			let now = getCurrentTime()
+			const now = getCurrentTime()
 			logger.debug(new Date(now))
 			return now
 		},

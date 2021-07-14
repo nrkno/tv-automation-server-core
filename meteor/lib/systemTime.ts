@@ -1,7 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { logger } from './logging'
-import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { systemTime } from './lib'
 import { MeteorCall } from './api/methods'
 
@@ -9,13 +7,13 @@ if (Meteor.isServer) {
 	// handled in systemTime
 } else {
 	// fetch time from server:
-	let updateDiffTime = () => {
-		let sentTime = Date.now()
+	const updateDiffTime = () => {
+		const sentTime = Date.now()
 		MeteorCall.peripheralDevice
 			.getTimeDiff()
 			.then((stat) => {
-				let replyTime = Date.now()
-				let diffTime = (sentTime + replyTime) / 2 - stat.currentTime
+				const replyTime = Date.now()
+				const diffTime = (sentTime + replyTime) / 2 - stat.currentTime
 
 				systemTime.diff = diffTime
 				systemTime.stdDev = Math.abs(sentTime - replyTime) / 2

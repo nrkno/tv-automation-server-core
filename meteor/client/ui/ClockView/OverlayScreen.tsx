@@ -1,7 +1,5 @@
 import React from 'react'
 import Moment from 'react-moment'
-import { DBSegment } from '../../../lib/collections/Segments'
-import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming } from '../RundownView/RundownTiming/withTiming'
@@ -10,10 +8,6 @@ import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { getPresenterScreenReactive, PresenterScreenBase, RundownOverviewTrackedProps } from './PresenterScreen'
-
-interface SegmentUi extends DBSegment {
-	items: Array<PartUi>
-}
 
 interface TimeMap {
 	[key: string]: number
@@ -37,15 +31,8 @@ export const OverlayScreen = withTranslation()(
 				protected bodyClassList: string[] = ['transparent']
 
 				render() {
-					const {
-						playlist,
-						segments,
-						nextShowStyleBaseId,
-						t,
-						playlistId,
-						currentPartInstance,
-						nextPartInstance,
-					} = this.props
+					const { playlist, segments, nextShowStyleBaseId, t, playlistId, currentPartInstance, nextPartInstance } =
+						this.props
 
 					if (playlist && playlistId && segments) {
 						const currentPart = currentPartInstance

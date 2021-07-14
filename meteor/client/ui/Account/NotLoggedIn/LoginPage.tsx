@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -7,7 +6,7 @@ import { Link } from 'react-router-dom'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { StatusResponse } from '../../../../lib/api/systemStatus'
-import { getUser, UserId, User } from '../../../../lib/collections/Users'
+import { getUser, User } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 
 interface ILoginProps extends RouteComponentProps<{ token: string }> {
@@ -25,7 +24,7 @@ interface ILoginPageState {
 	error: string
 }
 
-export const LoginPage = translateWithTracker((props: ILoginProps) => {
+export const LoginPage = translateWithTracker((_props: ILoginProps) => {
 	const user = getUser()
 	return { user: user ? user : null }
 })(
@@ -63,7 +62,7 @@ export const LoginPage = translateWithTracker((props: ILoginProps) => {
 			Meteor.loginWithPassword(this.state.email, this.state.password, this.handleLoginAttempt)
 		}
 
-		private handleLoginAttempt(error: Error) {
+		private handleLoginAttempt(error: Error | undefined) {
 			if (error) {
 				this.HandleError('Incorrect email or password')
 			}

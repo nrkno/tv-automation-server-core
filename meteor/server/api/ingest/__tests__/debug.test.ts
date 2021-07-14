@@ -14,9 +14,9 @@ require('../debug.ts') // include in order to create the Meteor methods needed
 
 describe('Test ingest actions for rundowns and segments', () => {
 	let device: PeripheralDevice
-	let externalId = 'abcde'
-	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
+	const externalId = 'abcde'
+	beforeAll(async () => {
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 	})
 
 	testInFiber('dataRundownCreate', () => {

@@ -7,7 +7,7 @@ import {
 	getSelectedPartInstancesFromCache,
 } from '../playout/cache'
 
-export function ensureNextPartIsValid(cache: CacheForPlayout) {
+export async function ensureNextPartIsValid(cache: CacheForPlayout): Promise<void> {
 	const span = profiler.startSpan('api.ingest.ensureNextPartIsValid')
 
 	// Ensure the next-id is still valid
@@ -40,12 +40,12 @@ export function ensureNextPartIsValid(cache: CacheForPlayout) {
 
 			if (newNextPart?.part?._id !== nextPartInstance.part._id || !nextPartInstance.part.isPlayable()) {
 				// The 'new' next part is before the current next, so move the next point
-				ServerPlayoutAPI.setNextPartInner(cache, newNextPart.part)
+				await ServerPlayoutAPI.setNextPartInner(cache, newNextPart.part)
 			}
 		} else if (!nextPartInstance || nextPartInstance.orphaned === 'deleted') {
 			// Don't have a nextPart or it has been deleted, so autoselect something
 			const newNextPart = selectNextPart(playlist, currentPartInstance ?? null, allPartsAndSegments)
-			ServerPlayoutAPI.setNextPartInner(cache, newNextPart?.part ?? null)
+			await ServerPlayoutAPI.setNextPartInner(cache, newNextPart?.part ?? null)
 		}
 	}
 

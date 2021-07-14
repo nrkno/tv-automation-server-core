@@ -50,22 +50,21 @@ import { ReadonlyDeep } from 'type-fest'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from './playout/lockFunction'
 import { runIngestOperationFromRundown } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
-import { asyncCollectionFindFetch } from '../lib/database'
 import { createShowStyleCompound } from './showStyles'
 import { checkAccessToPlaylist } from './lib'
 
-export function selectShowStyleVariant(
+export async function selectShowStyleVariant(
 	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
-): { variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null {
+): Promise<{ variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null> {
 	const studio = context.studio
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
 	}
-	const showStyleBases = ShowStyleBases.find({
+	const showStyleBases = await ShowStyleBases.findFetchAsync({
 		_id: { $in: clone<Array<ShowStyleBaseId>>(studio.supportedShowStyleBase) },
-	}).fetch()
+	})
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
 		logger.debug(
@@ -74,7 +73,7 @@ export function selectShowStyleVariant(
 		return null
 	}
 
-	const studioBlueprint = loadStudioBlueprint(studio)
+	const studioBlueprint = await loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
 	if (!studioBlueprint.blueprint.getShowStyleId)
@@ -94,10 +93,10 @@ export function selectShowStyleVariant(
 		)
 		return null
 	}
-	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
+	const showStyleVariants = await ShowStyleVariants.findFetchAsync({ showStyleBaseId: showStyleBase._id })
 	if (!showStyleVariants.length) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no variants`)
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyleBase)
 	if (!showStyleBlueprint)
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 
@@ -277,11 +276,11 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 				// Calculate the rank change per part
 				const dynamicPartCount = lastDynamicIndex - firstDynamicIndex + 1
 				const basePartRank =
-					beforePartIndex === -1 ? -1 : newPartsMap.get(remainingPreviousParts[beforePartIndex].id)?._rank!
+					beforePartIndex === -1 ? -1 : newPartsMap.get(remainingPreviousParts[beforePartIndex].id)?._rank! // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
 				const afterPartRank =
 					afterPartIndex === -1
 						? basePartRank + 1
-						: newPartsMap.get(remainingPreviousParts[afterPartIndex].id)?._rank!
+						: newPartsMap.get(remainingPreviousParts[afterPartIndex].id)?._rank! // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
 				const delta = (afterPartRank - basePartRank) / (dynamicPartCount + 1)
 
 				let prevRank = basePartRank
@@ -455,10 +454,10 @@ export namespace ClientRundownAPI {
 
 		// Load all variants/compounds
 		const { showStyleBases, showStyleVariants } = waitForPromiseObj({
-			showStyleBases: asyncCollectionFindFetch(ShowStyleBases, {
+			showStyleBases: ShowStyleBases.findFetchAsync({
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleBaseId) },
 			}),
-			showStyleVariants: asyncCollectionFindFetch(ShowStyleVariants, {
+			showStyleVariants: ShowStyleVariants.findFetchAsync({
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) },
 			}),
 		})
@@ -470,8 +469,8 @@ export namespace ClientRundownAPI {
 		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')
 		const showStyleBlueprintsMap = normalizeArray(showStyleBlueprints, '_id')
 
-		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] = uniqueShowStyleCompounds.map(
-			(rundown) => {
+		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] =
+			uniqueShowStyleCompounds.map((rundown) => {
 				const showStyleBase = showStyleBasesMap[unprotectString(rundown.showStyleBaseId)]
 				const showStyleVariant = showStyleVariantsMap[unprotectString(rundown.showStyleVariantId)]
 				const id = `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`
@@ -514,8 +513,7 @@ export namespace ClientRundownAPI {
 						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig),
 					}
 				}
-			}
-		)
+			})
 
 		return {
 			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.blueprintConfig),

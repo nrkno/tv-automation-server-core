@@ -1,13 +1,13 @@
-import _ from 'underscore'
-import { TransformedCollection, IndexSpecifier } from './typings/meteor'
+import { IndexSpecifier } from './typings/meteor'
 import { ProtectedString } from './lib'
 import { Meteor } from 'meteor/meteor'
+import { AsyncTransformedCollection } from './collections/lib'
 
 interface CollectionsIndexes {
 	[collectionName: string]: CollectionIndexes<any, any>
 }
 interface CollectionIndexes<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
-	collection: TransformedCollection<Class, DBInterface>
+	collection: AsyncTransformedCollection<Class, DBInterface>
 	indexes: IndexSpecifier<DBInterface>[]
 }
 
@@ -18,7 +18,7 @@ const indexes: CollectionsIndexes = {}
  * @param index
  */
 export function registerIndex<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-	collection: TransformedCollection<Class, DBInterface>,
+	collection: AsyncTransformedCollection<Class, DBInterface>,
 	index: IndexSpecifier<DBInterface>
 ) {
 	if (!Meteor.isServer) return // only used server-side

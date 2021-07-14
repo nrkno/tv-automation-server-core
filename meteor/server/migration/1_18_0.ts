@@ -1,8 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { Studios } from '../../lib/collections/Studios'
-import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 /*
  * **************************************************************************************
@@ -28,13 +24,4 @@ export const addSteps = addMigrationSteps('1.18.0', [
 	// 	}
 	// },
 	//
-	//
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '1.16.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '1.9.0'),
-	setExpectedVersion(
-		'expectedVersion.mediaManager',
-		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-		'_process',
-		'1.5.0'
-	),
 ])

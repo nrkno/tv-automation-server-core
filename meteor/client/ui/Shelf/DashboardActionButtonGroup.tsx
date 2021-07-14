@@ -1,8 +1,5 @@
 import * as React from 'react'
-import ClassNames from 'classnames'
-import { RundownAPI } from '../../../lib/api/rundown'
 
-import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceButton'
 import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
 import { DashboardActionButton } from './DashboardActionButton'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -86,7 +83,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 		}
 
 		render() {
-			return this.props.buttons.map((button: DashboardLayoutActionButton, index) => (
+			return this.props.buttons.map((button: DashboardLayoutActionButton) => (
 				<DashboardActionButton
 					key={button._id}
 					onButtonDown={this.onButtonDown}

@@ -23,6 +23,6 @@ PickerPOST.middleware(
 	})
 )
 
-export const PickerGET = Picker.filter((req, res) => req.method === 'GET')
+export const PickerGET = Picker.filter((req, _res) => req.method === 'GET')
 
-export const PickerDELETE = Picker.filter((req, res) => req.method === 'DELETE')
+export const PickerDELETE = Picker.filter((req, _res) => req.method === 'DELETE')
