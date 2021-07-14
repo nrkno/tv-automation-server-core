@@ -1,6 +1,4 @@
-import { Rundown, RundownId } from '../collections/Rundowns'
-import { NoteType } from './notes'
-import * as _ from 'underscore'
+import { RundownId } from '../collections/Rundowns'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
 import { SegmentId } from '../collections/Segments'
@@ -62,41 +60,4 @@ export namespace RundownAPI {
 		/** Source not set - the source object is not set to an actual source */
 		SOURCE_NOT_SET = 3,
 	}
-}
-
-/** Run function in context of a rundown. If an error is encountered, the runnningOrder will be notified */
-export function runInRundownContext<T>(rundown: Rundown, fcn: () => T, errorInformMessage?: string): T {
-	try {
-		const result = fcn() as any
-		if (_.isObject(result) && result.then && result.catch) {
-			// is promise
-
-			// Intercept the error, then throw:
-			result.catch((e) => {
-				handleRundownContextError(rundown, errorInformMessage, e)
-				throw e
-			})
-		}
-		return result
-	} catch (e) {
-		// Intercept the error, then throw:
-		handleRundownContextError(rundown, errorInformMessage, e)
-		throw e
-	}
-}
-function handleRundownContextError(rundown: Rundown, errorInformMessage: string | undefined, error: any) {
-	rundown.appendNote({
-		type: NoteType.ERROR,
-		message: {
-			key: `${
-				errorInformMessage || 'Something went wrong when processing data for this rundown.'
-			} Error message: {{error}}`,
-			args: {
-				error: `${error || 'N/A'}`,
-			},
-		},
-		origin: {
-			name: rundown.name,
-		},
-	})
 }

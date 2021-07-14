@@ -71,7 +71,7 @@ export function runPlayoutOperationWithCache<T>(
 	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
 	fcn: (cache: CacheForPlayout) => Promise<T> | T
-): Awaited<Awaited<T>> {
+): Awaited<T> {
 	let tmpPlaylist: RundownPlaylist
 	if (access) {
 		tmpPlaylist = access.playlist
@@ -89,7 +89,7 @@ export function runPlayoutOperationWithCache<T>(
 
 	return runStudioOperationWithLock(contextStr, tmpPlaylist.studioId, playoutToStudioLockPriority(priority), (lock) =>
 		playoutLockFunctionInner(contextStr, lock, tmpPlaylist, priority, preInitFcn, fcn)
-	)
+	) as Awaited<T>
 }
 
 /**
@@ -232,17 +232,17 @@ function playoutLockFunctionInner<T>(
 	options?: PlayoutLockOptions
 ): Awaited<T> {
 	async function doPlaylistInner() {
-		const cache = await CacheForPlayout.create(tmpPlaylist)
+		const initCache = await CacheForPlayout.createPreInit(tmpPlaylist)
 
 		if (preInitFcn) {
-			await preInitFcn(cache)
+			await preInitFcn(initCache)
 		}
 
-		await cache.initContent(null)
+		const fullCache = await CacheForPlayout.fromInit(initCache)
 
-		const res = await fcn(cache)
+		const res = await fcn(fullCache)
 
-		await cache.saveAllToDatabase()
+		await fullCache.saveAllToDatabase()
 
 		return res
 	}

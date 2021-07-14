@@ -20,14 +20,14 @@ import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../..
 describe('getOrderedPartsAfterPlayhead', () => {
 	let env: DefaultEnvironment
 	let playlistId: RundownPlaylistId
-	let rundownId: RundownId
+	// let rundownId: RundownId
 	let segmentId0: SegmentId
 	let segmentId1: SegmentId
 	let segmentId2: SegmentId
 	let partIds: PartId[]
 
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 
 		const mappings: MappingsExt = {}
 		for (const k of Object.keys(LookaheadMode)) {
@@ -40,7 +40,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			}
 		}
 		Studios.update(env.studio._id, { $set: { mappings } })
-		;({ playlistId, rundownId } = setupDefaultRundownPlaylist(
+		;({ playlistId } = setupDefaultRundownPlaylist(
 			env,
 			undefined,
 			(env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId) => {

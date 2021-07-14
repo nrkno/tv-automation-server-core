@@ -1,6 +1,6 @@
 {
 	"name": "mos-gateway",
-	"version": "1.35.0",
+	"version": "1.36.0-in-testing.4",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
@@ -26,7 +26,6 @@
 		}
 	],
 	"scripts": {
-		"info": "npm-scripts-info",
 		"build": "rimraf dist && yarn build:main",
 		"buildstart": "yarn build && yarn start",
 		"buildinspect": "yarn build && yarn inspect",
@@ -47,17 +46,6 @@
 		"start": "node dist/index.js",
 		"precommit": "lint-staged"
 	},
-	"scripts-info": {
-		"info": "Display information about the scripts",
-		"build": "(Trash and re)build the library",
-		"lint": "Lint all typescript source files",
-		"unit": "Build the library and run unit tests",
-		"test": "Lint, build, and test the library",
-		"watch": "Watch source files, rebuild library on changes, rerun relevant tests",
-		"cov": "Run tests, generate the HTML coverage report, and open it in a browser",
-		"ci": "Test script for running by the CI (CircleCI)",
-		"validate:dependencies": "Scan dependencies for vulnerabilities and check licenses"
-	},
 	"engines": {
 		"node": ">=12.20"
 	},
@@ -76,7 +64,7 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "^1.35.0",
+		"@sofie-automation/server-core-integration": "1.36.0-in-testing.4",
 		"mos-connection": "^1.0.2",
 		"tslib": "^2.1.0",
 		"underscore": "^1.12.1",

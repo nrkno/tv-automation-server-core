@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 // XXX docs
 
 // Things we explicitly do NOT support:
@@ -7,8 +9,8 @@ const { Meteor } = require('meteor/meteor')
 const util = require('util')
 const EJSON = require('ejson')
 
-Meteor.makeErrorType = function(name, constructor) {
-	var errorClass = function(/*arguments*/) {
+Meteor.makeErrorType = function (name, constructor) {
+	var errorClass = function (/*arguments*/) {
 		// Ensure we get a proper stack trace in most Javascript environments
 		if (Error.captureStackTrace) {
 			// V8 environments (Chrome and Node.js)
@@ -72,30 +74,30 @@ function check(value, pattern) {
  * @summary The namespace for all Match types and methods.
  */
 const Match = {
-	Optional: function(pattern) {
+	Optional: function (pattern) {
 		return new Optional(pattern)
 	},
-	Maybe: function(pattern) {
+	Maybe: function (pattern) {
 		return new Maybe(pattern)
 	},
-	OneOf: function(...args) {
+	OneOf: function (...args) {
 		return new OneOf(args)
 	},
 	Any: ['__any__'],
-	Where: function(condition) {
+	Where: function (condition) {
 		return new Where(condition)
 	},
-	ObjectIncluding: function(pattern) {
+	ObjectIncluding: function (pattern) {
 		return new ObjectIncluding(pattern)
 	},
-	ObjectWithValues: function(pattern) {
+	ObjectWithValues: function (pattern) {
 		return new ObjectWithValues(pattern)
 	},
 	// Matches only signed 32-bit integers
 	Integer: ['__integer__'],
 
 	// XXX matchers should know how to describe themselves for errors
-	Error: Meteor.makeErrorType('Match.Error', function(msg) {
+	Error: Meteor.makeErrorType('Match.Error', function (msg) {
 		this.message = 'Match error: ' + msg
 		// The path of the value that failed to match. Initially empty, this gets
 		// populated by catching and rethrowing the exception as it goes back up the
@@ -130,7 +132,7 @@ const Match = {
 	//
 	_failIfArgumentsAreNotAllChecked(f, context, args, description) {
 		var argChecker = new ArgumentChecker(args, description)
-		var result = currentArgumentChecker.withValue(argChecker, function() {
+		var result = currentArgumentChecker.withValue(argChecker, function () {
 			return f.apply(context, args)
 		})
 		// If f didn't itself throw, make sure it checked all of its arguments.
@@ -176,7 +178,7 @@ class ObjectWithValues {
 	}
 }
 
-var stringForErrorMessage = function(value, options) {
+var stringForErrorMessage = function (value, options) {
 	options = options || {}
 
 	if (value === null) return 'null'
@@ -214,7 +216,7 @@ var typeofChecks = [
 ]
 
 // Return `false` if it matches. Otherwise, return an object with a `message` and a `path` field.
-var testSubtree = function(value, pattern) {
+var testSubtree = function (value, pattern) {
 	// Match anything!
 	if (pattern === Match.Any) return false
 
@@ -556,12 +558,12 @@ function baseIsArguments(item) {
 }
 
 var isArguments = baseIsArguments(
-	(function() {
+	(function () {
 		return arguments
 	})()
 )
 	? baseIsArguments
-	: function(value) {
+	: function (value) {
 			return isObject(value) && typeof value.callee === 'function'
 	  }
 

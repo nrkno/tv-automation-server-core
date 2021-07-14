@@ -46,11 +46,7 @@ describe('ClientAPI', () => {
 			expect(ClientAPI.isClientResponseSuccess(response)).toBe(false)
 		})
 		it('Correctly recognizes that a Meteor.Error is not a success object', () => {
-			try {
-				throw new Meteor.Error(404)
-			} catch (e) {
-				expect(ClientAPI.isClientResponseSuccess(e)).toBe(false)
-			}
+			expect(ClientAPI.isClientResponseSuccess(new Meteor.Error(404))).toBe(false)
 		})
 	})
 	describe('isClientResponseError', () => {
@@ -63,11 +59,7 @@ describe('ClientAPI', () => {
 			expect(ClientAPI.isClientResponseError(response)).toBe(false)
 		})
 		it('Correctly recognizes that a Meteor.Error is not an error object', () => {
-			try {
-				throw new Meteor.Error(404)
-			} catch (e) {
-				expect(ClientAPI.isClientResponseError(e)).toBe(false)
-			}
+			expect(ClientAPI.isClientResponseError(new Meteor.Error(404))).toBe(false)
 		})
 	})
 })

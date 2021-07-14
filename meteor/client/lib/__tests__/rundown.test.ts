@@ -10,8 +10,8 @@ import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/Ru
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment
 	let playlistId: RundownPlaylistId
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 		playlistId = setupDefaultRundownPlaylist(env).playlistId
 	})
 	testInFiber('RundownUtils.getResolvedSegment', () => {
@@ -26,7 +26,7 @@ describe('client/lib/rundown', () => {
 		const parts = playlist.getAllOrderedParts()
 		const rundown = rundowns[0]
 		const segment = segments[0]
-		const nextSegment = segments[1]
+		// const nextSegment = segments[1]
 
 		const resolvedSegment = RundownUtils.getResolvedSegment(
 			showStyleBase,

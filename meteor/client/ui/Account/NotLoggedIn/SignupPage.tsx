@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
@@ -8,7 +7,7 @@ import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 import { createUser } from '../../../../lib/api/user'
 
-interface ISignupPageProps extends RouteComponentProps {}
+type ISignupPageProps = RouteComponentProps
 
 interface ISignupPageState {
 	email: string

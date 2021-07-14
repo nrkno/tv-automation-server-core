@@ -1,15 +1,12 @@
 import { MethodContext } from '../../../lib/api/methods'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { CoreSystem, getCoreSystem, setCoreSystemStorePath } from '../../../lib/collections/CoreSystem'
+import { setCoreSystemStorePath } from '../../../lib/collections/CoreSystem'
 import { DBOrganization, Organization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { Studio, Studios } from '../../../lib/collections/Studios'
 import { User, Users } from '../../../lib/collections/Users'
 import { protectString, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { UserId } from '../../../lib/typings/meteor'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { beforeAllInFiber, testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
+import { beforeAllInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
 import { BucketsAPI } from '../../api/buckets'
 import { storeSystemSnapshot } from '../../api/snapshot'
 import { BucketSecurity } from '../buckets'
@@ -24,7 +21,7 @@ describe('Security', () => {
 
 			isSimulation: false,
 			connection: null,
-			setUserId: (userId: string) => {},
+			setUserId: (_userId: string) => {},
 			unblock: () => {},
 		}
 	}
@@ -121,8 +118,8 @@ describe('Security', () => {
 		expect(fcn).not.toThrowError()
 	}
 	let env: DefaultEnvironment
-	beforeAllInFiber(() => {
-		env = setupDefaultStudioEnvironment(org0._id)
+	beforeAllInFiber(async () => {
+		env = await setupDefaultStudioEnvironment(org0._id)
 
 		Organizations.insert(org0)
 		Organizations.insert(org1)
@@ -175,9 +172,9 @@ describe('Security', () => {
 			expectAllowed(() => NoSecurityReadAccess.any())
 		})
 	})
-	testInFiber('Organization', () => {
+	testInFiber('Organization', async () => {
 		setCoreSystemStorePath('/non-existent-path/')
-		const snapshotId = storeSystemSnapshot(superAdmin, env.studio._id, 'for test')
+		const snapshotId = await storeSystemSnapshot(superAdmin, env.studio._id, 'for test')
 
 		changeEnableUserAccounts(() => {
 			const selectorId = { _id: org0._id }

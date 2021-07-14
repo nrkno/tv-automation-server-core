@@ -36,6 +36,7 @@ import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 
 const DEBUG = false
 
@@ -52,12 +53,12 @@ describe('test peripheralDevice general API methods', () => {
 	let rundownID: RundownId
 	let rundownPlaylistID: RundownPlaylistId
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 		device = env.ingestDevice
 		rundownID = protectString('rundown0')
 		rundownPlaylistID = protectString('rundownPlaylist0')
-		let rundownExternalID: string = 'rundown0'
+		const rundownExternalID: string = 'rundown0'
 		RundownPlaylists.insert({
 			_id: rundownPlaylistID,
 			externalId: 'mock_rpl',
@@ -92,8 +93,8 @@ describe('test peripheralDevice general API methods', () => {
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
 		})
-		let segmentID: SegmentId = protectString('segment0')
-		let segmentExternalID = 'segment0'
+		const segmentID: SegmentId = protectString('segment0')
+		const segmentExternalID = 'segment0'
 		Segments.insert({
 			_id: segmentID,
 			externalId: segmentExternalID,
@@ -158,7 +159,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 
-		let options: PeripheralDeviceAPI.InitOptions = {
+		const options: PeripheralDeviceAPI.InitOptions = {
 			category: PeripheralDeviceAPI.DeviceCategory.INGEST,
 			type: PeripheralDeviceAPI.DeviceType.MOS,
 			subType: 'mos_connection',
@@ -169,7 +170,7 @@ describe('test peripheralDevice general API methods', () => {
 			},
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.initialize, device._id, device.token, options)
-		let initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(initDevice).toBeTruthy()
 		expect(initDevice.lastSeen).toBeGreaterThan(getCurrentTime() - 100)
 		expect(initDevice.lastConnected).toBeGreaterThan(getCurrentTime() - 100)
@@ -192,7 +193,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('getPeripheralDevice', () => {
-		let gotDevice: PeripheralDevice = Meteor.call(
+		const gotDevice: PeripheralDevice = Meteor.call(
 			PeripheralDeviceAPIMethods.getPeripheralDevice,
 			device._id,
 			device.token
@@ -203,7 +204,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	testInFiber('ping', () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
-		let lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
+		const lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
 		Meteor.call(PeripheralDeviceAPIMethods.ping, device._id, device.token)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 	})
@@ -240,23 +241,23 @@ describe('test peripheralDevice general API methods', () => {
 
 		let resultErr = undefined
 		let resultMessage = undefined
-		let pingCompleted = (err, msg) => {
+		const pingCompleted = (err, msg) => {
 			resultErr = err
 			resultMessage = msg
 		}
 
 		// This is very odd. Ping command is sent and lastSeen updated before response
-		let device2 = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const device2 = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(device2).toBeTruthy()
 		// Decrease lastSeen to ensure that the call below updates it
-		let lastSeen = device2.lastSeen - 100
+		const lastSeen = device2.lastSeen - 100
 		PeripheralDevices.update(device._id, { $set: { lastSeen: lastSeen } })
 
-		let message = 'Waving!'
+		const message = 'Waving!'
 		// Note: the null is so that Metor doesnt try to use pingCompleted  as a callback instead of blocking
 		Meteor.call(PeripheralDeviceAPIMethods.pingWithCommand, device._id, device.token, message, pingCompleted, null)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
-		let command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
+		const command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
 		expect(command).toBeTruthy()
 		expect(command.hasReply).toBeFalsy()
 		expect(command.functionName).toBe('pingResponse')
@@ -265,7 +266,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(resultErr).toBeUndefined()
 		expect(resultMessage).toBeUndefined()
 
-		let replyMessage = 'Waving back!'
+		const replyMessage = 'Waving back!'
 		Meteor.call(
 			PeripheralDeviceAPIMethods.functionReply,
 			device._id,
@@ -288,10 +289,11 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
-		let partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
+		const currentPartInstance = playlist?.getSelectedPartInstances()?.currentPartInstance as PartInstance
+		expect(currentPartInstance).toBeTruthy()
+		const partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: currentPartInstance?._id!,
+			partInstanceId: currentPartInstance._id,
 			time: getCurrentTime(),
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStarted, device._id, device.token, partPlaybackStartedResult)
@@ -308,10 +310,11 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
-		let partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
+		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
+		expect(currentPartInstance).toBeTruthy()
+		const partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: currentPartInstance?._id!,
+			partInstanceId: currentPartInstance._id,
 			time: getCurrentTime(),
 		}
 
@@ -329,11 +332,12 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
+		expect(currentPartInstance).toBeTruthy()
 		const pieces = PieceInstances.find({
-			partInstanceId: currentPartInstance?._id!,
+			partInstanceId: currentPartInstance._id,
 		}).fetch()
-		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
+		const piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
 			pieceInstanceId: pieces[0]._id,
 			time: getCurrentTime(),
@@ -358,11 +362,12 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
+		expect(currentPartInstance).toBeTruthy()
 		const pieces = PieceInstances.find({
-			partInstanceId: currentPartInstance?._id!,
+			partInstanceId: currentPartInstance._id,
 		}).fetch()
-		let piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
+		const piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,
 			pieceInstanceId: pieces[0]._id,
 			time: getCurrentTime(),
@@ -399,7 +404,7 @@ describe('test peripheralDevice general API methods', () => {
 				)) ||
 			[]
 		expect(timelineObjs.length).toBe(1)
-		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
+		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
 			id: tObj.id,
 			time: getCurrentTime(),
 		}))
@@ -413,7 +418,7 @@ describe('test peripheralDevice general API methods', () => {
 		const timelineUpdatedObjs =
 			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
 		timelineUpdatedObjs.forEach((tlObj) => {
-			expect(Array.isArray(tlObj.enable)).toBeFalsy
+			expect(Array.isArray(tlObj.enable)).toBeFalsy()
 			const enable = tlObj.enable as TimelineEnableExt
 			expect(enable.setFromNow).toBe(true)
 			expect(enable.start).toBeGreaterThan(0)
@@ -425,30 +430,18 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('killProcess with a rundown present', () => {
 		// test this does not shutdown because Rundown stored
 		if (DEBUG) setLoggerLevel('debug')
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.killProcess, device._id, device.token, true)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[400] Unable to run killProcess: Rundowns not empty!`)
-		}
+		expect(() => Meteor.call(PeripheralDeviceAPIMethods.killProcess, device._id, device.token, true)).toThrow(
+			`[400] Unable to run killProcess: Rundowns not empty!`
+		)
 	})
 
 	testInFiber('testMethod', () => {
 		if (DEBUG) setLoggerLevel('debug')
-		let throwPlease = false
-		try {
-			let result = Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european')
-			expect(result).toBe('european')
-			throwPlease = true
-			Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european', throwPlease)
-			fail('expected to throw')
-		} catch (e) {
-			if (throwPlease) {
-				expect(e.message).toBe('[418] Error thrown, as requested')
-			} else {
-				expect(false).toBe(true)
-			}
-		}
+		const result = Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european')
+		expect(result).toBe('european')
+		expect(() =>
+			Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european', true)
+		).toThrow(`[418] Error thrown, as requested`)
 	})
 
 	/*
@@ -463,12 +456,9 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('requestUserAuthToken', () => {
 		if (DEBUG) setLoggerLevel('debug')
 
-		try {
+		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe('[400] can only request user auth token for peripheral device of spreadsheet type')
-		}
+		).toThrow('[400] can only request user auth token for peripheral device of spreadsheet type')
 
 		PeripheralDevices.update(device._id, {
 			$set: {
@@ -476,7 +466,7 @@ describe('test peripheralDevice general API methods', () => {
 			},
 		})
 		Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
-		let deviceWithAccessToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const deviceWithAccessToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(deviceWithAccessToken).toBeTruthy()
 		expect(deviceWithAccessToken.accessTokenUrl).toBe('http://auth.url/')
 
@@ -490,12 +480,9 @@ describe('test peripheralDevice general API methods', () => {
 	// Should only really work for SpreadsheetDevice
 	testInFiber('storeAccessToken', () => {
 		if (DEBUG) setLoggerLevel('debug')
-		try {
+		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'http://auth.url/')
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe('[400] can only store access token for peripheral device of spreadsheet type')
-		}
+		).toThrow('[400] can only store access token for peripheral device of spreadsheet type')
 
 		PeripheralDevices.update(device._id, {
 			$set: {
@@ -504,7 +491,7 @@ describe('test peripheralDevice general API methods', () => {
 		})
 
 		Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-		let deviceWithSecretToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const deviceWithSecretToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(deviceWithSecretToken).toBeTruthy()
 		expect(deviceWithSecretToken.accessTokenUrl).toBe('')
 		expect((deviceWithSecretToken.secretSettings as IngestDeviceSecretSettings).accessToken).toBe(
@@ -513,12 +500,12 @@ describe('test peripheralDevice general API methods', () => {
 		expect((deviceWithSecretToken.settings as IngestDeviceSettings).secretAccessToken).toBe(true)
 	})
 
-	testInFiber('uninitialize', () => {
+	testInFiber('uninitialize', async () => {
 		if (DEBUG) setLoggerLevel('debug')
 		Meteor.call(PeripheralDeviceAPIMethods.unInitialize, device._id, device.token)
 		expect(PeripheralDevices.findOne()).toBeFalsy()
 
-		device = setupDefaultStudioEnvironment().ingestDevice
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 		expect(PeripheralDevices.findOne()).toBeTruthy()
 	})
 
@@ -586,11 +573,11 @@ describe('test peripheralDevice general API methods', () => {
 		let workStepIds: ProtectedString<any>[]
 		let deviceId: ProtectedString<any>
 		let device: PeripheralDevice
-		beforeEach(() => {
+		beforeEach(async () => {
 			workFlowId = getRandomId()
 			workStepIds = [getRandomId(), getRandomId()]
 			deviceId = getRandomId()
-			env = setupDefaultStudioEnvironment()
+			env = await setupDefaultStudioEnvironment()
 			PeripheralDevices.insert({
 				_id: deviceId,
 				organizationId: null,
@@ -680,7 +667,7 @@ describe('test peripheralDevice general API methods', () => {
 				const workFlow = MediaWorkFlows.findOne(workFlowId)
 
 				expect(workFlow).toBeTruthy()
-				let newWorkFlow = Object.assign({}, workFlow)
+				const newWorkFlow = Object.assign({}, workFlow)
 				newWorkFlow._rev = '2'
 				newWorkFlow.comment = 'New comment'
 
@@ -717,7 +704,7 @@ describe('test peripheralDevice general API methods', () => {
 				const workStep = MediaWorkFlowSteps.findOne(workStepIds[0])
 
 				expect(workStep).toBeTruthy()
-				let newWorkStep = Object.assign({}, workStep)
+				const newWorkStep = Object.assign({}, workStep)
 				newWorkStep._rev = '2'
 				newWorkStep.status = MediaManagerAPI.WorkStepStatus.WORKING
 
@@ -757,9 +744,9 @@ describe('test peripheralDevice general API methods', () => {
 		const MOCK_COLLECTION = 'MockCollection'
 		const MOCK_MEDIA_ID = 'SOME_FILE'.toUpperCase()
 		const MOCK_OBJID = Random.id()
-		beforeEach(() => {
+		beforeEach(async () => {
 			deviceId = getRandomId()
-			env = setupDefaultStudioEnvironment()
+			env = await setupDefaultStudioEnvironment()
 			PeripheralDevices.insert({
 				_id: deviceId,
 				organizationId: null,
@@ -878,7 +865,7 @@ describe('test peripheralDevice general API methods', () => {
 })
 
 // Note: The data below is copied straight from the test data in mos-connection
-let xmlApiData = {
+const _xmlApiData = {
 	rundownCreate: literal<MOS.IMOSRunningOrder>({
 		ID: new MOS.MosString128('96857485'),
 		Slug: new MOS.MosString128('5PM RUNDOWN'),
@@ -1303,751 +1290,3 @@ let xmlApiData = {
 	rundownElementAction_swap_items_ItemId0: new MOS.MosString128('23'),
 	rundownElementAction_swap_items_ItemId1: new MOS.MosString128('24'),
 }
-
-describe('peripheralDevice: MOS Basic functions', function () {
-	// beforeEach(function () {
-	// 	StubCollections.stub(Rundowns)
-	// 	StubCollections.stub(Segments)
-	// 	StubCollections.stub(Parts)
-	// 	StubCollections.stub(Pieces)
-	//
-	// 	let rundownID = rundownId(new MOS.MosString128('rundown0'))
-	// 	// Prepare database:
-	// 	Rundowns.insert({
-	// 		_id: rundownID,
-	// 		mosId: 'rundown0',
-	// 		studioId: protectString('studio0'),
-	// 		showStyleBaseId: protectString('showStyle0'),
-	// 		showStyleVariantId: protectString('variant0'),
-	// 		name: 'test rundown',
-	// 		created: 1000,
-	// 		currentPartId: null,
-	// 		nextPartId: null,
-	// 		previousPartId: null,
-	// 		peripheralDeviceId: 'testMosDevice',
-	// 		modified: getCurrentTime(),
-	// 	})
-	// 	let segmentID = segmentId(rundownID, '', 0)
-	// 	Segments.insert({
-	// 		_id: segmentID,
-	// 		_rank: 0,
-	// 		mosId: 'segment00',
-	// 		rundownId: rundownID,
-	// 		name: 'Fire',
-	// 		number: ''
-	// 	})
-	// 	Parts.insert({
-	// 		_id: partId(segmentID, new MOS.MosString128('part000')),
-	// 		_rank: 0,
-	// 		mosId: 'part000',
-	// 		segmentId: segmentID,
-	// 		rundownId: rundownID,
-	// 		slug: ''
-	// 	})
-	// 	Parts.insert({
-	// 		_id: partId(segmentID, new MOS.MosString128('part001')),
-	// 		_rank: 1,
-	// 		mosId: 'part001',
-	// 		segmentId: segmentID,
-	// 		rundownId: rundownID,
-	// 		slug: ''
-	// 	})
-	// 	Segments.insert({
-	// 		number: '',
-	// 		_id: segmentId(rundownID, '', 1),
-	// 		_rank: 1,
-	// 		mosId: 'segment01',
-	// 		rundownId: rundownID,
-	// 		name: 'Water'
-	// 	})
-	// 	Segments.insert({
-	// 		number: '',
-	// 		_id: segmentId(rundownID, '', 2),
-	// 		_rank: 2,
-	// 		mosId: 'segment02',
-	// 		rundownId: rundownID,
-	// 		name: 'Earth'
-	// 	})
-	// 	rundownID = rundownId(new MOS.MosString128('rundown1'))
-	// 	Rundowns.insert({
-	// 		_id: rundownID,
-	// 		mosId: 'rundown1',
-	// 		studioId: protectString('studio0'),
-	// 		showStyleBaseId: 'showStyle1',
-	// 		showStyleVariantId: protectString('variant0'),
-	// 		name: 'test rundown 1',
-	// 		created: 2000,
-	// 		currentPartId: null,
-	// 		nextPartId: null,
-	// 		previousPartId: null,
-	// 		peripheralDeviceId: 'testMosDevice',
-	// 		modified: getCurrentTime(),
-	// 	})
-	// 	Segments.insert({
-	// 		number: '',
-	// 		_id: segmentId(rundownID, '', 10),
-	// 		_rank: 0,
-	// 		mosId: 'segment10',
-	// 		rundownId: rundownID,
-	// 		name: 'Fire'
-	// 	})
-	// 	Rundowns.insert({
-	// 		_id: rundownId(new MOS.MosString128('rundown2')),
-	// 		mosId: 'rundown2',
-	// 		studioId: protectString('studio0'),
-	// 		showStyleBaseId: 'showStyle1',
-	// 		showStyleVariantId: protectString('variant0'),
-	// 		name: 'test rundown 2',
-	// 		created: 2000,
-	// 		currentPartId: null,
-	// 		nextPartId: null,
-	// 		previousPartId: null,
-	// 		peripheralDeviceId: 'testMosDevice',
-	// 		modified: getCurrentTime(),
-	// 	})
-	// })
-	//
-	// afterEach(function () {
-	// 	StubCollections.restore()
-	// })
-	// it('getRO', function () {
-	// 	let rundown = getRO(new MOS.MosString128('rundown1'))
-	//
-	// 	expect(rundown).to.be.an('object')
-	// 	expect(rundown._id).to.be.equal('rundown_rundown1')
-	// 	expect(rundown.mosId).to.be.equal('rundown1')
-	//
-	// 	expect(() => {
-	// 		let rundown = getRO(new MOS.MosString128('unknown'))
-	// 	}).to.throw()
-	// })
-	// it('getSegment', function () {
-	// 	let segment = getSegment(new MOS.MosString128('rundown1'), new MOS.MosString128('segment10'))
-	//
-	// 	expect(segment).to.be.an('object')
-	// 	expect(segment._id).to.be.equal('rundown_rundown1_segment10')
-	// 	expect(segment.mosId).to.be.equal('segment10')
-	//
-	// 	expect(() => {
-	// 		let segment = getSegment(new MOS.MosString128('rundown0'), new MOS.MosString128('unknown'))
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		let segment = getSegment(new MOS.MosString128('unknown'), new MOS.MosString128('segment00'))
-	// 	}).to.throw()
-	// })
-	// it('getPart', function () {
-	// 	let part = getPart(
-	// 		new MOS.MosString128('rundown0'),
-	// 		new MOS.MosString128('segment00'),
-	// 		new MOS.MosString128('part000')
-	// 	)
-	//
-	// 	expect(part).to.be.an('object')
-	// 	expect(part._id).to.be.equal('rundown_rundown0_segment00_part000')
-	// 	expect(part.mosId).to.be.equal('part000')
-	//
-	// 	expect(() => {
-	// 		let part = getPart(new MOS.MosString128('rundown0'), new MOS.MosString128('segment00'), new MOS.MosString128('unknown'))
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		let part = getPart(new MOS.MosString128('rundown0'), new MOS.MosString128('unknown'), new MOS.MosString128('part000'))
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		let part = getPart(new MOS.MosString128('unknown'), new MOS.MosString128('segment00'), new MOS.MosString128('part000'))
-	// 	}).to.throw()
-	// })
-	// it('convertToSegment', function () {
-	//
-	// 	let story = xmlApiData.rundownElementAction_insert_story_Stories[0]
-	// 	let segment = convertToSegment(story, 'rundown_rundown0', 123)
-	//
-	// 	expect(segment).to.be.an('object')
-	// 	expect(segment.mosId).to.equal(story.ID.toString())
-	// 	expect(segment.rundownId).to.equal('rundown_rundown0')
-	// 	expect(segment._rank).to.equal(123)
-	// })
-	// it('convertToPart', function () {
-	//
-	// 	let item = xmlApiData.rundownElementAction_insert_item_Items[0]
-	// 	let part = convertToPart(item, 'rundown_rundown0', 'segment00', 123)
-	//
-	// 	expect(part).to.be.an('object')
-	// 	expect(part.mosId).to.equal(item.ID.toString())
-	// 	expect(part.rundownId).to.equal('rundown_rundown0')
-	// 	expect(part.segmentId).to.equal('segment00')
-	// 	expect(part._rank).to.equal(123)
-	// })
-	// it('insertSegment', function () {
-	// 	let story = xmlApiData.rundownElementAction_insert_story_Stories[0]
-	// 	let rundownID = 'rundown_rundown0'
-	// 	insertSegment(story, rundownID, 123)
-	//
-	// 	let dbSegment = Segments.findOne(segmentId(rundownID, '', story.ID))
-	//
-	// 	expect(dbSegment).to.be.an('object')
-	// 	expect(dbSegment.mosId).to.equal(story.ID.toString())
-	// 	expect(dbSegment._rank).to.equal(123)
-	// 	expect(dbSegment.rundownId).to.equal('rundown_rundown0')
-	//
-	// 	let dbParts = Parts.find({
-	// 		rundownId: dbSegment.rundownId,
-	// 		segmentId: dbSegment._id
-	// 	},mod).fetch()
-	//
-	// 	expect(dbParts).to.have.length(story.Items.length)
-	//
-	// 	expect(dbParts[0]._id).to.equal( partId(dbSegment._id, story.Items[0].ID))
-	// })
-	// it('removeSegment', function () {
-	// 	let dbSegment = Segments.findOne(segmentId('rundown_rundown0','',  new MOS.MosString128('segment00')))
-	// 	expect(dbSegment).to.be.an('object')
-	// 	expect(dbSegment.mosId).to.equal('segment00')
-	// 	expect(dbSegment.rundownId).to.equal('rundown_rundown0')
-	// 	expect(
-	// 		Parts.find({segmentId: dbSegment._id}).fetch().length
-	// 	).to.be.greaterThan(0)
-	//
-	// 	removeSegment( dbSegment._id, dbSegment.rundownId)
-	//
-	// 	expect(Segments.find(dbSegment._id).fetch()).to.have.length(0)
-	// 	expect(
-	// 		Parts.find({segmentId: dbSegment._id}).fetch()
-	// 	).to.have.length(0)
-	// })
-	// it('getRank', function () {
-	//
-	// 	let before = {_rank: 10}
-	// 	let after = {_rank: 22}
-	//
-	// 	// insert 1 in between
-	// 	expect(getRank(before, after, 0, 1)).to.equal(16)
-	// 	// insert 2 in between
-	// 	expect(getRank(before, after, 0, 2)).to.equal(14)
-	// 	expect(getRank(before, after, 1, 2)).to.equal(18)
-	// 	// insert 3 in between
-	// 	expect(getRank(before, after, 0, 3)).to.equal(13)
-	// 	expect(getRank(before, after, 1, 3)).to.equal(16)
-	// 	expect(getRank(before, after, 2, 3)).to.equal(19)
-	// 	// insert 1 first
-	// 	expect(getRank(null, before, 0, 1)).to.be.lessThan(10)
-	// 	// insert 2 first
-	// 	expect(getRank(null, before, 0, 2)).to.be.lessThan(10)
-	// 	expect(getRank(null, before, 1, 2)).to.be.lessThan(10)
-	// 	// insert 1 last
-	// 	expect(getRank(after, null, 0, 1)).to.be.greaterThan(22)
-	// 	// insert 2 last
-	// 	expect(getRank(after, null, 0, 2)).to.be.greaterThan(22)
-	// 	expect(getRank(after, null, 1, 2)).to.be.greaterThan(22)
-	// })
-})
-describe('peripheralDevice: MOS API methods', function () {
-	// it('mosRoCreate', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let item = story.Items[0]
-	//
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	//
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	expect(dbRundown).to.be.an('object')
-	// 	expect(dbRundown.mosId).to.equal(rundown.ID.toString())
-	// 	expect(dbRundown.name).to.equal(rundown.Slug.toString())
-	//
-	// 	let dbSegments = Segments.find({
-	// 		rundownId: dbRundown._id
-	// 	}, mod).fetch()
-	// 	expect(dbSegments).to.have.length(rundown.Stories.length)
-	// 	let dbSegment = dbSegments[0]
-	// 	expect(dbSegment.mosId).to.equal(story.ID.toString())
-	//
-	// 	let dbParts = Parts.find({
-	// 		rundownId: dbRundown._id,
-	// 		segmentId: dbSegment._id
-	// 	}, mod).fetch()
-	// 	expect(dbParts).to.have.length(story.Items.length)
-	// 	let dbPart = dbParts[0]
-	// 	expect(dbPart.mosId).to.equal(item.ID.toString())
-	// })
-	// it('mosRoDelete', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let item = story.Items[0]
-	//
-	// 	let rundownID = rundownId(rundown.ID)
-	// 	// first create:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	expect(Rundowns.find(rundownID).fetch()).to.have.length(1)
-	// 	// Then delete:
-	// 	ServerPeripheralDeviceAPI.mosRoDelete(rundown.ID)
-	//
-	// 	expect(Rundowns.find(rundownID).fetch()).to.have.length(0)
-	// 	expect(Segments.find({
-	// 		rundownId: rundownID
-	// 	}).fetch()).to.have.length(0)
-	// 	expect(Parts.find({
-	// 		rundownId: rundownID
-	// 	}).fetch()).to.have.length(0)
-	// 	expect(Pieces.find({
-	// 		rundownId: rundownID
-	// 	}).fetch()).to.have.length(0)
-	// })
-	// it('mosRoMetadata', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let md = xmlApiData.rundownMetadataReplace
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	// Then delete:
-	// 	ServerPeripheralDeviceAPI.mosRoMetadata(md)
-	//
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	expect(dbRundown).to.be.an('object')
-	// 	expect(dbRundown.mosId).to.equal(rundown.ID.toString())
-	// 	// expect(dbRundown.metaData).to.be.an('object')
-	// 	// TODO: Make a test (and testdata?) for this?
-	//
-	// })
-	// it('mosRoStatus', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let status0: MOS.IMOSRunningOrderStatus = {
-	// 		ID: rundown.ID,
-	// 		Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let status1: MOS.IMOSRunningOrderStatus = {
-	// 		ID: rundown.ID,
-	// 		Status: MOS.IMOSObjectStatus.READY,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let statusUnknown: MOS.IMOSRunningOrderStatus = {
-	// 		ID: new MOS.MosString128('unknown'),
-	// 		Status: MOS.IMOSObjectStatus.MOVED,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	// Set status:
-	// 	ServerPeripheralDeviceAPI.mosRoStatus(status0)
-	// 	expect(Rundowns.findOne(rundownId(rundown.ID)).status).to.be.equal(status0.Status)
-	// 	ServerPeripheralDeviceAPI.mosRoStatus(status1)
-	// 	expect(Rundowns.findOne(rundownId(rundown.ID)).status).to.be.equal(status1.Status)
-	// 	expect(() => {
-	// 		ServerPeripheralDeviceAPI.mosRoStatus(statusUnknown)
-	// 	}).to.throw(/404/)
-	// 	expect(Rundowns.findOne(rundownId(rundown.ID)).status).to.be.equal(status1.Status) // keep the previous status
-	// })
-	// it('mosRoStoryStatus', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let status0: MOS.IMOSStoryStatus = {
-	// 		ID: story.ID,
-	// 		RundownId: rundown.ID,
-	// 		Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let status1: MOS.IMOSStoryStatus = {
-	// 		ID: story.ID,
-	// 		RundownId: rundown.ID,
-	// 		Status: MOS.IMOSObjectStatus.READY,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let statusUnknown0: MOS.IMOSStoryStatus = {
-	// 		ID: new MOS.MosString128('unknown'),
-	// 		RundownId: rundown.ID,
-	// 		Status: MOS.IMOSObjectStatus.NOT_READY,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let statusUnknown1: MOS.IMOSStoryStatus = {
-	// 		ID: story.ID,
-	// 		RundownId: new MOS.MosString128('unknown'),
-	// 		Status: MOS.IMOSObjectStatus.UPDATED,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let segmentID = segmentId(rundownId(rundown.ID), story.ID)
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	// Set status:
-	// 	ServerPeripheralDeviceAPI.mosRoStoryStatus(status0)
-	// 	expect(Segments.findOne(segmentID).status).to.be.equal(status0.Status)
-	// 	ServerPeripheralDeviceAPI.mosRoStoryStatus(status1)
-	// 	expect(Segments.findOne(segmentID).status).to.be.equal(status1.Status)
-	// 	expect(() => {
-	// 		ServerPeripheralDeviceAPI.mosRoStoryStatus(statusUnknown0)
-	// 	}).to.throw(/404/)
-	// 	expect(Segments.findOne(segmentID).status).to.be.equal(status1.Status) // keep the previous status
-	// 	expect(() => {
-	// 		ServerPeripheralDeviceAPI.mosRoStoryStatus(statusUnknown1)
-	// 	}).to.throw(/404/)
-	// 	expect(Segments.findOne(segmentID).status).to.be.equal(status1.Status) // keep the previous status
-	// })
-	// it('mosRoItemStatus', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let item = story.Items[0]
-	//
-	// 	let status0: MOS.IMOSItemStatus = {
-	// 		ID: item.ID,
-	// 		StoryId: story.ID,
-	// 		RundownId: rundown.ID,
-	// 		Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let status1: MOS.IMOSItemStatus = {
-	// 		ID: item.ID,
-	// 		RundownId: rundown.ID,
-	// 		StoryId: story.ID,
-	// 		Status: MOS.IMOSObjectStatus.READY,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let statusUnknown0: MOS.IMOSItemStatus = {
-	// 		ID: new MOS.MosString128('unknown'),
-	// 		RundownId: rundown.ID,
-	// 		StoryId: story.ID,
-	// 		Status: MOS.IMOSObjectStatus.NOT_READY,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let statusUnknown1: MOS.IMOSItemStatus = {
-	// 		ID: item.ID,
-	// 		StoryId: new MOS.MosString128('unknown'),
-	// 		RundownId: rundown.ID,
-	// 		Status: MOS.IMOSObjectStatus.UPDATED,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let statusUnknown2: MOS.IMOSItemStatus = {
-	// 		ID: item.ID,
-	// 		StoryId: story.ID,
-	// 		RundownId: new MOS.MosString128('unknown'),
-	// 		Status: MOS.IMOSObjectStatus.BUSY,
-	// 		Time: new MOS.MosTime('2009-04-11T14:13:53')
-	// 	}
-	// 	let segmentID = segmentId(rundownId(rundown.ID), story.ID)
-	// 	let partID = partId(segmentID, item.ID)
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	// Set status:
-	// 	ServerPeripheralDeviceAPI.mosRoItemStatus(status0)
-	// 	expect(Parts.findOne(partID).status).to.be.equal(status0.Status)
-	// 	ServerPeripheralDeviceAPI.mosRoItemStatus(status1)
-	// 	expect(Parts.findOne(partID).status).to.be.equal(status1.Status)
-	// 	expect(() => {
-	// 		ServerPeripheralDeviceAPI.mosRoItemStatus(statusUnknown0)
-	// 	}).to.throw(/404/)
-	// 	expect(Parts.findOne(partID).status).to.be.equal(status1.Status) // keep the previous status
-	// 	expect(() => {
-	// 		ServerPeripheralDeviceAPI.mosRoItemStatus(statusUnknown1)
-	// 	}).to.throw(/404/)
-	// 	expect(Parts.findOne(partID).status).to.be.equal(status1.Status) // keep the previous status
-	// 	expect(() => {
-	// 		ServerPeripheralDeviceAPI.mosRoItemStatus(statusUnknown2)
-	// 	}).to.throw(/404/)
-	// 	expect(Parts.findOne(partID).status).to.be.equal(status1.Status) // keep the previous status
-	// })
-	// it('mosRoStoryInsert', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story0 = rundown.Stories[0]
-	// 	let story1 = rundown.Stories[1]
-	//
-	// 	let action0: MOS.IMOSStoryAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story1.ID // will insert a story before this
-	// 	}
-	// 	let stories0 = xmlApiData.rundownElementAction_insert_story_Stories
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegments0 = Segments.find({ rundownId: dbRundown._id }).fetch()
-	//
-	// 	// Insert story:
-	// 	ServerPeripheralDeviceAPI.mosRoStoryInsert(action0, stories0)
-	// 	let dbSegments1 = Segments.find({
-	// 		rundownId: dbRundown._id
-	// 	}, mod).fetch()
-	// 	expect(dbSegments1.length).to.be.greaterThan(dbSegments0.length)
-	// 	expect(dbSegments1.length).to.equal(dbSegments0.length + stories0.length)
-	// 	expect(dbSegments1[1].mosId).to.equal(stories0[0].ID.toString())
-	//
-	// })
-	// it('mosRoItemInsert', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let item0 = story.Items[0]
-	//
-	// 	let action0: MOS.IMOSItemAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story.ID,
-	// 		ItemID: item0.ID // will insert an item before this
-	//
-	// 	}
-	// 	let items0 = xmlApiData.rundownElementAction_insert_item_Items
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-	// 	let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
-	//
-	// 	// Insert item:
-	// 	ServerPeripheralDeviceAPI.mosRoItemInsert(action0, items0)
-	// 	let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-	// 	expect(dbParts1.length).to.be.greaterThan(dbParts0.length)
-	// 	expect(dbParts1.length).to.equal(dbParts0.length + items0.length)
-	// 	expect(dbParts1[0].mosId).to.equal(items0[0].ID.toString())
-	//
-	// })
-	// it('mosRoStoryReplace', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	//
-	// 	let action0: MOS.IMOSStoryAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story.ID // will replace this story
-	//
-	// 	}
-	// 	let stories0 = xmlApiData.rundownElementAction_replace_story_Stories
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegments0 = Segments.find({ rundownId: dbRundown._id }).fetch()
-	//
-	// 	// Replace story:
-	// 	ServerPeripheralDeviceAPI.mosRoStoryReplace(action0, stories0)
-	// 	let dbSegments1 = Segments.find({
-	// 		rundownId: dbRundown._id
-	// 	}, mod).fetch()
-	// 	expect(dbSegments1.length).to.equal(dbSegments0.length - 1 + stories0.length)
-	// 	expect(dbSegments1[0].mosId).to.equal(stories0[0].ID.toString())
-	//
-	// })
-	// it('mosRoItemReplace', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let item0 = story.Items[0]
-	//
-	// 	let action0: MOS.IMOSItemAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story.ID,
-	// 		ItemID: item0.ID // will replace this item
-	//
-	// 	}
-	// 	let items0 = xmlApiData.rundownElementAction_replace_item_Items
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-	// 	let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
-	//
-	// 	// Replace item:
-	// 	ServerPeripheralDeviceAPI.mosRoItemReplace(action0, items0)
-	// 	let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-	// 	expect(dbParts1.length).to.equal(dbParts0.length - 1 + items0.length)
-	// 	expect(dbParts1[0].mosId).to.equal(items0[0].ID.toString())
-	//
-	// })
-	// it('mosRoStoryMove', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story0 = rundown.Stories[0]
-	// 	let story1 = rundown.Stories[1]
-	//
-	// 	let action0: MOS.IMOSStoryAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story0.ID // will move a story to before this story
-	// 	}
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegments0 = Segments.find({ rundownId: dbRundown._id }).fetch()
-	//
-	// 	// Move story:
-	// 	ServerPeripheralDeviceAPI.mosRoStoryMove(action0, [story1.ID])
-	// 	let dbSegments1 = Segments.find({
-	// 		rundownId: dbRundown._id
-	// 	}, mod).fetch()
-	// 	expect(dbSegments1.length).to.equal(dbSegments0.length)
-	// 	expect(dbSegments1[0].mosId).to.equal(story1.ID.toString())
-	// 	expect(dbSegments1[1].mosId).to.equal(story0.ID.toString())
-	//
-	// })
-	// it('mosRoItemMove', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let item0 = story.Items[0]
-	//
-	// 	let action0: MOS.IMOSItemAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story.ID,
-	// 		ItemID: item0.ID // will move before this item
-	// 	}
-	// 	let items0 = xmlApiData.rundownElementAction_insert_item_Items
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	ServerPeripheralDeviceAPI.mosRoItemInsert(action0, items0)
-	//
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-	// 	let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
-	//
-	// 	// Move item:
-	// 	ServerPeripheralDeviceAPI.mosRoItemMove(action0, [new MOS.MosString128(dbParts0[0].mosId)])
-	// 	let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-	// 	expect(dbParts1.length).to.equal(dbParts0.length)
-	// 	expect(dbParts1[0].mosId).to.equal(dbParts0[1].mosId)
-	// 	expect(dbParts1[1].mosId).to.equal(dbParts0[0].mosId)
-	//
-	// })
-	// it('mosRoStoryDelete', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story0 = rundown.Stories[0]
-	// 	let story1 = rundown.Stories[1]
-	//
-	// 	let action0: MOS.IMOSStoryAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story0.ID // will delete this story
-	// 	}
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegments0 = Segments.find({ rundownId: dbRundown._id }).fetch()
-	//
-	// 	// Delete story:
-	// 	ServerPeripheralDeviceAPI.mosRoStoryDelete(action0, [story1.ID])
-	// 	let dbSegments1 = Segments.find({
-	// 		rundownId: dbRundown._id
-	// 	}, mod).fetch()
-	// 	expect(dbSegments1.length).to.equal(dbSegments0.length - 1)
-	//
-	// })
-	// it('mosRoItemDelete', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let item0 = story.Items[0]
-	//
-	// 	let action0: MOS.IMOSItemAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story.ID,
-	// 		ItemID: item0.ID // will delete this item
-	//
-	// 	}
-	// 	let items0 = xmlApiData.rundownElementAction_insert_item_Items
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	ServerPeripheralDeviceAPI.mosRoItemInsert(action0, items0)
-	//
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-	// 	let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
-	//
-	// 	// Delete item:
-	// 	ServerPeripheralDeviceAPI.mosRoItemDelete(action0, [new MOS.MosString128(dbParts0[0].mosId)])
-	// 	let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-	// 	expect(dbParts1.length).to.equal(dbParts0.length - 1)
-	//
-	// })
-	// it('mosRoStorySwap', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story0 = rundown.Stories[0]
-	// 	let story1 = rundown.Stories[1]
-	//
-	// 	let action0: MOS.IMOSROAction = {
-	// 		RundownID: rundown.ID
-	// 	}
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegments0 = Segments.find({ rundownId: dbRundown._id }).fetch()
-	//
-	// 	// Swap stories:
-	// 	ServerPeripheralDeviceAPI.mosRoStorySwap(action0, story0.ID, story1.ID)
-	// 	let dbSegments1 = Segments.find({
-	// 		rundownId: dbRundown._id
-	// 	}, mod).fetch()
-	// 	expect(dbSegments1.length).to.equal(dbSegments0.length)
-	// 	expect(dbSegments1[0].mosId).to.equal(story1.ID.toString())
-	// 	expect(dbSegments1[1].mosId).to.equal(story0.ID.toString())
-	//
-	// })
-	// it('mosRoItemSwap', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let item0 = story.Items[0]
-	//
-	// 	let action0: MOS.IMOSItemAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story.ID,
-	// 		ItemID: item0.ID // will move before this item
-	// 	}
-	// 	let action1: MOS.IMOSStoryAction = {
-	// 		RundownID: rundown.ID,
-	// 		StoryID: story.ID
-	// 	}
-	// 	let items0 = xmlApiData.rundownElementAction_insert_item_Items
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	ServerPeripheralDeviceAPI.mosRoItemInsert(action0, items0)
-	//
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	// 	let dbSegment0 = Segments.findOne( segmentId(rundownId(rundown.ID), story.ID))
-	// 	let dbParts0 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }).fetch()
-	//
-	// 	// Swap items:
-	// 	ServerPeripheralDeviceAPI.mosRoItemSwap(action1, item0.ID, items0[0].ID)
-	// 	let dbParts1 = Parts.find({ rundownId: dbRundown._id, segmentId: dbSegment0._id }, mod).fetch()
-	// 	expect(dbParts1.length).to.equal(dbParts0.length)
-	// 	expect(dbParts1[0].mosId).to.equal(dbParts0[1].mosId)
-	// 	expect(dbParts1[1].mosId).to.equal(dbParts0[0].mosId)
-	//
-	// })
-	// it('mosRoReadyToAir', function () {
-	// 	// Test data:
-	// 	let rundown = xmlApiData.rundownCreate
-	// 	let story = rundown.Stories[0]
-	// 	let item0 = story.Items[0]
-	//
-	// 		ID: rundown.ID,
-	// 		Status: MOS.IMOSObjectAirStatus.READY
-	// 	}
-	//
-	// 		ID: rundown.ID,
-	// 		Status: MOS.IMOSObjectAirStatus.NOT_READY
-	// 	}
-	//
-	// 	// first create the rundown:
-	// 	ServerPeripheralDeviceAPI.mosRoCreate(rundown)
-	// 	let dbRundown = Rundowns.findOne(rundownId(rundown.ID))
-	//
-	// 	// Set ready to air status:
-	// 	ServerPeripheralDeviceAPI.mosRoReadyToAir(status0)
-	// 	expect(Rundowns.findOne(dbRundown._id).airStatus).to.equal(status0.Status)
-	//
-	// 	ServerPeripheralDeviceAPI.mosRoReadyToAir(status1)
-	// 	expect(Rundowns.findOne(dbRundown._id).airStatus).to.equal(status1.Status)
-	//
-	// })
-})

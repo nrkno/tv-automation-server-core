@@ -1,33 +1,33 @@
-import * as React from 'react'
+// import * as React from 'react'
 
-import ClassNames from 'classnames'
-import * as _ from 'underscore'
-import { withTranslation } from 'react-i18next'
+// import ClassNames from 'classnames'
+// import * as _ from 'underscore'
+// import { withTranslation } from 'react-i18next'
 
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
+// import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+// import { Rundown } from '../../../lib/collections/Rundowns'
 
-import { PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'
-import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { unprotectString } from '../../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
+// import { PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'
+// import { SourceLayerItemContainer } from './SourceLayerItemContainer'
+// import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+// import { unprotectString } from '../../../lib/lib'
+// import { Studio } from '../../../lib/collections/Studios'
 
-interface IProps {
-	playlist: RundownPlaylist
-	studio: Studio
-	part?: PartUi
-	outputGroups?: {
-		[key: string]: IOutputLayerUi
-	}
-	sourceLayers?: {
-		[key: string]: ISourceLayerUi
-	}
-	collapsedOutputs: {
-		[key: string]: boolean
-	}
-	isCollapsed?: boolean
-}
+// interface IProps {
+// 	playlist: RundownPlaylist
+// 	studio: Studio
+// 	part?: PartUi
+// 	outputGroups?: {
+// 		[key: string]: IOutputLayerUi
+// 	}
+// 	sourceLayers?: {
+// 		[key: string]: ISourceLayerUi
+// 	}
+// 	collapsedOutputs: {
+// 		[key: string]: boolean
+// 	}
+// 	isCollapsed?: boolean
+// }
 
 /**
  * This code is not used anywhere, and it's just saved here, because the idea of a SegmentNextPreview comes up occasionally

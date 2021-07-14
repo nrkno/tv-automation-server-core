@@ -1,8 +1,6 @@
-import { setExpectedVersion } from './lib'
 import { addMigrationSteps } from './databaseMigration'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 /**
  * This file contains system specific migration steps.
@@ -15,7 +13,7 @@ export const addSteps = addMigrationSteps('0.16.0', [
 		id: 'CoreSystem.storePath',
 		canBeRunAutomatically: false,
 		validate: () => {
-			let system = getCoreSystem()
+			const system = getCoreSystem()
 			if (!system) return 'CoreSystem not found!'
 			if (!system.storePath) return 'CoreSystem.storePath not set!'
 			if (!_.isString(system.storePath)) return 'CoreSystem.storePath must be a string!'
@@ -36,6 +34,4 @@ export const addSteps = addMigrationSteps('0.16.0', [
 			},
 		],
 	},
-
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.1.1'),
 ])

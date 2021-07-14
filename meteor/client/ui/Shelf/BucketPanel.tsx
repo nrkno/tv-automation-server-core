@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Rundowns, Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -21,8 +21,6 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
 	ISourceLayer,
-	SomeContent,
-	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
 	SomeTimelineContent,
@@ -72,7 +70,7 @@ import { i18nTranslator } from '../i18n'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
-		let size = {
+		const size = {
 			width: 0,
 			height: 0,
 		}
@@ -104,7 +102,7 @@ const bucketSource = {
 }
 
 const bucketTarget = {
-	canDrop(props: IBucketPanelProps, monitor: DropTargetMonitor) {
+	canDrop(_props: IBucketPanelProps, _monitor: DropTargetMonitor) {
 		return true
 	},
 
@@ -281,10 +279,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				showStyleVariantId = rundown.showStyleVariantId
 			}
 		}
-		let tOLayers: {
+		const tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
-		let tSLayers: {
+		const tSLayers: {
 			[key: string]: ISourceLayer
 		} = {}
 
@@ -463,7 +461,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
-				onSelectAdLib = (piece: BucketAdLibItem, e: any) => {}
+				onSelectAdLib = (_piece: BucketAdLibItem, _e: any) => {}
 
 				onToggleAdLib = (piece: BucketAdLibItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
@@ -493,7 +491,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						return
 					}
 
-					let sourceLayer = this.props.sourceLayers && this.props.sourceLayers[piece.sourceLayerId]
+					const sourceLayer = this.props.sourceLayers && this.props.sourceLayers[piece.sourceLayerId]
 
 					if (queue && sourceLayer && !sourceLayer.isQueueable) {
 						console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
@@ -506,6 +504,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								MeteorCall.userAction.executeAction(
 									e,
 									this.props.playlist._id,
+									bucketAction.adlibAction._id,
 									bucketAction.adlibAction.actionId,
 									bucketAction.adlibAction.userData,
 									mode?.data
@@ -513,7 +512,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							)
 						} else {
 							if (
-								!this.isAdLibOnAir((piece as any) as AdLibPieceUi) ||
+								!this.isAdLibOnAir(piece as any as AdLibPieceUi) ||
 								!(sourceLayer && sourceLayer.clearKeyboardHotkey)
 							) {
 								const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -651,7 +650,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						const draggedB = this.props.adLibPieces.find((b) => b._id === draggedId)
 
 						if (draggedOver && draggedB) {
-							var newRank = draggedOver._rank
+							let newRank = draggedOver._rank
 
 							// Dragged over into first place
 							if (newIndex === 0) {
@@ -741,8 +740,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				render() {
-					const { isDragging, connectDragSource, connectDragPreview, connectDropTarget } = this.props
-					const opacity = isDragging ? 0 : 1
+					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
 					if (this.props.showStyleBase) {
 						return connectDragPreview(
@@ -800,7 +798,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												holdToDisplay={contextMenuHoldToDisplayTime()}
 											>
 												<BucketPieceButton
-													piece={(adlib as any) as IAdLibListItem}
+													piece={adlib as any as IAdLibListItem}
 													studio={this.props.studio}
 													bucketId={adlib.bucketId}
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
@@ -808,7 +806,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													onToggleAdLib={this.onToggleAdLib as any}
 													onSelectAdLib={this.onSelectAdLib as any}
 													playlist={this.props.playlist}
-													isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
+													isOnAir={this.isAdLibOnAir(adlib as any as AdLibPieceUi)}
 													mediaPreviewUrl={
 														this.props.studio
 															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''

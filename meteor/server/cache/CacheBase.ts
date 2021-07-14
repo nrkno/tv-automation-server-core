@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { isDbCacheWritable } from './lib'
-import { waitTime, ProtectedString } from '../../lib/lib'
+import { sleep, ProtectedString } from '../../lib/lib'
 import { logger } from '../logging'
 import { isInTestWrite } from '../security/lib/securityVerify'
 import { profiler } from '../api/profiler'
@@ -9,7 +9,7 @@ import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection
 import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 import { anythingChanged, sumChanges } from '../lib/database'
 
-type DeferredFunction<Cache> = (cache: Cache) => void
+type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
 
 type DbCacheWritable<T1 extends T2, T2 extends { _id: ProtectedString<any> }> =
 	| DbCacheWriteCollection<T1, T2>
@@ -29,9 +29,9 @@ export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 >
 
 /** This cache contains data relevant in a studio */
-export abstract class ReadOnlyCacheBase {
-	protected _deferredFunctions: DeferredFunction<ReadOnlyCacheBase>[] = []
-	protected _deferredAfterSaveFunctions: (() => void)[] = []
+export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
+	protected _deferredFunctions: DeferredFunction<T>[] = []
+	protected _deferredAfterSaveFunctions: (() => void | Promise<void>)[] = []
 	private _activeTimeout: number | null = null
 	private _hasTimedOut = false
 
@@ -66,8 +66,12 @@ export abstract class ReadOnlyCacheBase {
 		const lowPrioDBs: DbCacheWritable<any, any>[] = []
 
 		_.map(_.keys(this), (key) => {
-			const db = this[key]
-			if (isDbCacheWritable(db)) {
+			let db = this[key]
+			if (db && typeof db === 'object' && 'getIfLoaded' in db) {
+				// If wrapped in a lazy
+				db = db.getIfLoaded()
+			}
+			if (db && isDbCacheWritable(db)) {
 				if (key.match(/timeline/i)) {
 					highPrioDBs.push(db)
 				} else {
@@ -89,7 +93,7 @@ export abstract class ReadOnlyCacheBase {
 
 		// Execute cache.defer()'s
 		for (let i = 0; i < this._deferredFunctions.length; i++) {
-			this._deferredFunctions[i](this)
+			await this._deferredFunctions[i](this as any)
 		}
 		this._deferredFunctions.length = 0 // clear the array
 
@@ -103,7 +107,7 @@ export abstract class ReadOnlyCacheBase {
 				// Wait a little bit before saving the rest.
 				// The idea is that this allows for the high priority publications to update (such as the Timeline),
 				// sending the updated timeline to Playout-gateway
-				waitTime(2)
+				await sleep(2)
 			}
 		}
 
@@ -113,7 +117,7 @@ export abstract class ReadOnlyCacheBase {
 
 		// Execute cache.deferAfterSave()'s
 		for (let i = 0; i < this._deferredAfterSaveFunctions.length; i++) {
-			this._deferredAfterSaveFunctions[i]()
+			await this._deferredAfterSaveFunctions[i]()
 		}
 		this._deferredAfterSaveFunctions.length = 0 // clear the array
 
@@ -194,7 +198,7 @@ export abstract class ReadOnlyCacheBase {
 		if (span) span.end()
 	}
 }
-export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase {
+export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase<T> {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<T>): void {
 		this._deferredFunctions.push(fcn)
@@ -202,7 +206,7 @@ export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheB
 	/** Defer provided function to after cache.saveAllToDatabase().
 	 * Note that at the time of execution, the cache is no longer available.
 	 * */
-	deferAfterSave(fcn: () => void) {
+	deferAfterSave(fcn: () => void | Promise<void>) {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}
 }

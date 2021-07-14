@@ -83,21 +83,21 @@ const $ = {
 }
 
 export namespace MeteorMock {
-	export let isTest: boolean = true
+	export const isTest: boolean = true
 
-	export let isClient: boolean = false
-	export let isCordova: boolean = false
-	export let isServer: boolean = true
-	export let isProduction: boolean = false
-	export let release: string = ''
+	export const isClient: boolean = false
+	export const isCordova: boolean = false
+	export const isServer: boolean = true
+	export const isProduction: boolean = false
+	export const release: string = ''
 
-	export let settings: any = {}
+	export const settings: any = {}
 
-	export let mockMethods: { [name: string]: Function } = {}
+	export const mockMethods: { [name: string]: Function } = {}
 	export let mockUser: Meteor.User | undefined = undefined
-	export let mockStartupFunctions: Function[] = []
+	export const mockStartupFunctions: Function[] = []
 
-	export let absolutePath = process.cwd()
+	export const absolutePath = process.cwd()
 
 	export function user(): Meteor.User | undefined {
 		return mockUser
@@ -185,13 +185,13 @@ export namespace MeteorMock {
 	export function apply(
 		methodName: string,
 		args: any[],
-		options?: {
+		_options?: {
 			wait?: boolean
 			onResultReceived?: Function
 			returnStubValue?: boolean
 			throwStubExceptions?: boolean
 		},
-		asyncCallback?: Function
+		_asyncCallback?: Function
 	): any {
 		// ?
 		mockMethods[methodName].call(getMethodContext(), ...args)
@@ -305,6 +305,11 @@ export namespace MeteorMock {
 				cb(e)
 			})
 	})
+
+	/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */
+	export function sleepNoFakeTimers(time: number): Promise<void> {
+		return new Promise<void>((resolve) => $.orgSetTimeout(resolve, time))
+	}
 }
 export function setup() {
 	return {
@@ -313,8 +318,8 @@ export function setup() {
 }
 
 /** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */
-export function waitTimeNoFakeTimers(time: number) {
-	waitForPromise(new Promise((resolve) => $.orgSetTimeout(resolve, time)))
+export function waitTimeNoFakeTimers(time: number): void {
+	waitForPromise(MeteorMock.sleepNoFakeTimers(time))
 }
 export const waitForPromise: <T>(p: Promise<T>) => T = MeteorMock.wrapAsync(function waitForPromises<T>(
 	p: Promise<T>,

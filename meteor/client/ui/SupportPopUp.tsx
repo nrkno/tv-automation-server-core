@@ -20,7 +20,7 @@ interface ITrackedProps {
 	}
 }
 
-export const SupportPopUp = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
+export const SupportPopUp = translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) => {
 	const core = CoreSystem.findOne()
 	return {
 		support: core && core.support ? core.support : { message: '' },

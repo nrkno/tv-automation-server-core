@@ -44,13 +44,13 @@ export class LottieButton extends React.Component<IProps, IState> {
 		}
 	}
 
-	onMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+	onMouseEnter = () => {
 		this.setState({
 			hover: true,
 		})
 	}
 
-	onMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+	onMouseLeave = () => {
 		this.setState({
 			hover: false,
 		})

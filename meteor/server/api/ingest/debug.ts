@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { check } from '../../../lib/check'
 import { IngestActions } from './actions'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'

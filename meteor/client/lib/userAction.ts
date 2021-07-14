@@ -191,7 +191,7 @@ export function doUserAction<Result>(
 
 	// Display a progress message, if the method takes a long time to execute:
 	let timeoutMessage: Notification | null = null
-	let timeout = Meteor.setTimeout(() => {
+	const timeout = Meteor.setTimeout(() => {
 		timeoutMessage = new Notification(
 			undefined,
 			NoticeLevel.NOTIFICATION,
@@ -215,7 +215,7 @@ export function doUserAction<Result>(
 	}
 
 	fcn(eventContextForLog(userEvent))
-		.then((res: ClientAPI.ClientResponseSuccess<Result>) => {
+		.then((res: ClientAPI.ClientResponse<Result>) => {
 			clearMethodTimeout()
 
 			if (ClientAPI.isClientResponseError(res)) {

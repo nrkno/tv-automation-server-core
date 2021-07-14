@@ -1,8 +1,5 @@
-import * as _ from 'underscore'
-import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { Parts, DBPart } from './Parts'
+import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { RundownId } from './Rundowns'
-import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
 import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
 import { SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
@@ -28,49 +25,9 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentNote>
 }
-export class Segment implements DBSegment {
-	public _id: SegmentId
-	public _rank: number
-	public externalId: string
-	public externalModified: number
-	public rundownId: RundownId
-	public name: string
-	public metaData?: { [key: string]: any }
-	public notes?: Array<SegmentNote>
-	public isHidden?: boolean
-	public orphaned?: 'deleted'
-	public identifier?: string
+export type Segment = DBSegment
 
-	constructor(document: DBSegment) {
-		for (let [key, value] of Object.entries(document)) {
-			this[key] = value
-		}
-	}
-	getParts(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBPart>) {
-		selector = selector || {}
-		options = options || {}
-		return Parts.find(
-			_.extend(
-				{
-					rundownId: this.rundownId,
-					segmentId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1 },
-				},
-				options
-			)
-		).fetch()
-	}
-}
-
-// export const Segments = createMongoCollection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
-export const Segments: TransformedCollection<Segment, DBSegment> = createMongoCollection<Segment>('segments', {
-	transform: (doc) => applyClassToDocument(Segment, doc),
-})
+export const Segments = createMongoCollection<Segment, DBSegment>('segments')
 registerCollection('Segments', Segments)
 
 registerIndex(Segments, {

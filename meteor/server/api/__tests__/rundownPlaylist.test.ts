@@ -7,7 +7,7 @@ import {
 	setupDefaultRundownPlaylist,
 	setupDefaultRundown,
 } from '../../../__mocks__/helpers/database'
-import { protectString, waitForPromise } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { produceRundownPlaylistInfoFromRundown, updateRundownsInPlaylist } from '../rundownPlaylist'
@@ -32,10 +32,10 @@ export enum RundownAPIMethods { // Using our own method definition, to catch ext
 
 describe('Rundown', () => {
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 	})
-	testInFiber('moveRundown', () => {
+	testInFiber('moveRundown', async () => {
 		// Set up a playlist:
 		const { rundownId: rundownId00, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
 			env,
@@ -66,9 +66,10 @@ describe('Rundown', () => {
 		expect(rundown00.playlistId).toEqual(playlistId0)
 
 		// This should set the default sorting of the rundowns in the plylist:
-		let rundownsCollection = new DbCacheWriteCollection(Rundowns)
-		waitForPromise(rundownsCollection.prepareInit({ playlistId: playlist0._id }, true))
-		let rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
+		const rundownsCollection = await DbCacheWriteCollection.createFromDatabase(Rundowns, {
+			playlistId: playlist0._id,
+		})
+		const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
 			env.studio,
 			undefined,
 			playlist0,
@@ -77,10 +78,10 @@ describe('Rundown', () => {
 			rundownsCollection.findFetch()
 		)
 		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundownsCollection)
-		waitForPromise(rundownsCollection.updateDatabaseWithData())
+		await rundownsCollection.updateDatabaseWithData()
 
 		// Expect the rundowns to be in the right order:
-		let rundownsInPLaylist0 = playlist0.getRundowns()
+		const rundownsInPLaylist0 = playlist0.getRundowns()
 		expect(rundownsInPLaylist0[0]).toMatchObject({ _id: 'rundown00', _rank: 1 })
 		expect(rundownsInPLaylist0[1]).toMatchObject({ _id: 'rundown01', _rank: 2 })
 		expect(rundownsInPLaylist0[2]).toMatchObject({ _id: 'rundown02', _rank: 3 })

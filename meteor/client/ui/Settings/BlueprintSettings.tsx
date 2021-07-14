@@ -2,7 +2,6 @@ import * as React from 'react'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -73,8 +72,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					uploadFileKey: Date.now(),
 				})
 
-				let uploadFileContents = (e2.target as any).result
-				let blueprint = this.props.blueprint
+				const uploadFileContents = (e2.target as any).result
+				const blueprint = this.props.blueprint
 
 				// First attempt
 				doModalDialog({
@@ -310,6 +309,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								</p>
 							</div>
 						) : null}
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								{t('Disable version check')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="disableVersionChecks"
+									obj={blueprint}
+									type="checkbox"
+									collection={Blueprints}
+									className="input"
+								/>
+							</label>
+						</div>
 
 						<div className="mod mvs mhn">
 							<UploadButton

@@ -2,13 +2,7 @@ import * as React from 'react'
 import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data/nora/browser-plugin-data'
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../../../lib/parsers/mos/mosXml2Js'
 import { PieceGeneric } from '../../../../../lib/collections/Pieces'
-import {
-	createMosAppInfoXmlString,
-	UIMetric as MOSUIMetric,
-	UIMetricMode as MOSUIMetricMode,
-} from '../../../../lib/data/mos/plugin-support'
-import { IMOSItem } from 'mos-connection'
-import { literal } from '../../../../../lib/lib'
+import { createMosAppInfoXmlString } from '../../../../lib/data/mos/plugin-support'
 
 //TODO: figure out what the origin should be
 const LOCAL_ORIGIN = `${window.location.protocol}//${window.location.host}`
@@ -28,7 +22,7 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 		this.setUpEventListeners(window)
 	}
 
-	componentDidUpdate(prevProps: INoraEditorProps) {
+	componentDidUpdate(_prevProps: INoraEditorProps) {
 		if (this.iframe && this.iframe.contentWindow) {
 			this.setUpEventListeners(this.iframe.contentWindow)
 		}
@@ -84,22 +78,22 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 
 	sendAppInfo(target: Window | null) {
 		if (target) {
-			let uiMetrics: MOSUIMetric[] | undefined = undefined
-			if (this.iframe) {
-				const size = this.iframe.getClientRects().item(0)
-				if (size) {
-					uiMetrics = [
-						literal<MOSUIMetric>({
-							startx: size.left,
-							starty: size.top,
-							endx: size.left + size.width,
-							endy: size.top + size.height,
-							mode: MOSUIMetricMode.ModalDialog,
-							canClose: true,
-						}),
-					]
-				}
-			}
+			// let uiMetrics: MOSUIMetric[] | undefined = undefined
+			// if (this.iframe) {
+			// 	const size = this.iframe.getClientRects().item(0)
+			// 	if (size) {
+			// 		uiMetrics = [
+			// 			literal<MOSUIMetric>({
+			// 				startx: size.left,
+			// 				starty: size.top,
+			// 				endx: size.left + size.width,
+			// 				endy: size.top + size.height,
+			// 				mode: MOSUIMetricMode.ModalDialog,
+			// 				canClose: true,
+			// 			}),
+			// 		]
+			// 	}
+			// }
 
 			const payloadXmlString = createMosAppInfoXmlString()
 			target.postMessage(payloadXmlString, MODULE_BROWSER_ORIGIN)

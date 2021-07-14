@@ -11,6 +11,7 @@ export namespace ExpectedPackage {
 	export enum PackageType {
 		MEDIA_FILE = 'media_file',
 		QUANTEL_CLIP = 'quantel_clip',
+		JSON_DATA = 'json_data',
 
 		// TALLY_LABEL = 'tally_label'
 
@@ -28,6 +29,9 @@ export namespace ExpectedPackage {
 
 		/** What type of package it is */
 		type: PackageType
+
+		/** Whether the blueprints should be notified (re-run) on any package info updates */
+		listenToPackageInfoUpdates?: boolean
 
 		/** Definition of the content of the Package.
 		 * With "content", we mean what's the basic definition of a package. For a media file, think "filename".
@@ -49,7 +53,7 @@ export namespace ExpectedPackage {
 			/** Reference to a PackageContainer */
 			containerId: string
 			/** Locally defined Accessors, these are combined (deep extended) with the PackageContainer (if it is found) Accessors */
-			accessors?: { [accessorId: string]: AccessorOnPackage.Any }
+			accessors: { [accessorId: string]: AccessorOnPackage.Any }
 		}[]
 
 		/** The sideEffect is used by the Package Manager to generate extra artifacts, such as thumbnails & previews */
@@ -93,6 +97,7 @@ export namespace ExpectedPackage {
 					| AccessorOnPackage.LocalFolder
 					| AccessorOnPackage.FileShare
 					| AccessorOnPackage.HTTP
+					| AccessorOnPackage.HTTPProxy
 			}
 		}[]
 	}
@@ -118,6 +123,25 @@ export namespace ExpectedPackage {
 			accessors: { [accessorId: string]: AccessorOnPackage.Quantel }
 		}[]
 	}
+
+	export interface ExpectedPackageJSONData extends Base {
+		type: PackageType.JSON_DATA
+		content: {
+			/** Local path on the package container */
+			path: string
+		}
+		version: any // {}
+		sources: {
+			containerId: string
+			accessors: {
+				[accessorId: string]:
+					| AccessorOnPackage.HTTP
+					| AccessorOnPackage.HTTPProxy
+					| AccessorOnPackage.LocalFolder
+					| AccessorOnPackage.FileShare
+			}
+		}[]
+	}
 }
 
 /** A PackageContainer defines a place that contains Packages, that can be read or written to.
@@ -139,15 +163,14 @@ export interface PackageContainer {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Accessor {
-	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection
+	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection
 
 	export enum AccessType {
 		LOCAL_FOLDER = 'local_folder',
 		FILE_SHARE = 'file_share',
 		HTTP = 'http',
-
+		HTTP_PROXY = 'http_proxy',
 		QUANTEL = 'quantel',
-
 		CORE_PACKAGE_INFO = 'core_package_info',
 	}
 
@@ -158,7 +181,7 @@ export namespace Accessor {
 		allowRead: boolean
 		allowWrite: boolean
 	}
-	/** Defines access to a local folder */
+	/** Definition of access to a local folder. */
 	export interface LocalFolder extends Base {
 		type: AccessType.LOCAL_FOLDER
 
@@ -170,6 +193,7 @@ export namespace Accessor {
 		 */
 		folderPath: string
 	}
+	/** Definition of a file share over a network. */
 	export interface FileShare extends Base {
 		type: AccessType.FILE_SHARE
 
@@ -184,14 +208,23 @@ export namespace Accessor {
 		userName?: string
 		password?: string
 	}
+	/** Definition of access to a generic HTTP endpoint. (Read-access only) */
 	export interface HTTP extends Base {
 		type: AccessType.HTTP
+		allowWrite: false
 
 		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
 		baseUrl: string
 
-		/** Any headers to send along with the request */
-		// headers?: { [name: string]: any } // Not implemented (yet)
+		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
+		networkId?: string
+	}
+	/** Definition of access to the HTTP-proxy server that comes with Package Manager. */
+	export interface HTTPProxy extends Base {
+		type: AccessType.HTTP_PROXY
+
+		/** Base url (url to the host), for example http://myhost.com/fileShare/ */
+		baseUrl: string
 
 		/** Name/Id of the network the share exists on. Used to differ between different local networks. Leave empty if globally accessible. */
 		networkId?: string
@@ -228,7 +261,7 @@ export namespace Accessor {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AccessorOnPackage {
-	export type Any = LocalFolder | FileShare | HTTP | Quantel | CorePackageCollection
+	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection
 
 	export interface LocalFolder extends Partial<Accessor.LocalFolder> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
@@ -237,6 +270,10 @@ export namespace AccessorOnPackage {
 	export interface FileShare extends Partial<Accessor.FileShare> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
 		filePath?: string
+	}
+	export interface HTTPProxy extends Partial<Accessor.HTTPProxy> {
+		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
+		url?: string
 	}
 	export interface HTTP extends Partial<Accessor.HTTP> {
 		/** URL path to resource (combined with .baseUrl gives the full URL), for example: /folder/myFile */
@@ -291,14 +328,30 @@ export namespace ExpectedPackageStatusAPI {
 	/** The stat */
 	export interface WorkStatusInfo {
 		/** Short description on what the current status is. Example "working", "fulfilled" */
-		status: string
-		/** Longer reason as to why the status is what it is */
-		statusReason: string
+		status: WorkStatusState
+		/** The reason as to why the status is what it is */
+		statusReason: Reason
+
+		/** Timestamp when the status was (actually) last changed. Just minor changes in the statusReason doesn't count. */
+		statusChanged: number
 
 		/** Progress, 0-1 */
 		progress?: number
 		/** Calculated time left of this step */
 		expectedLeft?: number
+	}
+	/** The various states a Work can be in. See documentation in Package Manager. */
+	export enum WorkStatusState {
+		NEW = 'new',
+		WAITING = 'waiting',
+		READY = 'ready',
+		WORKING = 'working',
+		FULFILLED = 'fulfilled',
+		REMOVED = 'removed',
+
+		// Triggered from Core:
+		RESTARTED = 'restarted',
+		ABORTED = 'aborted',
 	}
 
 	/** Describes the status of a Package in a PackageContainer */
@@ -314,8 +367,8 @@ export namespace ExpectedPackageStatusAPI {
 		/** Calculated time left, used when status = TRANSFERRING_* */
 		expectedLeft?: number
 
-		/** Longer reason as to why the status is what it is */
-		statusReason: string
+		/** The reason as to why the status is what it is */
+		statusReason: Reason
 	}
 	export enum PackageContainerPackageStatusStatus {
 		/** The Package source isn't found at all */
@@ -329,9 +382,11 @@ export namespace ExpectedPackageStatusAPI {
 		/** All good, the package is in place and ready to play*/
 		READY = 'ready',
 	}
-}
-
-export interface ListenToPackageUpdate {
-	/** Same type of _id as in expectedPackages */
-	packageId: string
+	/** Contains textual descriptions for statuses. */
+	export interface Reason {
+		/** User-readable reason (to be displayed in GUI:s, to regular humans ) */
+		user: string
+		/** Technical reason  (to be displayed in GUI:s, but to super-users only ) */
+		tech: string
+	}
 }

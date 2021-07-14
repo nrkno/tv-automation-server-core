@@ -1,5 +1,3 @@
-import * as _ from 'underscore'
-
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
@@ -17,7 +15,7 @@ export function maintainFocusOnPartInstance(
 	forceScroll?: boolean,
 	noAnimation?: boolean
 ) {
-	let startTime = Date.now()
+	const startTime = Date.now()
 	const focus = () => {
 		if (Date.now() - startTime < timeWindow) {
 			_dontClearInterval = true
@@ -71,7 +69,7 @@ export async function scrollToPart(
 	zoomInToFit?: boolean
 ): Promise<boolean> {
 	quitFocusOnPart()
-	let part = Parts.findOne(partId)
+	const part = Parts.findOne(partId)
 	if (part) {
 		await scrollToSegment(part.segmentId, forceScroll, noAnimation)
 
@@ -138,8 +136,8 @@ export function scrollToSegment(
 		return elementToScrollToOrSegmentId
 	}
 
-	let elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
-	let historyTarget: HTMLElement | null = getElementToScrollTo(true)
+	const elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
+	const historyTarget: HTMLElement | null = getElementToScrollTo(true)
 
 	// historyTarget will be === to elementToScrollTo if history is not used / not found
 	if (!elementToScrollTo || !historyTarget) {
@@ -217,7 +215,7 @@ function innerScrollToSegment(
 }
 
 function regionInViewport(topElement: HTMLElement, bottomElement: HTMLElement) {
-	let { top, bottom } = getRegionPosition(topElement, bottomElement)
+	const { top, bottom } = getRegionPosition(topElement, bottomElement)
 
 	const headerHeight = Math.floor(getHeaderHeight())
 
@@ -238,13 +236,11 @@ let scrollToPositionRequestReject: ((reason?: any) => void) | undefined
 
 export function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
 	if (noAnimation) {
-		return new Promise((resolve, reject) => {
-			window.scroll({
-				top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
-				left: 0,
-			})
-			resolve()
+		window.scroll({
+			top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
+			left: 0,
 		})
+		return Promise.resolve()
 	} else {
 		return new Promise((resolve, reject) => {
 			if (scrollToPositionRequest !== undefined) window.cancelIdleCallback(scrollToPositionRequest)
@@ -276,7 +272,7 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 let pointerLockTurnstile = 0
 let pointerHandlerAttached = false
 
-function pointerLockChange(e: Event): void {
+function pointerLockChange(_e: Event): void {
 	if (!document.pointerLockElement) {
 		// noOp, if the pointer is unlocked, good. That's a safe position
 	} else {

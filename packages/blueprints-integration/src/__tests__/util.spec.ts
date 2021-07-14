@@ -67,4 +67,116 @@ describe('Util', () => {
 			attr1: 'hello',
 		})
 	})
+
+	test('iterateDeeply nora', () => {
+		const rawData = {
+			funksjoner: [
+				{
+					funksjon: 'Redaktør:',
+					navn: '',
+					'@name': 'funksjoner',
+					'@type': 'element',
+				},
+				{
+					funksjon: 'Regi:',
+					navn: '',
+					'@name': 'funksjoner',
+					'@type': 'element',
+				},
+			],
+			sami: false,
+			_valid: true,
+		}
+
+		const expected = {
+			funksjoner: [
+				{
+					funksjon: 'Redaktør:',
+					navn: '',
+				},
+				{
+					funksjon: 'Regi:',
+					navn: '',
+				},
+			],
+			sami: false,
+			_valid: true,
+		}
+
+		const content = iterateDeeply(rawData, (value, key) => {
+			// Remove any special conversion keys
+			if (key === '@name' || key === '@type') {
+				return undefined
+			}
+
+			if (
+				typeof key !== 'number' &&
+				key &&
+				typeof value === 'object' &&
+				value['@type'] === 'element' &&
+				!value.elements
+			) {
+				return ''
+			}
+
+			return iterateDeeplyEnum.CONTINUE
+		})
+		expect(content).toEqual(expected)
+	})
+
+	test('iterateDeeplyAsync nora', async () => {
+		const rawData = {
+			funksjoner: [
+				{
+					funksjon: 'Redaktør:',
+					navn: '',
+					'@name': 'funksjoner',
+					'@type': 'element',
+				},
+				{
+					funksjon: 'Regi:',
+					navn: '',
+					'@name': 'funksjoner',
+					'@type': 'element',
+				},
+			],
+			sami: false,
+			_valid: true,
+		}
+
+		const expected = {
+			funksjoner: [
+				{
+					funksjon: 'Redaktør:',
+					navn: '',
+				},
+				{
+					funksjon: 'Regi:',
+					navn: '',
+				},
+			],
+			sami: false,
+			_valid: true,
+		}
+
+		const content = await iterateDeeplyAsync(rawData, async (value, key) => {
+			// Remove any special conversion keys
+			if (key === '@name' || key === '@type') {
+				return undefined
+			}
+
+			if (
+				typeof key !== 'number' &&
+				key &&
+				typeof value === 'object' &&
+				value['@type'] === 'element' &&
+				!value.elements
+			) {
+				return ''
+			}
+
+			return iterateDeeplyEnum.CONTINUE
+		})
+		expect(content).toEqual(expected)
+	})
 })

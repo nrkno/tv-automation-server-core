@@ -32,7 +32,7 @@ interface LeveledLogMethodFixed {
 	(msg: any, meta: LogMeta, callback: Winston.LogCallback): LoggerInstanceFixed
 	(msg: any, ...meta: LogMeta[]): LoggerInstanceFixed
 }
-let leadingZeros = (num: number | string, length: number) => {
+const leadingZeros = (num: number | string, length: number) => {
 	num = num + ''
 	if (num.length < length) {
 		return '00000000000000000000000000000000000000000'.slice(0, length - num.length) + num
@@ -57,8 +57,8 @@ function safeStringify(o: any): string {
 }
 if (logToFile || logPath !== '') {
 	if (logPath === '') {
-		let time = new Date()
-		let startDate =
+		const time = new Date()
+		const startDate =
 			time.getFullYear() +
 			'-' +
 			leadingZeros(time.getMonth(), 2) +
@@ -70,7 +70,7 @@ if (logToFile || logPath !== '') {
 			leadingZeros(time.getMinutes(), 2) +
 			'_' +
 			leadingZeros(time.getSeconds(), 2)
-		let logDirectory = getAbsolutePath() + '/.meteor/local/log'
+		const logDirectory = getAbsolutePath() + '/.meteor/local/log'
 		logPath = logDirectory + '/log_' + startDate + '.log'
 		// let logPath = './log/'
 

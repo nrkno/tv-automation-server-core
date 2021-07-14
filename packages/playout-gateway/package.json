@@ -1,6 +1,6 @@
 {
 	"name": "playout-gateway",
-	"version": "1.35.0",
+	"version": "1.36.0-in-testing.4",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
@@ -20,7 +20,6 @@
 	},
 	"contributors": [],
 	"scripts": {
-		"info": "npm-scripts-info",
 		"build": "rimraf dist && yarn build:main",
 		"buildstart": "yarn build && yarn start",
 		"buildinspect": "yarn build && yarn inspect",
@@ -40,15 +39,6 @@
 		"license-validate": "yarn sofie-licensecheck --allowPackages cycle@1.0.3",
 		"precommit": "lint-staged"
 	},
-	"scripts-info": {
-		"info": "Display information about the scripts",
-		"build": "(Trash and re)build the library",
-		"lint": "Lint all typescript source files",
-		"unit": "Build the library and run unit tests",
-		"test": "Lint, build, and test the library",
-		"watch": "Watch source files, rebuild library on changes, rerun relevant tests",
-		"cov": "Run tests, generate the HTML coverage report, and open it in a browser"
-	},
 	"engines": {
 		"node": ">=12.20"
 	},
@@ -66,10 +56,10 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "^1.35.0",
-		"@sofie-automation/server-core-integration": "^1.35.0",
+		"@sofie-automation/blueprints-integration": "1.36.0-in-testing.4",
+		"@sofie-automation/server-core-integration": "1.36.0-in-testing.4",
 		"fast-clone": "^1.5.13",
-		"timeline-state-resolver": "^6.0.3",
+		"timeline-state-resolver": "6.1.0-release36.1",
 		"tslib": "^2.1.0",
 		"underscore": "^1.12.1",
 		"winston": "^2.4.2"

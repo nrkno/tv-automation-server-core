@@ -42,7 +42,7 @@ describe('Basic test of test environment', () => {
 		const val = asynchronousFibersFunction(1, 2, 3)
 		expect(val).toEqual(1 + 2 + 3)
 
-		let p = Promise.resolve()
+		const p = Promise.resolve()
 			.then(() => {
 				expect(isInFiber()).toBeTruthy()
 				return 'a'
@@ -55,7 +55,7 @@ describe('Basic test of test environment', () => {
 			})
 		expect(waitForPromise(p)).toEqual('a')
 	})
-	test('Test Meteor Random mock', () => {
+	test('Meteor Random mock', () => {
 		RandomMock.mockIds = ['superRandom']
 		expect(tempTestRandom()).toEqual('superRandom')
 	})
@@ -109,7 +109,7 @@ describe('Basic test of test environment', () => {
 		// @ts-ignore
 		expect(UserActionsLog._isMock).toBeTruthy()
 	})
-	test('Test Mock collection data', () => {
+	test('Mock collection data', () => {
 		expect(Studios.find().fetch()).toHaveLength(0)
 
 		MongoMock.mockSetData<DBStudio>(Studios, [
@@ -168,7 +168,7 @@ describe('Basic test of test environment', () => {
 		expect(Studios.find().fetch()).toHaveLength(0)
 	})
 	testInFiber('Promises in fibers', () => {
-		let p = new Promise((resolve) => {
+		const p = new Promise((resolve) => {
 			setTimeout(() => {
 				resolve('yup')
 			}, 10)
@@ -243,6 +243,6 @@ const innerAsynchronousFiberFunction = Meteor.wrapAsync((val0, val1, cb) => {
 	}, 10)
 })
 
-export function tempTestRandom() {
+function tempTestRandom() {
 	return Random.id()
 }

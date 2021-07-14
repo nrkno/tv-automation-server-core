@@ -1,5 +1,4 @@
 import { getCurrentTime, Time, registerCollection, ProtectedString } from '../lib'
-import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { PeripheralDeviceId } from './PeripheralDevices'
@@ -22,14 +21,13 @@ export interface PeripheralDeviceCommand {
 
 	time: Time // time
 }
-export const PeripheralDeviceCommands: TransformedCollection<
-	PeripheralDeviceCommand,
-	PeripheralDeviceCommand
-> = createMongoCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+export const PeripheralDeviceCommands = createMongoCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>(
+	'peripheralDeviceCommands'
+)
 registerCollection('PeripheralDeviceCommands', PeripheralDeviceCommands)
 
 // Monitor and remove old, lingering commands:
-let removeOldCommands = () => {
+const removeOldCommands = () => {
 	PeripheralDeviceCommands.find().forEach((cmd) => {
 		if (getCurrentTime() - (cmd.time || 0) > 20 * 1000) {
 			// timeout a long time ago

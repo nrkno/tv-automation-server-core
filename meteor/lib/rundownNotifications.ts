@@ -1,23 +1,9 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
 import { NoteType, TrackedNote } from './api/notes'
-import { Segments, Segment, DBSegment } from './collections/Segments'
+import { Segments, DBSegment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
-import {
-	unprotectString,
-	makePromise,
-	waitForPromise,
-	literal,
-	generateTranslation,
-	normalizeArrayToMap,
-	assertNever,
-} from './lib'
+import { unprotectString, literal, generateTranslation, normalizeArrayToMap, assertNever } from './lib'
 import * as _ from 'underscore'
-import { Pieces } from './collections/Pieces'
-import { ShowStyleBases, ShowStyleBase } from './collections/ShowStyleBases'
-import { checkPieceContentStatus } from './mediaObjects'
-import { Studios, Studio } from './collections/Studios'
-import { RundownAPI } from './api/rundown'
-import { IMediaObjectIssue } from './api/rundownNotifications'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
 import { RundownPlaylist } from './collections/RundownPlaylists'
@@ -107,7 +93,7 @@ function getAllNotesForSegmentAndParts(
 	parts: Part[],
 	deletedPartInstances: PartInstance[]
 ): Array<TrackedNote> {
-	let notes: Array<TrackedNote> = []
+	const notes: Array<TrackedNote> = []
 
 	const rundownsMap = normalizeArrayToMap(rundowns, '_id')
 	const partsBySegment = _.groupBy(parts, (p) => p.segmentId)
@@ -190,15 +176,17 @@ export function getBasicNotesForSegment(
 	for (const part of parts) {
 		const newNotes = part.notes?.slice() || []
 
-		if (part.invalidReason) {
-			newNotes.push({
-				type: NoteType.ERROR,
-				message: part.invalidReason.message,
-				origin: {
-					name: part.title,
-				},
-			})
-		}
+		// Temporarily disable showing invalidReason notifications
+		//		-- Jan Starzak, 2021/06/30
+		// if (part.invalidReason) {
+		// 	newNotes.push({
+		// 		type: NoteType.ERROR,
+		// 		message: part.invalidReason.message,
+		// 		origin: {
+		// 			name: part.title,
+		// 		},
+		// 	})
+		// }
 
 		if (newNotes.length > 0) {
 			notes.push(
@@ -219,96 +207,6 @@ export function getBasicNotesForSegment(
 	}
 
 	return notes
-}
-
-export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue[] {
-	const rundowns = Rundowns.find({
-		_id: {
-			$in: rundownIds,
-		},
-	})
-
-	const p = Promise.all(
-		rundowns.map((rundown) =>
-			makePromise(() => {
-				let showStyle: ShowStyleBase | undefined
-				let rundownStudio: Studio | undefined
-				let segments: {
-					[key: string]: Segment
-				}
-
-				const ps: Promise<void>[] = []
-
-				// p.push(asyncCollectionFindOne(ShowStyleBases, rundown.showStyleBaseId))
-				ps.push(
-					makePromise(() => {
-						showStyle = ShowStyleBases.findOne(rundown.showStyleBaseId)
-					})
-				)
-				ps.push(
-					makePromise(() => {
-						rundownStudio = Studios.findOne(rundown.studioId)
-					})
-				)
-				ps.push(
-					makePromise(() => {
-						segments = _.object(
-							Segments.find({ rundownId: rundown._id })
-								.fetch()
-								.map((segment) => [segment._id, segment])
-						)
-					})
-				)
-				waitForPromise(Promise.all(ps))
-
-				if (showStyle && rundownStudio) {
-					const showStyleBase = showStyle
-					const studio = rundownStudio
-					const pieceStatus = Pieces.find({
-						startRundownId: rundown._id,
-					}).map((piece) => {
-						// run these in parallel
-						const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
-						const part = Parts.findOne(piece.startPartId, {
-							fields: {
-								_rank: 1,
-								title: 1,
-								segmentId: 1,
-							},
-						})
-						const segment = part ? segments[unprotectString(part.segmentId)] : undefined
-						if (segment && sourceLayer && part) {
-							// we don't want this to be in a non-reactive context, so we manage this computation manually
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
-							if (
-								status !== RundownAPI.PieceStatusCode.OK &&
-								status !== RundownAPI.PieceStatusCode.UNKNOWN &&
-								status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-							) {
-								return {
-									rundownId: part.rundownId,
-									segmentId: segment._id,
-									segmentRank: segment._rank,
-									segmentName: segment.name,
-									partId: part._id,
-									partRank: part._rank,
-									pieceId: piece._id,
-									name: piece.name,
-									status,
-									message,
-								}
-							}
-						}
-						return undefined
-					})
-					return _.compact(pieceStatus)
-				}
-			})
-		)
-	)
-	const allStatus = waitForPromise(p)
-
-	return _.flatten(allStatus)
 }
 
 export enum ServerTranslatedMesssages {

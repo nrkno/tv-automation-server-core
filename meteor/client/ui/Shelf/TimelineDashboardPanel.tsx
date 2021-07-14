@@ -4,7 +4,6 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import {
 	IAdLibPanelProps,
@@ -16,7 +15,6 @@ import {
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
 import {
 	DashboardPanelInner,
 	dashboardElementPosition,
@@ -27,19 +25,10 @@ import {
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-interface IState {
-	outputLayers: {
-		[key: string]: IOutputLayer
-	}
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	}
-	searchFilter: string | undefined
-}
 
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
-	IState,
+	DashboardPanelInner['state'],
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
@@ -106,7 +95,9 @@ export const TimelineDashboardPanel = translateWithTracker<
 					return (
 						<div className="dashboard-panel dashboard-panel--timeline-style" style={dashboardElementPosition(filter)}>
 							<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
-							{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
+							{filter.enableSearch && (
+								<AdLibPanelToolbar onFilterChange={this.onFilterChange} searchFilter={this.state.searchFilter} />
+							)}
 							<div
 								className={ClassNames('dashboard-panel__panel', {
 									'dashboard-panel__panel--horizontal': filter.overflowHorizontally,

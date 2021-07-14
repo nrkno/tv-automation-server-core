@@ -17,18 +17,15 @@ import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
 	UIMetricMode as MOSUIMetricMode,
-	createMosItemRequest,
 	Events as MOSEvents,
 } from '../../lib/data/mos/plugin-support'
-import { MODULE_BROWSER_ORIGIN } from './Inspector/ItemRenderers/NoraItemEditor'
 import { IMOSItem } from 'mos-connection'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Buckets, Bucket, BucketId } from '../../../lib/collections/Buckets'
+import { Buckets, BucketId } from '../../../lib/collections/Buckets'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { check } from '../../../lib/check'
 
@@ -59,10 +56,10 @@ interface SofieExternalMessage {
 	payload?: any
 }
 
-interface HelloSofieExternalMessage extends SofieExternalMessage {
-	type: SofieExternalMessageType.HELLO
-	payload: never
-}
+// interface HelloSofieExternalMessage extends SofieExternalMessage {
+// 	type: SofieExternalMessageType.HELLO
+// 	payload: never
+// }
 
 interface WelcomeSofieExternalMessage extends SofieExternalMessage {
 	type: SofieExternalMessageType.WELCOME
@@ -73,16 +70,16 @@ interface WelcomeSofieExternalMessage extends SofieExternalMessage {
 	}
 }
 
-interface KeyboardEventSofieExternalMessage extends SofieExternalMessage {
-	type: SofieExternalMessageType.KEYBOARD_EVENT
-	payload: KeyboardEvent & {
-		currentTarget: null
-		path: null
-		scrElement: null
-		target: null
-		view: null
-	}
-}
+// interface KeyboardEventSofieExternalMessage extends SofieExternalMessage {
+// 	type: SofieExternalMessageType.KEYBOARD_EVENT
+// 	payload: KeyboardEvent & {
+// 		currentTarget: null
+// 		path: null
+// 		scrElement: null
+// 		target: null
+// 		view: null
+// 	}
+// }
 
 interface CurrentNextPartChangedSofieExternalMessage extends SofieExternalMessage {
 	type: SofieExternalMessageType.CURRENT_PART_CHANGED | SofieExternalMessageType.NEXT_PART_CHANGED
@@ -125,7 +122,7 @@ export const ExternalFramePanel = withTranslation()(
 					// Send the event sanitized to prevent sending huge objects
 					payload: _.omit(
 						_.omit(e, ['currentTarget', 'path', 'srcElement', 'target', 'view', 'sourceCapabilities']),
-						(value, key) => typeof value === 'function'
+						(value) => typeof value === 'function'
 					),
 				})
 			)
@@ -281,9 +278,9 @@ export const ExternalFramePanel = withTranslation()(
 								this.sendSofieCurrentState()
 							}
 						})
-						.catch((e) => console.warn)
+						.catch((e) => console.warn(e))
 					break
-				case SofieExternalMessageType.FOCUS_IN:
+				case SofieExternalMessageType.FOCUS_IN: {
 					this.sendSofieMessage(
 						literal<SofieExternalMessage>({
 							id: Random.id(),
@@ -294,6 +291,7 @@ export const ExternalFramePanel = withTranslation()(
 					const randomEl = document.querySelector('button')
 					if (randomEl) randomEl.focus()
 					break
+				}
 			}
 		}
 
@@ -396,7 +394,7 @@ export const ExternalFramePanel = withTranslation()(
 			e.preventDefault()
 		}
 
-		onDragLeave = (e: DragEvent) => {
+		onDragLeave = (_e: Event) => {
 			this.failedDragTimeout = undefined
 			const event = new CustomEvent<{}>(MOSEvents.dragleave, {
 				cancelable: false,

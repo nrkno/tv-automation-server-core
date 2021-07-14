@@ -61,13 +61,12 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 	}
 
 	scroll = () => {
-		const that = this
-		function clb() {
-			if (that._scrollFactor === 0) return
-			if (that._element) {
-				that._element.scrollLeft = that._element.scrollLeft + that._scrollFactor
+		const clb = () => {
+			if (this._scrollFactor === 0) return
+			if (this._element) {
+				this._element.scrollLeft = this._element.scrollLeft + this._scrollFactor
 			}
-			that.resizeHandler()
+			this.resizeHandler()
 			window.requestAnimationFrame(clb)
 		}
 

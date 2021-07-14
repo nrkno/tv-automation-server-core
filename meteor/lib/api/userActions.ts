@@ -18,6 +18,7 @@ import { BucketAdLib } from '../collections/BucketAdlibs'
 import { AdLibActionId, AdLibActionCommon } from '../collections/AdLibActions'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
 import { PeripheralDeviceId } from '../collections/PeripheralDevices'
+import { RundownBaselineAdLibActionId } from '../collections/RundownBaselineAdLibActions'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -84,6 +85,7 @@ export interface NewUserActionAPI extends MethodContext {
 	executeAction(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string

@@ -4,12 +4,14 @@ import { PartId } from '../../../../lib/collections/Parts'
 import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 
 interface IPartCountdownProps {
 	partId?: PartId
 	hideOnZero?: boolean
 	label?: ReactNode
 	useWallClock?: boolean
+	playlist: RundownPlaylist
 }
 
 /**
@@ -33,7 +35,14 @@ export const PartCountdown = withTiming<IPartCountdownProps, {}>()(function Part
 					<Moment
 						interval={0}
 						format="HH:mm:ss"
-						date={(props.timingDurations.currentTime || 0) + (thisPartCountdown || 0)}
+						date={
+							(props.playlist.activationId
+								? // if show is activated, use currentTime as base
+								  props.timingDurations.currentTime ?? 0
+								: // if show is not activated, use expectedStart or currentTime, whichever is later
+								  Math.max(props.playlist.expectedStart ?? 0, props.timingDurations.currentTime ?? 0)) +
+							(thisPartCountdown || 0)
+						}
 					/>
 				) : (
 					RundownUtils.formatTimeToShortTime(

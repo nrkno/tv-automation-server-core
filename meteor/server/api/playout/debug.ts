@@ -62,8 +62,8 @@ if (!Settings.enableUserAccounts) {
 					'debug_updateTimeline',
 					studioId,
 					StudioLockFunctionPriority.USER_PLAYOUT,
-					(cache) => {
-						updateStudioOrPlaylistTimeline(cache)
+					async (cache) => {
+						await updateStudioOrPlaylistTimeline(cache)
 					}
 				)
 			} catch (e) {
@@ -94,8 +94,8 @@ if (!Settings.enableUserAccounts) {
 								playlists[0],
 								PlayoutLockFunctionPriority.USER_PLAYOUT,
 								null,
-								(playlistCache) => {
-									ensureNextPartIsValid(playlistCache)
+								async (playlistCache) => {
+									await ensureNextPartIsValid(playlistCache)
 								}
 							)
 						} else {
@@ -163,7 +163,7 @@ if (!Settings.enableUserAccounts) {
 				id,
 				PlayoutLockFunctionPriority.MISC,
 				null,
-				(cache) => {
+				async (cache) => {
 					const playlist = cache.Playlist.doc
 					if (playlist.nextPartInstanceId && playlist.activationId) {
 						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
@@ -172,7 +172,7 @@ if (!Settings.enableUserAccounts) {
 							setNextPart(cache, null)
 							setNextPart(cache, { part: part })
 
-							updateTimeline(cache)
+							await updateTimeline(cache)
 						}
 					}
 				}

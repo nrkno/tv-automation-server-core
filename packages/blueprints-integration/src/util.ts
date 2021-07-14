@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 // tslint:disable-next-line:no-submodule-imports
 import * as tsrPkgInfo from 'timeline-state-resolver-types/package.json'
 
@@ -23,11 +22,17 @@ export function iterateDeeply(
 	const newValue = iteratee(obj, key)
 	if (newValue === iterateDeeplyEnum.CONTINUE) {
 		// Continue iterate deeper if possible
-		if (_.isObject(obj)) {
+		if (obj && typeof obj === 'object') {
 			// object or array
-			_.each(obj, (v, k) => {
-				obj[k] = iterateDeeply(v, iteratee, k)
-			})
+			if (Array.isArray(obj)) {
+				obj.forEach((v, k) => {
+					obj[k] = iterateDeeply(v, iteratee, k)
+				})
+			} else {
+				for (const [k, v] of Object.entries(obj)) {
+					obj[k] = iterateDeeply(v, iteratee, k)
+				}
+			}
 		} else {
 			// don't change anything
 		}
@@ -50,13 +55,20 @@ export async function iterateDeeplyAsync(
 	const newValue = await iteratee(obj, key)
 	if (newValue === iterateDeeplyEnum.CONTINUE) {
 		// Continue iterate deeper if possible
-		if (_.isObject(obj)) {
-			// object or array
-			await Promise.all(
-				_.map(obj, async (v, k) => {
-					obj[k] = await iterateDeeplyAsync(v, iteratee, k)
-				})
-			)
+		if (obj && typeof obj === 'object') {
+			if (Array.isArray(obj)) {
+				await Promise.all(
+					obj.map(async (v, k) => {
+						obj[k] = await iterateDeeplyAsync(v, iteratee, k)
+					})
+				)
+			} else {
+				await Promise.all(
+					Object.entries(obj).map(async ([k, v]) => {
+						obj[k] = await iterateDeeplyAsync(v, iteratee, k)
+					})
+				)
+			}
 		} else {
 			// don't change anything
 		}

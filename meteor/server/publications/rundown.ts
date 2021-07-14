@@ -10,7 +10,7 @@ import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
-import { PartInstance, PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
+import { PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
@@ -80,6 +80,25 @@ meteorPublish(PubSub.partInstances, function (selector: MongoQuery<DBPartInstanc
 		fields: {
 			// @ts-ignore
 			'part.metaData': 0,
+		},
+	}
+
+	// Enforce only not-reset
+	selector.reset = { $ne: true }
+
+	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+		return PartInstances.find(selector, modifier)
+	}
+	return null
+})
+meteorPublish(PubSub.partInstancesSimple, function (selector: MongoQuery<DBPartInstance>, token?: string) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier: FindOptions<DBPartInstance> = {
+		fields: {
+			// @ts-ignore
+			'part.metaData': 0,
+			isTaken: 0,
+			timings: 0,
 		},
 	}
 

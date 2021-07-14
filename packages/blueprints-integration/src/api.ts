@@ -5,7 +5,6 @@ import { ConfigManifestEntry } from './config'
 import {
 	IActionExecutionContext,
 	ISyncIngestUpdateToPartInstanceContext,
-	IStudioContext,
 	IPartEventContext,
 	IRundownContext,
 	IStudioUserContext,
@@ -15,6 +14,7 @@ import {
 	ITimelineEventContext,
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
+	IStudioBaselineContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -85,7 +85,7 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	translations?: string
 
 	/** Returns the items used to build the baseline (default state) of a studio, this is the baseline used when there's no active rundown */
-	getBaseline: (context: IStudioContext) => BlueprintResultStudioBaseline
+	getBaseline: (context: IStudioBaselineContext) => BlueprintResultStudioBaseline
 
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
 	getShowStyleId: (

@@ -1,9 +1,8 @@
-import * as _ from 'underscore'
-import { testInFiber, beforeAllInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
-import { literal, protectString, waitForPromise } from '../../../../lib/lib'
+import { literal, protectString } from '../../../../lib/lib'
 import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
@@ -19,9 +18,9 @@ require('../../peripheralDevice.ts') // include in order to create the Meteor me
 
 const rundownId: RundownId = protectString('mock_ro')
 const rundownPlaylistId: RundownPlaylistId = protectString('mock_rpl')
-function createMockRO() {
+async function createMockRO(): Promise<RundownId> {
 	const existing = Rundowns.findOne(rundownId)
-	if (existing) waitForPromise(removeRundownsFromDb([existing._id]))
+	if (existing) await removeRundownsFromDb([existing._id])
 
 	Studios.insert({
 		...defaultStudio(protectString('mock_studio')),
@@ -58,7 +57,7 @@ function createMockRO() {
 		organizationId: protectString(''),
 	})
 
-	saveIntoDb(
+	await saveIntoDb(
 		Segments,
 		{
 			rundownId: rundownId,
@@ -279,14 +278,14 @@ function createMockRO() {
 		}),
 	]
 
-	saveIntoDb(
+	await saveIntoDb(
 		PartInstances,
 		{
 			rundownId: rundownId,
 		},
 		rawInstances
 	)
-	saveIntoDb(
+	await saveIntoDb(
 		Parts,
 		{
 			rundownId: rundownId,
@@ -298,8 +297,8 @@ function createMockRO() {
 }
 
 describe('ensureNextPartIsValid', () => {
-	beforeAllInFiber(() => {
-		createMockRO()
+	beforeAll(async () => {
+		await createMockRO()
 	})
 	beforeEach(() => {
 		jest.clearAllMocks()
@@ -326,7 +325,7 @@ describe('ensureNextPartIsValid', () => {
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => ensureNextPartIsValidRaw(cache)
+			async (cache) => ensureNextPartIsValidRaw(cache)
 		)
 	}
 

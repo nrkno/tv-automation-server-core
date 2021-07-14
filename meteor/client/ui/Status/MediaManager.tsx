@@ -347,7 +347,7 @@ const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.Wit
 }
 
 export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps, {}, IMediaManagerStatusTrackedProps>(
-	(props: IMediaManagerStatusProps) => {
+	(_props: IMediaManagerStatusProps) => {
 		return {
 			workFlows: MediaWorkFlows.find({})
 				.fetch()

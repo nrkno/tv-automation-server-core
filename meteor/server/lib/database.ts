@@ -1,24 +1,9 @@
 import { Meteor } from 'meteor/meteor'
-import { BulkWriteOperation, BulkWriteOpResultObject } from 'mongodb'
+import { BulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
-import {
-	DBObj,
-	waitForPromise,
-	normalizeArrayToMap,
-	ProtectedString,
-	makePromise,
-	sleep,
-	deleteAllUndefinedProperties,
-} from '../../lib/lib'
-import {
-	TransformedCollection,
-	MongoQuery,
-	FindOptions,
-	MongoModifier,
-	UpdateOptions,
-	UpsertOptions,
-	FindOneOptions,
-} from '../../lib/typings/meteor'
+import { AsyncTransformedCollection } from '../../lib/collections/lib'
+import { DBObj, normalizeArrayToMap, ProtectedString, deleteAllUndefinedProperties } from '../../lib/lib'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
 
 export interface Changes {
@@ -34,7 +19,7 @@ export interface ChangedIds<T extends ProtectedString<any>> {
 }
 
 export function sumChanges(...changes: (Changes | ChangedIds<any> | null)[]): Changes {
-	let change: Changes = {
+	const change: Changes = {
 		added: 0,
 		updated: 0,
 		removed: 0,
@@ -60,16 +45,14 @@ export function anythingChanged(changes: Changes): boolean {
  * @param newData The new data
  */
 export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: TransformedCollection<DocClass, DBInterface>,
+	collection: AsyncTransformedCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbHooks<DocClass, DBInterface>
-): Changes {
+): Promise<Changes> {
 	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
 
-	const changes = savePreparedChanges(preparedChanges, collection, options ?? {})
-
-	return waitForPromise(changes)
+	return savePreparedChanges(preparedChanges, collection, options ?? {})
 }
 
 export interface PreparedChanges<T> {
@@ -80,7 +63,7 @@ export interface PreparedChanges<T> {
 }
 
 function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: TransformedCollection<DocClass, DBInterface>,
+	collection: AsyncTransformedCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbHooks<DocClass, DBInterface>
@@ -109,10 +92,10 @@ function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 }
 async function savePreparedChanges<DocClass extends DBInterface, DBInterface extends DBObj>(
 	preparedChanges: PreparedChanges<DBInterface>,
-	collection: TransformedCollection<DocClass, DBInterface>,
+	collection: AsyncTransformedCollection<DocClass, DBInterface>,
 	options: SaveIntoDbHooks<DocClass, DBInterface>
 ): Promise<Changes> {
-	let change: Changes = {
+	const change: Changes = {
 		added: 0,
 		updated: 0,
 		removed: 0,
@@ -175,7 +158,7 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 		})
 	}
 
-	const pBulkWriteResult = updates.length > 0 ? asyncCollectionBulkWrite(collection, updates) : null
+	const pBulkWriteResult = updates.length > 0 ? collection.bulkWriteAsync(updates) : Promise.resolve()
 
 	await pBulkWriteResult
 
@@ -283,145 +266,4 @@ export function saveIntoBase<DocClass extends DBInterface, DBInterface extends D
 	span?.addLabels(changes as any)
 	span?.end()
 	return changes
-}
-
-export async function asyncCollectionFindFetch<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | string,
-	options?: FindOptions<DBInterface>
-): Promise<Array<DocClass>> {
-	// Make the collection fethcing in another Fiber:
-	const p = makePromise(() => {
-		return collection.find(selector as any, options).fetch()
-	})
-	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-	await sleep(0)
-	return p
-}
-export async function asyncCollectionFindOne<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | DBInterface['_id'],
-	options?: FindOneOptions<DBInterface>
-): Promise<DocClass | undefined> {
-	const arr = await asyncCollectionFindFetch(collection, selector, { ...options, limit: 1 })
-	return arr[0]
-}
-export async function asyncCollectionInsert<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(collection: TransformedCollection<DocClass, DBInterface>, doc: DBInterface): Promise<DBInterface['_id']> {
-	const p = makePromise(() => {
-		return collection.insert(doc)
-	})
-	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-	await sleep(0)
-	return p
-}
-export function asyncCollectionInsertMany<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(collection: TransformedCollection<DocClass, DBInterface>, docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
-	return Promise.all(_.map(docs, (doc) => asyncCollectionInsert(collection, doc)))
-}
-/** Insert document, and ignore if document already exists */
-export async function asyncCollectionInsertIgnore<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(collection: TransformedCollection<DocClass, DBInterface>, doc: DBInterface): Promise<DBInterface['_id']> {
-	const p = makePromise(() => {
-		return collection.insert(doc)
-	}).catch((err) => {
-		if (err.toString().match(/duplicate key/i)) {
-			// @ts-ignore id duplicate, doc._id must exist
-			return doc._id
-		} else {
-			throw err
-		}
-	})
-	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-	await sleep(0)
-	return p
-}
-export async function asyncCollectionUpdate<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | DBInterface['_id'],
-	modifier: MongoModifier<DBInterface>,
-	options?: UpdateOptions
-): Promise<number> {
-	const p = makePromise(() => {
-		return collection.update(selector, modifier, options)
-	})
-	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-	await sleep(0)
-	return p
-}
-
-export async function asyncCollectionUpsert<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | DBInterface['_id'],
-	modifier: MongoModifier<DBInterface>,
-	options?: UpsertOptions
-): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {
-	const p = makePromise(() => {
-		return collection.upsert(selector, modifier, options)
-	})
-	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-	await sleep(0)
-	return p
-}
-
-export async function asyncCollectionRemove<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | DBInterface['_id']
-): Promise<number> {
-	const p = makePromise(() => {
-		return collection.remove(selector)
-	})
-	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-	await sleep(0)
-	return p
-}
-
-export async function asyncCollectionBulkWrite<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	ops: Array<BulkWriteOperation<DBInterface>>
-): Promise<BulkWriteOpResultObject> {
-	if (ops.length > 0) {
-		const rawCollection = collection.rawCollection()
-		const bulkWriteResult = await rawCollection.bulkWrite(ops, {
-			ordered: false,
-		})
-
-		if (
-			bulkWriteResult &&
-			_.isArray(bulkWriteResult.result?.writeErrors) &&
-			bulkWriteResult.result.writeErrors.length
-		) {
-			throw new Meteor.Error(
-				500,
-				`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
-			)
-		}
-		return bulkWriteResult
-	} else {
-		return {}
-	}
 }

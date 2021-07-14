@@ -1,5 +1,3 @@
-import { Session } from 'meteor/session'
-
 declare class ReactiveArray<T> extends Array<T> {
 	constructor(source?: Array<T>)
 

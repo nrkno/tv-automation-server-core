@@ -11,6 +11,7 @@ import {
 	PartInstance,
 	wrapPartToTemporaryInstance,
 	findPartInstanceInMapOrWrapToTemporary,
+	PartInstanceId,
 } from '../../../../lib/collections/PartInstances'
 import { Settings } from '../../../../lib/Settings'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
@@ -21,6 +22,8 @@ const MINIMAL_NONZERO_DURATION = 1
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
 // LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
+
+const CURRENT_TIME_GRANULARITY = 1000 / 60
 
 /**
  * RundownTimingProvider properties.
@@ -112,7 +115,8 @@ export const RundownTimingProvider = withTracker<
 			IRundownTimingProviderProps & IRundownTimingProviderTrackedProps,
 			IRundownTimingProviderState
 		>
-		implements React.ChildContextProvider<IRundownTimingProviderChildContext> {
+		implements React.ChildContextProvider<IRundownTimingProviderChildContext>
+	{
 		static childContextTypes = {
 			durations: PropTypes.object.isRequired,
 		}
@@ -127,6 +131,11 @@ export const RundownTimingProvider = withTracker<
 		private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
 
 		private linearParts: Array<[PartId, number | null]> = []
+
+		// this.previousPartInstanceId is used to check if the previousPart has changed since last iteration.
+		private previousPartInstanceId: PartInstanceId | null = null
+		private lastTakeAt: number | undefined = undefined
+
 		// look at the comments on RundownTimingContext to understand what these do
 		private partDurations: Record<string, number> = {}
 		private partExpectedDurations: Record<string, number> = {}
@@ -151,8 +160,12 @@ export const RundownTimingProvider = withTracker<
 			}
 		}
 
+		calmDownTiming = (time: number) => {
+			return Math.round(time / CURRENT_TIME_GRANULARITY) * CURRENT_TIME_GRANULARITY
+		}
+
 		onRefreshTimer = () => {
-			const now = getCurrentTime()
+			const now = this.calmDownTiming(getCurrentTime())
 			const isLowResolution = this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0
 			this.updateDurations(now, isLowResolution)
 			this.dispatchHREvent(now)
@@ -239,8 +252,6 @@ export const RundownTimingProvider = withTracker<
 
 			Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 			this.linearParts.length = 0
-
-			let debugConsole = ''
 
 			const { playlist, parts, partInstancesMap } = this.props
 
@@ -418,7 +429,22 @@ export const RundownTimingProvider = withTracker<
 					this.partDisplayDurations[partInstancePartId] = partDisplayDuration
 					this.partDisplayDurationsNoPlayback[partInstancePartId] = partDisplayDurationNoPlayback
 					startsAtAccumulator += this.partDurations[partInstancePartId]
-					displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId] // || this.props.defaultDuration || 3000
+
+					if (playlist.previousPartInstanceId !== partInstance._id) {
+						displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId]
+					} else {
+						if (this.previousPartInstanceId !== playlist.previousPartInstanceId) {
+							this.lastTakeAt = now
+							this.previousPartInstanceId = playlist.previousPartInstanceId || ''
+						}
+						const durationToTake =
+							this.lastTakeAt && lastStartedPlayback
+								? this.lastTakeAt - lastStartedPlayback
+								: this.partDisplayDurations[partInstancePartId]
+						this.partDisplayDurations[partInstancePartId] = durationToTake
+						displayStartsAtAccumulator += durationToTake
+					}
+
 					// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 					// always add the full duration, in case by some manual intervention this segment should play twice
 					if (memberOfDisplayDurationGroup) {

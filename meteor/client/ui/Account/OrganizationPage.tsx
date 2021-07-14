@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -23,7 +22,7 @@ interface OrganizationState {
 	editUser: string
 }
 
-export const OrganizationPage = translateWithTracker((props: RouteComponentProps) => {
+export const OrganizationPage = translateWithTracker((_props: RouteComponentProps) => {
 	const user = getUser()
 	const organization = user && Organizations.findOne({ _id: user.organizationId })
 
@@ -95,7 +94,7 @@ export const OrganizationPage = translateWithTracker((props: RouteComponentProps
 		render() {
 			const { t } = this.props
 			const org = this.props.organization
-			const { user, roles } = this.getUserAndRoles()
+			// const { user, roles } = this.getUserAndRoles()
 			if (!getUserRoles().admin) {
 				return 'Not Allowed'
 			}

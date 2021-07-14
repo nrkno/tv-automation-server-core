@@ -2,13 +2,13 @@ import { getCurrentTime, Time } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 
-let getCurrentTimeReactiveDep = new Tracker.Dependency()
+const getCurrentTimeReactiveDep = new Tracker.Dependency()
 export function getCurrentTimeReactive(): Time {
 	getCurrentTimeReactiveDep.depend()
 	return getCurrentTime()
 }
-let updateCurrentTimeReactive = () => {
-	let time = getCurrentTime()
+const updateCurrentTimeReactive = () => {
+	const time = getCurrentTime()
 
 	getCurrentTimeReactiveDep.changed()
 

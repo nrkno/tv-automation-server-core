@@ -1,8 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { Studios } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, ensureCollectionPropertyManual, setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { ensureCollectionPropertyManual } from './lib'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
 
 // 1.0.0 (Release 12)
@@ -24,7 +23,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.slackEvaluationUrls) {
 					if (_.find(studio.config, (c) => c._id === 'slack_evaluation')) {
 						validate = `slackEvaluationUrls not set on studio ${studio._id}`
@@ -35,7 +34,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.slackEvaluationUrls) {
 					const value = _.find(studio.config, (c) => c._id === 'slack_evaluation')
 					if (value) {
@@ -74,7 +73,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.supportedMediaFormats) {
 					if (_.find(studio.config, (c) => c._id === 'mediaResolutions')) {
 						validate = `supportedMediaFormats not set on studio ${studio._id}`
@@ -85,7 +84,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.supportedMediaFormats) {
 					const value = _.find(studio.config, (c) => c._id === 'mediaResolutions')
 					if (value) {
@@ -124,7 +123,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		validate: () => {
 			let validate: boolean | string = false
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.supportedAudioStreams) {
 					if (_.find(studio.config, (c) => c._id === 'audioStreams')) {
 						validate = `supportedAudioStreams not set on studio ${studio._id}`
@@ -135,7 +134,7 @@ export const addSteps = addMigrationSteps('1.0.0', [
 		},
 		migrate: () => {
 			Studios.find().forEach((studio0) => {
-				const studio = (studio0 as any) as Studio_1_10_0
+				const studio = studio0 as any as Studio_1_10_0
 				if (!studio.settings || !studio.settings.supportedAudioStreams) {
 					const value = _.find(studio.config, (c) => c._id === 'audioStreams')
 					if (value) {
@@ -155,12 +154,4 @@ export const addSteps = addMigrationSteps('1.0.0', [
 			})
 		},
 	},
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.0.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.0.0'),
-	setExpectedVersion(
-		'expectedVersion.mediaManager',
-		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-		'_process',
-		'^1.0.0'
-	),
 ])

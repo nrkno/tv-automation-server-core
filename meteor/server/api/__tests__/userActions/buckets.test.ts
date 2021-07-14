@@ -1,21 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import { setMinimumTakeSpan } from '../../userActions'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { RESTART_SALT } from '../../../../lib/api/userActions'
-import { getHash, waitForPromise, protectString, getRandomId } from '../../../../lib/lib'
-import { UserActionsLog } from '../../../../lib/collections/UserActionsLog'
-import { MeteorCall } from '../../../../lib/api/methods'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
+import { getRandomId } from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
 import { Bucket, BucketId, Buckets } from '../../../../lib/collections/Buckets'
-import { Random } from 'meteor/random'
 import { BucketAdLibs } from '../../../../lib/collections/BucketAdlibs'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 
@@ -86,8 +75,8 @@ describe('User Actions - Buckets', () => {
 			}).fetch(),
 		}
 	}
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 		jest.resetAllMocks()
 	})
 	testInFiber('createBucket', () => {

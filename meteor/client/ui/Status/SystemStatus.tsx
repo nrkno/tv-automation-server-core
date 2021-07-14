@@ -61,7 +61,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 			}
 		}
 		deviceTypeString() {
-			let t = this.props.t
+			const t = this.props.t
 
 			switch (this.props.device.type) {
 				case PeripheralDeviceAPI.DeviceType.MOS:
@@ -75,7 +75,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 			}
 		}
 		deviceVersions() {
-			let versions = this.props.device.versions
+			const versions = this.props.device.versions
 			if (versions) {
 				return _.map(versions, (version, packageName) => {
 					return packageName + ': ' + version
@@ -612,12 +612,12 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		}
 
 		renderPeripheralDevices() {
-			let devices: Array<DeviceInHierarchy> = []
-			let refs = {}
-			let devicesToAdd = {}
+			const devices: Array<DeviceInHierarchy> = []
+			const refs = {}
+			const devicesToAdd = {}
 			// First, add all as references:
 			_.each(this.props.devices, (device) => {
-				let d: DeviceInHierarchy = {
+				const d: DeviceInHierarchy = {
 					device: device,
 					children: [],
 				}
@@ -627,7 +627,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			// Then, map and add devices:
 			_.each(devicesToAdd, (d: DeviceInHierarchy) => {
 				if (d.device.parentDeviceId) {
-					let parent: DeviceInHierarchy = refs[unprotectString(d.device.parentDeviceId)]
+					const parent: DeviceInHierarchy = refs[unprotectString(d.device.parentDeviceId)]
 					if (parent) {
 						parent.children.push(d)
 					} else {
@@ -640,7 +640,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			})
 
 			const getDeviceContent = (d: DeviceInHierarchy, toplevel: boolean): JSX.Element => {
-				let content: JSX.Element[] = [
+				const content: JSX.Element[] = [
 					<DeviceItem
 						key={'device' + d.device._id}
 						device={d.device}
@@ -649,7 +649,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 					/>,
 				]
 				if (d.children.length) {
-					let children: JSX.Element[] = []
+					const children: JSX.Element[] = []
 					_.each(d.children, (child: DeviceInHierarchy) =>
 						children.push(
 							<li key={'childdevice' + child.device._id} className="child-device-li">
@@ -715,7 +715,7 @@ export const PeripheralDeviceStatus = reacti18next.withTranslation()(
 				: t('Not Connected')
 		}
 		statusMessages() {
-			let messages = ((this.props.device || {}).status || {}).messages || []
+			const messages = ((this.props.device || {}).status || {}).messages || []
 			return messages.length ? '"' + messages.join(', ') + '"' : ''
 		}
 		render() {

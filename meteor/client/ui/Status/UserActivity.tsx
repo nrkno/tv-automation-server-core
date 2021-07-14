@@ -14,7 +14,7 @@ import { withTranslation } from 'react-i18next'
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
 	onItemClick?: (item: UserActionsLogItem) => void
-	renderButtons?: (item: UserActionsLogItem) => React.Component
+	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
 }
 
 export const UserActionsList = withTranslation()(
@@ -52,7 +52,7 @@ export const UserActionsList = withTranslation()(
 								<tr
 									className={this.props.onItemClick ? 'clickable' : undefined}
 									key={unprotectString(msg._id)}
-									onClick={(e) => this.props.onItemClick && this.props.onItemClick(msg)}
+									onClick={() => this.props.onItemClick && this.props.onItemClick(msg)}
 								>
 									<td className="user-action-log__timestamp">
 										<Moment format="YYYY/MM/DD HH:mm:ss.SSS">{msg.timestamp}</Moment>
@@ -94,7 +94,7 @@ interface IUserActivityTrackedProps {
 }
 
 const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState, IUserActivityTrackedProps>(
-	(props: IUserActivityProps) => {
+	(_props: IUserActivityProps) => {
 		return {
 			log: UserActionsLog.find(
 				{},
@@ -129,7 +129,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 			this.updateSubscription()
 		}
 		updateSubscription() {
-			let h = this.state.dateFrom + '_' + this.state.dateTo
+			const h = this.state.dateFrom + '_' + this.state.dateTo
 			if (h !== this._currentsub) {
 				this._currentsub = h
 				if (this._sub) {

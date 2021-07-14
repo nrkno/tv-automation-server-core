@@ -1,6 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 /*
  * **************************************************************************************
@@ -26,13 +24,4 @@ export const addSteps = addMigrationSteps('1.15.0', [
 	// 	}
 	// },
 	//
-	//
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.13.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.7.0'),
-	setExpectedVersion(
-		'expectedVersion.mediaManager',
-		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-		'_process',
-		'^1.3.0'
-	),
 ])

@@ -12,7 +12,6 @@ import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
-import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 
 interface ITimelineViewProps {
 	match?: {
@@ -22,7 +21,7 @@ interface ITimelineViewProps {
 	}
 }
 interface ITimelineViewState {}
-const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, {}>((props: ITimelineViewProps) => {
+const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, {}>((_props: ITimelineViewProps) => {
 	return {}
 })(
 	class TimelineView extends MeteorReactComponent<Translated<ITimelineViewProps>, ITimelineViewState> {
@@ -194,7 +193,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 						{this.state.scriptLoaded ? (
 							this.renderTimeline()
 						) : this.state.scriptError ? (
-							<div>'Unable to load script'</div>
+							<div>Unable to load script</div>
 						) : null}
 					</div>
 					<div className="details">
@@ -229,7 +228,7 @@ export const ComponentTimelineSimulate = withTracker<
 	ITimelineSimulateState,
 	ITimelineSimulateTrackedProps
 >((props: ITimelineSimulateProps) => {
-	let now = getCurrentTimeReactive()
+	const now = getCurrentTimeReactive()
 
 	try {
 		// These properties will be exposed under this.props
@@ -260,8 +259,8 @@ export const ComponentTimelineSimulate = withTracker<
 		const transformed = transformTimeline(timeline)
 
 		// TODO - dont repeat unless changed
-		let tl = Resolver.resolveTimeline(transformed, { time: tlComplete?.generated || now })
-		let allStates = Resolver.resolveAllStates(tl)
+		const tl = Resolver.resolveTimeline(transformed, { time: tlComplete?.generated || now })
+		const allStates = Resolver.resolveAllStates(tl)
 
 		return {
 			now: now,

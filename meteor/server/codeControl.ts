@@ -81,7 +81,7 @@ export function syncFunction<T extends Function>(
 	timeout: number = 10000,
 	priority: number = 1
 ): T {
-	let id1 = Random.id()
+	const id1 = Random.id()
 	return syncFunctionInner(id1, fcn, context, id0, timeout, priority)
 }
 function syncFunctionInner<T extends Function>(
@@ -94,9 +94,9 @@ function syncFunctionInner<T extends Function>(
 ): T {
 	return MeteorWrapAsync((...args0: any[]) => {
 		const queueTime = Date.now()
-		let args = args0.slice(0, -1)
+		const args = args0.slice(0, -1)
 		// @ts-ignore
-		let cb: Callback = _.last(args0) // the callback is the last argument
+		const cb: Callback = _.last(args0) // the callback is the last argument
 
 		if (!cb) throw new Meteor.Error(500, 'Callback is not defined')
 		if (!_.isFunction(cb)) {
@@ -104,7 +104,7 @@ function syncFunctionInner<T extends Function>(
 			throw new Meteor.Error(500, 'Callback is not a function, it is a ' + typeof cb)
 		}
 
-		let id = id0 ? getId(id0, args) : getHash(id1 + JSON.stringify(args.join()))
+		const id = id0 ? getId(id0, args) : getHash(id1 + JSON.stringify(args.join()))
 		const name = getFunctionName(context, fcn)
 		logger.debug(`syncFunction: ${id} (${name})`)
 		const waitingOnFunctions = getSyncFunctionsRunningOrWaiting(id)
@@ -125,7 +125,7 @@ function syncFunctionInner<T extends Function>(
 }
 function evaluateFunctions() {
 	const groups = _.groupBy(syncFunctionFcns, (fcn) => fcn.id)
-	_.each(groups, (group, id) => {
+	_.each(groups, (group) => {
 		const runningFcn = _.find(group, (fcn) => fcn.status === syncFunctionFcnStatus.RUNNING)
 		let startNext = false
 		if (runningFcn) {
@@ -165,7 +165,7 @@ function evaluateFunctions() {
 				}
 				Meteor.setTimeout(() => {
 					try {
-						let result = nextFcn.fcn(...nextFcn.args)
+						const result = nextFcn.fcn(...nextFcn.args)
 						nextFcn.cb(null, result)
 					} catch (e) {
 						nextFcn.cb(e)
@@ -212,7 +212,7 @@ export function isAnySyncFunctionsRunning(): boolean {
 	return found
 }
 export function getSyncFunctionsRunningOrWaiting(id: string): string[] {
-	let names: string[] = []
+	const names: string[] = []
 	for (const fcn of syncFunctionFcns) {
 		if (
 			fcn.id == id &&

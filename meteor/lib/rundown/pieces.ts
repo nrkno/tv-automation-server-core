@@ -24,7 +24,7 @@ export interface PieceGroupMetadata extends PieceTimelineMetadata {
 export function createPieceGroupAndCap(
 	pieceInstance: Pick<
 		ReadonlyDeep<PieceInstanceWithTimings>,
-		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority' | 'partInstanceId'
+		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority' | 'partInstanceId' | 'userDuration'
 	>,
 	partGroup?: TimelineObjRundown,
 	pieceEnable?: TSR.Timeline.TimelineEnable
@@ -32,6 +32,19 @@ export function createPieceGroupAndCap(
 	pieceGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>
 	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt>
 } {
+	if (pieceEnable) {
+		pieceEnable = clone(pieceEnable)
+	} else {
+		if (pieceInstance.userDuration) {
+			pieceEnable = {
+				start: pieceInstance.piece.enable.start,
+				end: pieceInstance.userDuration.end,
+			}
+		} else {
+			pieceEnable = clone(pieceInstance.piece.enable)
+		}
+	}
+
 	const pieceGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>>({
 		id: getPieceGroupId(pieceInstance),
 		content: {
@@ -45,7 +58,7 @@ export function createPieceGroupAndCap(
 		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
 		partInstanceId: pieceInstance.partInstanceId,
 		objectType: TimelineObjType.RUNDOWN,
-		enable: clone<TimelineObjGroupRundown['enable']>(pieceEnable ?? pieceInstance.piece.enable),
+		enable: pieceEnable,
 		layer: pieceInstance.piece.sourceLayerId,
 		priority: pieceInstance.priority,
 		metaData: literal<PieceGroupMetadata>({

@@ -64,8 +64,7 @@ export namespace MosIntegration {
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
-		rundownId: MOS.MosString128,
-		force?: boolean
+		rundownId: MOS.MosString128
 	) {
 		const transaction = profiler.startTransaction('mosRoDelete', apmNamespace)
 

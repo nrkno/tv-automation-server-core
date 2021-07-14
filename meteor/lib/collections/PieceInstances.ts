@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, ProtectedStringProperties, protectString, omit } from '../lib'
 import { IBlueprintPieceInstance, IBlueprintResolvedPieceInstance } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
@@ -114,9 +113,7 @@ export function wrapPieceToInstance(
 	)
 }
 
-export const PieceInstances: TransformedCollection<PieceInstance, PieceInstance> = createMongoCollection<PieceInstance>(
-	'pieceInstances'
-)
+export const PieceInstances = createMongoCollection<PieceInstance, PieceInstance>('pieceInstances')
 registerCollection('PieceInstances', PieceInstances)
 
 registerIndex(PieceInstances, {

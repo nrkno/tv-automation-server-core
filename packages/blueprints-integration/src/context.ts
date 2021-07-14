@@ -83,9 +83,19 @@ export interface IStudioContext extends ICommonContext {
 
 	/** Get the mappings for the studio */
 	getStudioMappings: () => Readonly<BlueprintMappings>
+}
 
+export interface IPackageInfoContext {
+	/**
+	 * Get the PackageInfo items for an ExpectedPackage, if any have been reported by the package manager.
+	 * Only info for packages with the `listenToPackageInfoUpdates` property set to true can be returned.
+	 * The possible packageIds are scoped based on the ownership of the package.
+	 * eg, baseline packages can be accessed when generating the baseline objects, piece/adlib packages can be access when regenerating the segment they are from
+	 */
 	getPackageInfo: (packageId: string) => Readonly<PackageInfo.Any[]>
 }
+
+export interface IStudioBaselineContext extends IStudioContext, IPackageInfoContext {}
 
 export interface IStudioUserContext extends IUserNotesContext, IStudioContext {}
 
@@ -98,7 +108,7 @@ export interface IShowStyleContext extends ICommonContext, IStudioContext {
 	getShowStyleConfigRef(configKey: string): string
 }
 
-export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleContext {}
+export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleContext, IPackageInfoContext {}
 
 /** Rundown */
 
@@ -109,7 +119,7 @@ export interface IRundownContext extends IShowStyleContext {
 
 export interface IRundownUserContext extends IUserNotesContext, IRundownContext {}
 
-export interface ISegmentUserContext extends IUserNotesContext, IRundownContext {
+export interface ISegmentUserContext extends IUserNotesContext, IRundownContext, IPackageInfoContext {
 	/** Display a notification to the user of an error */
 	notifyUserError: (message: string, params?: { [key: string]: any }, partExternalId?: string) => void
 	/** Display a notification to the user of an warning */

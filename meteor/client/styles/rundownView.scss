@@ -87,7 +87,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	animation-duration: 1s;
 	animation-fill-mode: forwards;
 	animation-iteration-count: infinite;
-	animation-name: placeholder-shimmer;
+	// animation-name: placeholder-shimmer;
 	animation-timing-function: linear;
 
 	&::before {
@@ -246,6 +246,15 @@ body.no-overflow {
 
 	z-index: 10000;
 	pointer-events: none;
+
+	@media screen and (prefer-reduced-motion: reduce) {
+		// if prefer-reduced-motion is set in the browser, the animation will be skipped
+		animation: none;
+	}
+
+	&--reduce-animation {
+		animation-timing-function: steps(3, end); // used in development, show a 1fps animation
+	}
 }
 
 .header.rundown {
@@ -1366,7 +1375,8 @@ svg.icon {
 					left: 2px;
 					text-transform: uppercase;
 					font-weight: bold;
-					line-height: 1em;
+					line-height: 0.9em;
+					background: $segment-background-color;
 					white-space: nowrap;
 					word-wrap: none;
 					color: $part-start-color;
@@ -2005,9 +2015,9 @@ svg.icon {
 					text-align: right;
 					margin: 0;
 					padding: 0 0.3em;
-					max-width: calc(100% - 10px);
 					overflow: hidden;
 					text-overflow: clip;
+					background: inherit;
 
 					> * {
 						position: relative;

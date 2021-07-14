@@ -35,7 +35,9 @@
  * 1.33.0: Release 33  (2021-06-15)
  * 1.34.0: Release 34 (2021-07-02)
  * 1.35.0: Release 35 (2021-07-07)
+ * 1.36.0: Release 36 (2021-07-12)
+ * 1.37.0: Release 37 (2021-08)
  */
 
 // Note: Only set this to release versions, (ie X.Y.Z), not pre-releases (ie X.Y.Z-0-pre-release)
-export const CURRENT_SYSTEM_VERSION = '1.35.0'
+export const CURRENT_SYSTEM_VERSION = '1.36.0'

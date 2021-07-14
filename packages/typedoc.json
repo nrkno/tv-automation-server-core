@@ -2,6 +2,7 @@
 	"name": "Sofie Integration Libraries",
 	"out": "docs",
 	"theme": "default",
+	"readme": "none",
 	"exclude": [
 		"*.spec.ts",
 		"node_modules",
@@ -10,9 +11,7 @@
 		"*/dist",
 		"*/src/types",
 		"*/examples",
-		"packages/*-gateway",
-		"packages/mos-gateway",
-		"packages/playout-gateway"
+		"*-gateway"
 	],
-	"external-modulemap": ".*packages/([^/]+)-integration/.*"
+	"external-modulemap": ".*packages/([^/]+)/.*"
 }

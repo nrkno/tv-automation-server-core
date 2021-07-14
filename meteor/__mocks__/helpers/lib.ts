@@ -1,6 +1,6 @@
-import { TransformedCollection } from '../../lib/typings/meteor'
 import * as _ from 'underscore'
 import { ProtectedString } from '../../lib/lib'
+import { AsyncTransformedCollection } from '../../lib/collections/lib'
 
 /*
 interface MockedCollection<T, Y extends any[]> {
@@ -25,6 +25,15 @@ const METHOD_NAMES = [
 	'upsert',
 	'_ensureIndex',
 	'_dropIndex',
+	'findFetchAsync',
+	'findOneAsync',
+	'insertAsync',
+	'insertManyAsync',
+	'insertIgnoreAsync',
+	'updateAsync',
+	'upsertAsync',
+	'removeAsync',
+	'bulkWriteAsync',
 ]
 
 /**
@@ -32,9 +41,9 @@ const METHOD_NAMES = [
  * Important: This Remember to run resetMockupCollection() after the test
  */
 export function mockupCollection<A extends B, B extends { _id: ProtectedString<any> }>(
-	collection0: TransformedCollection<A, B>
-): TransformedCollection<A, B> & MockedCollection {
-	const collection = collection0 as TransformedCollection<A, B> & MockedCollection
+	collection0: AsyncTransformedCollection<A, B>
+): AsyncTransformedCollection<A, B> & MockedCollection {
+	const collection = collection0 as AsyncTransformedCollection<A, B> & MockedCollection
 
 	_.each(METHOD_NAMES, (methodName) => {
 		collection['__original' + methodName] = collection[methodName]
@@ -51,7 +60,7 @@ export function mockupCollection<A extends B, B extends { _id: ProtectedString<a
 	return collection
 }
 export function resetMockupCollection<A extends B, B extends { _id: ProtectedString<any> }>(
-	collection: TransformedCollection<A, B>
+	collection: AsyncTransformedCollection<A, B>
 ): void {
 	_.each(METHOD_NAMES, (methodName) => {
 		collection[methodName] = collection['__original' + methodName]

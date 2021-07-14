@@ -13,11 +13,7 @@ import { PieceId, Piece } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
 
-export function defaultRundownPlaylist(
-	_id: RundownPlaylistId,
-	studioId: StudioId,
-	ingestDeviceId: PeripheralDeviceId
-): DBRundownPlaylist {
+export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
 		_id: _id,
 

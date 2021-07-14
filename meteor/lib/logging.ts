@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { MeteorCall } from './api/methods'
 import * as _ from 'underscore'
 
 export interface LoggerInstanceFixed {
@@ -29,7 +28,7 @@ export interface LeveledLogMethodFixed {
 
 let logger: LoggerInstanceFixed
 if (Meteor.isServer) {
-	let getLogMethod = (type) => {
+	const getLogMethod = (type) => {
 		return (...args) => {
 			args = _.map(args, (arg) => {
 				if (_.isObject(arg)) {
@@ -68,14 +67,14 @@ if (Meteor.isServer) {
 		notice: getLogMethod('notice'),
 	}
 } else {
-	let getLogMethod = (type) => {
+	const getLogMethod = (type) => {
 		return (...args) => {
 			console.log(type, ...args)
 			return logger
 		}
 	}
 
-	let noop = (type) => {
+	const noop = (_type) => {
 		// do nothing
 		return logger
 	}

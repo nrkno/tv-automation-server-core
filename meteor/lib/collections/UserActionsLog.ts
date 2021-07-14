@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection, ProtectedString, TimeDuration } from '../lib'
 import { createMongoCollection } from './lib'
 import { UserId } from './Users'
@@ -32,10 +31,7 @@ export interface UserActionsLogItem {
 	timelineResolveDuration?: TimeDuration[]
 }
 
-export const UserActionsLog: TransformedCollection<
-	UserActionsLogItem,
-	UserActionsLogItem
-> = createMongoCollection<UserActionsLogItem>('userActionsLog')
+export const UserActionsLog = createMongoCollection<UserActionsLogItem, UserActionsLogItem>('userActionsLog')
 registerCollection('UserActionsLog', UserActionsLog)
 
 registerIndex(UserActionsLog, {

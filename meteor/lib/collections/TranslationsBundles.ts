@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 
 import { TranslationsBundleType } from '@sofie-automation/blueprints-integration'
@@ -43,8 +42,5 @@ export interface TranslationsBundle {
 	data: Translation[]
 }
 
-export const TranslationsBundles: TransformedCollection<
-	TranslationsBundle,
-	TranslationsBundle
-> = createMongoCollection<TranslationsBundle>('translationsBundles')
+export const TranslationsBundles = createMongoCollection<TranslationsBundle, TranslationsBundle>('translationsBundles')
 registerCollection('TranslationsBundles', TranslationsBundles)

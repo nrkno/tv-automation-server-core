@@ -60,7 +60,7 @@ Meteor.startup(() => {
 export async function verifyAllMethods() {
 	// Verify all Meteor methods
 	let ok = true
-	for (let methodName of AllMeteorMethods) {
+	for (const methodName of AllMeteorMethods) {
 		ok = ok && verifyMethod(methodName)
 
 		if (!ok) return false // Bail on first error

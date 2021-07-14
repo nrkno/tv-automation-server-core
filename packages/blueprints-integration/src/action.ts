@@ -1,4 +1,4 @@
-import { ExpectedPackage, ListenToPackageUpdate } from './package'
+import { ExpectedPackage } from './package'
 import { ConfigManifestEntry } from './config'
 import { SomeContent } from './content'
 import { ITranslatableMessage } from './translations'
@@ -89,5 +89,4 @@ export interface IBlueprintActionManifest {
 	 * An array of which Packages this Action uses. This is used by a Package Manager to ensure that the Package is in place for playout.
 	 */
 	expectedPackages?: ExpectedPackage.Any[]
-	listenToPackageInfoUpdates?: ListenToPackageUpdate[]
 }

@@ -1,7 +1,6 @@
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { StatusCode } from '../../server/systemStatus/systemStatus'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
@@ -23,7 +22,6 @@ import {
 	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
-	TSR,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -33,7 +31,7 @@ import {
 	ShowStyleVariantId,
 } from '../../lib/collections/ShowStyleVariants'
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
@@ -56,6 +54,8 @@ import {
 	defaultStudio,
 } from '../defaultCollectionObjects'
 import { OrganizationId } from '../../lib/collections/Organization'
+import { StatusCode } from '../../lib/api/systemStatus'
+import { PackageInfo } from '../../server/coreSystem'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -64,15 +64,16 @@ export enum LAYER_IDS {
 }
 
 function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VERSION: string } {
-	const INTEGRATION_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/package.json')
-		.version
+	const INTEGRATION_VERSION =
+		require('../../node_modules/@sofie-automation/blueprints-integration/package.json').version
 
 	let TSR_VERSION = ''
 	try {
+		// eslint-disable-next-line node/no-missing-require
 		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
 	} catch (e) {
-		TSR_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
-			.version
+		TSR_VERSION =
+			require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json').version
 	}
 
 	return {
@@ -112,6 +113,9 @@ export function setupMockPeripheralDevice(
 		token: 'mockToken',
 		configManifest: {
 			deviceConfig: [],
+		},
+		versions: {
+			'@sofie-automation/server-core-integration': stripVersion(PackageInfo.version),
 		},
 	}
 	const device = _.extend(defaultDevice, doc) as PeripheralDevice
@@ -228,10 +232,10 @@ export function packageBlueprint<T extends BlueprintManifestBase>(
 	})
 	return `({default: (${code})()})`
 }
-export function setupMockStudioBlueprint(
+export async function setupMockStudioBlueprint(
 	showStyleBaseId: ShowStyleBaseId,
 	organizationId: OrganizationId | null = null
-): Blueprint {
+): Promise<Blueprint> {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
@@ -271,10 +275,10 @@ export function setupMockStudioBlueprint(
 
 	return internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId)
 }
-export function setupMockShowStyleBlueprint(
+export async function setupMockShowStyleBlueprint(
 	showStyleVariantId: ShowStyleVariantId,
 	organizationId?: OrganizationId | null
-): Blueprint {
+): Promise<Blueprint> {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
@@ -388,14 +392,16 @@ export interface DefaultEnvironment {
 
 	ingestDevice: PeripheralDevice
 }
-export function setupDefaultStudioEnvironment(organizationId: OrganizationId | null = null): DefaultEnvironment {
+export async function setupDefaultStudioEnvironment(
+	organizationId: OrganizationId | null = null
+): Promise<DefaultEnvironment> {
 	const core = setupMockCore({})
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
 	const showStyleVariantId: ShowStyleVariantId = getRandomId()
 
-	const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId, organizationId)
-	const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
+	const studioBlueprint = await setupMockStudioBlueprint(showStyleBaseId, organizationId)
+	const showStyleBlueprint = await setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
 
 	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, {
 		_id: showStyleBaseId,
@@ -435,11 +441,7 @@ export function setupDefaultRundownPlaylist(
 ): { rundownId: RundownId; playlistId: RundownPlaylistId } {
 	const rundownId: RundownId = rundownId0 || getRandomId()
 
-	const playlist: DBRundownPlaylist = defaultRundownPlaylist(
-		protectString('playlist_' + rundownId),
-		env.studio._id,
-		env.ingestDevice._id
-	)
+	const playlist: DBRundownPlaylist = defaultRundownPlaylist(protectString('playlist_' + rundownId), env.studio._id)
 
 	const playlistId = RundownPlaylists.insert(playlist)
 

@@ -1,15 +1,13 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { getUser } from '../../../../lib/collections/Users'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 
-interface ILostPasswordPageProps extends RouteComponentProps {}
+type ILostPasswordPageProps = RouteComponentProps
 
 interface ILostPasswordPageState {
 	email: string
@@ -34,7 +32,7 @@ export const LostPasswordPage = translateWithTracker((props: ILostPasswordPagePr
 			}
 		}
 
-		private validateEmail(e: React.FocusEvent<HTMLInputElement>) {
+		private validateEmail(_e: React.FocusEvent<HTMLInputElement>) {
 			/** Find good email regex */
 		}
 

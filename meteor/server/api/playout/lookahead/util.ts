@@ -1,3 +1,4 @@
+import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { Part } from '../../../../lib/collections/Parts'
 import { PieceInstance, PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
@@ -16,9 +17,13 @@ export interface PartInstanceAndPieceInstances {
 	nowInPart: number
 	allPieces: PieceInstance[]
 }
+export interface PieceInstanceWithObjectMap extends PieceInstance {
+	/** Cache of objects built by findObjects. */
+	objectMap?: Map<string, TimelineObjectCoreExt>
+}
 export interface PartAndPieces {
 	part: Part
-	pieces: PieceInstance[]
+	pieces: PieceInstanceWithObjectMap[]
 }
 
 export function isPieceInstance(piece: Piece | PieceInstance | PieceInstancePiece): piece is PieceInstance {

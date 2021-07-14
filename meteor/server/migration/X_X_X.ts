@@ -1,6 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import * as _ from 'underscore'
 
 /*
  * **************************************************************************************
@@ -27,5 +26,4 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// },
 	//
 	//
-	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
 ])

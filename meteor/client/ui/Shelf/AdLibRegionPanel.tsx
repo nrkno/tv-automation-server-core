@@ -32,7 +32,7 @@ interface IAdLibRegionPanelProps {
 	adlibRank?: number
 }
 
-interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {}
+type IAdLibRegionPanelTrackedProps = IDashboardPanelTrackedProps
 
 export class AdLibRegionPanelInner extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
@@ -83,7 +83,7 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 			if (piece.isAction && piece.adlibAction) {
 				const action = piece.adlibAction
 				doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-					MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+					MeteorCall.userAction.executeAction(e, this.props.playlist._id, action._id, action.actionId, action.userData)
 				)
 			} else if (!piece.isGlobal && !piece.isAction) {
 				doUserAction(t, e, UserAction.START_ADLIB, (e) =>

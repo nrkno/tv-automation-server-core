@@ -148,6 +148,12 @@ const PLAYOUT_SUBDEVICE_CONFIG: SubDeviceConfigManifest['config'] = {
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{
+			id: 'options.resendTime',
+			name: 'Resend time in ms',
+			hint: 'Minimum time in ms before a command is resent, set to a number > 0 to enable',
+			type: ConfigManifestEntryType.INT,
+		},
+		{
 			id: 'options.makeReadyCommands',
 			name: 'Make Ready Commands',
 			type: ConfigManifestEntryType.TABLE,

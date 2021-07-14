@@ -1,5 +1,4 @@
 import { DBObj, ProtectedString } from '../../lib/lib'
-import * as _ from 'underscore'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'

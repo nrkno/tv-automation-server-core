@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-export, jest/valid-title, jest/expect-expect, jest/no-focused-tests */
 import { runInFiber } from '../Fibers'
 
 export function beforeAllInFiber(fcn: () => void | Promise<void>, timeout?: number) {
@@ -32,7 +33,7 @@ export function testInFiber(testName: string, fcn: () => void | Promise<void>, t
 }
 
 export function testInFiberOnly(testName: string, fcn: () => void | Promise<void>, timeout?: number) {
-	// tslint:disable-next-line:no-focused-test
+	// eslint-disable-next-line custom-rules/no-focused-test
 	test.only(
 		testName,
 		async () => {

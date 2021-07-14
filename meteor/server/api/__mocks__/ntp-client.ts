@@ -1,6 +1,6 @@
 import { RandomMock } from '../../../__mocks__/random'
 
-export let ntpReplyTimeout: number = 1000
+export const ntpReplyTimeout: number = 1000
 
 export const getNetworkTime = (
 	host: string,

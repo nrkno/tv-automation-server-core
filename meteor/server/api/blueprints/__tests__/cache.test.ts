@@ -1,7 +1,6 @@
-import * as _ from 'underscore'
+import '../../../../__mocks__/_extendJest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal, protectString } from '../../../../lib/lib'
 import {
 	loadSystemBlueprints,
@@ -22,8 +21,8 @@ import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowS
 import { generateFakeBlueprint } from './lib'
 
 describe('Test blueprint cache', () => {
-	beforeAll(() => {
-		setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		await setupDefaultStudioEnvironment()
 	})
 	beforeEach(() => {
 		BLUEPRINT_CACHE_CONTROL.disable = true
@@ -38,28 +37,26 @@ describe('Test blueprint cache', () => {
 			expect(core).toBeTruthy()
 			return core
 		}
-		testInFiber('Blueprint not specified', () => {
+		test('Blueprint not specified', async () => {
 			const core = getCore()
 			expect(core.blueprintId).toBeFalsy()
 
-			const blueprint = loadSystemBlueprints(core)
+			const blueprint = await loadSystemBlueprints(core)
 			expect(blueprint).toBeFalsy()
 		})
-		testInFiber('Blueprint does not exist', () => {
+		test('Blueprint does not exist', async () => {
 			const core = getCore()
 			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
 
 			Blueprints.remove(protectString('fake_id'))
 
-			try {
-				loadSystemBlueprints(core)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(`[404] Blueprint "${core.blueprintId}" not found! (referenced by CoreSystem)`)
-			}
+			await expect(loadSystemBlueprints(core)).rejects.toThrowMeteor(
+				404,
+				`Blueprint "${core.blueprintId}" not found! (referenced by CoreSystem)`
+			)
 		})
-		testInFiber('Blueprint no type', () => {
+		test('Blueprint no type', async () => {
 			const core = getCore()
 			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
@@ -67,17 +64,13 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id'))
 
-			try {
-				loadSystemBlueprints(core)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem (undefined)!`
-				)
-			}
+			await expect(loadSystemBlueprints(core)).rejects.toThrowMeteor(
+				500,
+				`Blueprint "${core.blueprintId}" is not valid for a CoreSystem (undefined)!`
+			)
 		})
 
-		testInFiber('Blueprint wrong type', () => {
+		test('Blueprint wrong type', async () => {
 			const core = getCore()
 			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
@@ -87,17 +80,13 @@ describe('Test blueprint cache', () => {
 			Blueprints.insert(bp)
 
 			expect(BLUEPRINT_CACHE_CONTROL.disable).toBeTruthy()
-			try {
-				loadSystemBlueprints(core)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem (showstyle)!`
-				)
-			}
+			await expect(loadSystemBlueprints(core)).rejects.toThrowMeteor(
+				500,
+				`Blueprint "${core.blueprintId}" is not valid for a CoreSystem (showstyle)!`
+			)
 		})
 
-		testInFiber('Blueprint wrong internal type', () => {
+		test('Blueprint wrong internal type', async () => {
 			const core = getCore()
 			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
@@ -121,16 +110,12 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
-			try {
-				loadSystemBlueprints(core)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[500] Evaluated Blueprint-manifest and document does not have the same blueprintType ("studio", "system")!`
-				)
-			}
+			await expect(loadSystemBlueprints(core)).rejects.toThrowMeteor(
+				500,
+				`Evaluated Blueprint-manifest and document does not have the same blueprintType ("studio", "system")!`
+			)
 		})
-		testInFiber('Blueprint correct type', () => {
+		test('Blueprint correct type', async () => {
 			const core = getCore()
 			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
@@ -146,7 +131,7 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
 
-			const blueprint = loadSystemBlueprints(core)
+			const blueprint = await loadSystemBlueprints(core)
 			expect(blueprint).toBeTruthy()
 		})
 	})
@@ -158,31 +143,27 @@ describe('Test blueprint cache', () => {
 			return studio
 		}
 
-		testInFiber('Blueprint not specified', () => {
+		test('Blueprint not specified', async () => {
 			const studio = getStudio()
 			studio.blueprintId = undefined
 			expect(studio.blueprintId).toBeFalsy()
 
-			const blueprint = loadStudioBlueprint(studio)
+			const blueprint = await loadStudioBlueprint(studio)
 			expect(blueprint).toBeFalsy()
 		})
-		testInFiber('Blueprint does not exist', () => {
+		test('Blueprint does not exist', async () => {
 			const studio = getStudio()
 			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
 
 			Blueprints.remove(protectString('fake_id'))
 
-			try {
-				loadStudioBlueprint(studio)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[404] Blueprint "${studio.blueprintId}" not found! (referenced by Studio \"${studio._id}\")`
-				)
-			}
+			await expect(loadStudioBlueprint(studio)).rejects.toThrowMeteor(
+				404,
+				`Blueprint "${studio.blueprintId}" not found! (referenced by Studio \"${studio._id}\")`
+			)
 		})
-		testInFiber('Blueprint no type', () => {
+		test('Blueprint no type', async () => {
 			const studio = getStudio()
 			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
@@ -190,16 +171,12 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id'))
 
-			try {
-				loadStudioBlueprint(studio)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\" (undefined)!`
-				)
-			}
+			await expect(loadStudioBlueprint(studio)).rejects.toThrowMeteor(
+				500,
+				`Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\" (undefined)!`
+			)
 		})
-		testInFiber('Blueprint wrong type', () => {
+		test('Blueprint wrong type', async () => {
 			const studio = getStudio()
 			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
@@ -207,16 +184,12 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
 
-			try {
-				loadStudioBlueprint(studio)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\" (showstyle)!`
-				)
-			}
+			await expect(loadStudioBlueprint(studio)).rejects.toThrowMeteor(
+				500,
+				`Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\" (showstyle)!`
+			)
 		})
-		testInFiber('Blueprint wrong internal type', () => {
+		test('Blueprint wrong internal type', async () => {
 			const studio = getStudio()
 			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
@@ -232,16 +205,12 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.STUDIO, manifest))
 
-			try {
-				loadStudioBlueprint(studio)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[500] Evaluated Blueprint-manifest and document does not have the same blueprintType ("system", "studio")!`
-				)
-			}
+			await expect(loadStudioBlueprint(studio)).rejects.toThrowMeteor(
+				500,
+				`Evaluated Blueprint-manifest and document does not have the same blueprintType ("system", "studio")!`
+			)
 		})
-		testInFiber('Blueprint correct type', () => {
+		test('Blueprint correct type', async () => {
 			const studio = getStudio()
 			studio.blueprintId = protectString('fake_id')
 			expect(studio.blueprintId).toBeTruthy()
@@ -265,7 +234,7 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.STUDIO, manifest))
 
-			const blueprint = loadStudioBlueprint(studio) as WrappedStudioBlueprint
+			const blueprint = (await loadStudioBlueprint(studio)) as WrappedStudioBlueprint
 			expect(blueprint).toBeTruthy()
 
 			expect(blueprint.blueprint.blueprintType).toEqual('studio')
@@ -279,35 +248,29 @@ describe('Test blueprint cache', () => {
 			return showStyle
 		}
 
-		testInFiber('Blueprint not specified', () => {
+		test('Blueprint not specified', async () => {
 			const showStyle = getShowStyle()
 			;(showStyle as any).blueprintId = undefined
 			expect(showStyle.blueprintId).toBeFalsy()
 
-			try {
-				loadShowStyleBlueprint(showStyle)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(`[500] ShowStyleBase "${showStyle._id}" has no defined blueprint!`)
-			}
+			await expect(loadShowStyleBlueprint(showStyle)).rejects.toThrowMeteor(
+				500,
+				`ShowStyleBase "${showStyle._id}" has no defined blueprint!`
+			)
 		})
-		testInFiber('Blueprint does not exist', () => {
+		test('Blueprint does not exist', async () => {
 			const showStyle = getShowStyle()
 			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
 
 			Blueprints.remove(protectString('fake_id'))
 
-			try {
-				loadShowStyleBlueprint(showStyle)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[404] Blueprint "${showStyle.blueprintId}" not found! (referenced by ShowStyleBase \"${showStyle._id}\")`
-				)
-			}
+			await expect(loadShowStyleBlueprint(showStyle)).rejects.toThrowMeteor(
+				404,
+				`Blueprint "${showStyle.blueprintId}" not found! (referenced by ShowStyleBase "${showStyle._id}")`
+			)
 		})
-		testInFiber('Blueprint no type', () => {
+		test('Blueprint no type', async () => {
 			const showStyle = getShowStyle()
 			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
@@ -315,16 +278,12 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id'))
 
-			try {
-				loadShowStyleBlueprint(showStyle)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\" (undefined)!`
-				)
-			}
+			await expect(loadShowStyleBlueprint(showStyle)).rejects.toThrowMeteor(
+				500,
+				`Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle "${showStyle._id}" (undefined)!`
+			)
 		})
-		testInFiber('Blueprint wrong type', () => {
+		test('Blueprint wrong type', async () => {
 			const showStyle = getShowStyle()
 			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
@@ -332,16 +291,12 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM))
 
-			try {
-				loadShowStyleBlueprint(showStyle)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\" (system)!`
-				)
-			}
+			await expect(loadShowStyleBlueprint(showStyle)).rejects.toThrowMeteor(
+				500,
+				`Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\" (system)!`
+			)
 		})
-		testInFiber('Blueprint wrong internal type', () => {
+		test('Blueprint wrong internal type', async () => {
 			const showStyle = getShowStyle()
 			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
@@ -357,16 +312,12 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE, manifest))
 
-			try {
-				loadShowStyleBlueprint(showStyle)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[500] Evaluated Blueprint-manifest and document does not have the same blueprintType ("system", "showstyle")!`
-				)
-			}
+			await expect(loadShowStyleBlueprint(showStyle)).rejects.toThrowMeteor(
+				500,
+				`Evaluated Blueprint-manifest and document does not have the same blueprintType ("system", "showstyle")!`
+			)
 		})
-		testInFiber('Blueprint correct type', () => {
+		test('Blueprint correct type', async () => {
 			const showStyle = getShowStyle()
 			showStyle.blueprintId = protectString('fake_id')
 			expect(showStyle.blueprintId).toBeTruthy()
@@ -381,14 +332,14 @@ describe('Test blueprint cache', () => {
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],
 				getShowStyleVariantId: () => null,
-				getRundown: () => (null as any) as BlueprintResultRundown,
-				getSegment: () => (null as any) as BlueprintResultSegment,
+				getRundown: () => null as any as BlueprintResultRundown,
+				getSegment: () => null as any as BlueprintResultSegment,
 			})
 
 			Blueprints.remove(protectString('fake_id'))
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE, manifest))
 
-			const blueprint = loadShowStyleBlueprint(showStyle)
+			const blueprint = await loadShowStyleBlueprint(showStyle)
 			expect(blueprint).toBeTruthy()
 		})
 	})
@@ -414,14 +365,14 @@ describe('Test blueprint cache', () => {
 				})
 			)
 		}
-		testInFiber('Valid showStyleBase', () => {
+		test('Valid showStyleBase', async () => {
 			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
 			expect(showStyle).toBeTruthy()
 
 			const rundown = getRundown()
 			rundown.showStyleBaseId = showStyle._id
 
-			const blueprint = loadShowStyleBlueprint(showStyle)
+			const blueprint = await loadShowStyleBlueprint(showStyle)
 			expect(blueprint).toBeTruthy()
 		})
 	})

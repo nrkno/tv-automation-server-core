@@ -83,7 +83,7 @@ describe('ui/RundownList/DragAndDropTypes', () => {
 		})
 
 		// note that the RundownPlaylistId type is a protected string, and runtime that will just be a regular string
-		it('should return false for object with invalid rundownId', () => {
+		it('should return false for object with invalid targetPlaylistId', () => {
 			const invalid = {
 				type: RundownPlaylistUiActionTypes.NOOP,
 				rundownId: protectString('_Zdde0124650o12378459'),
