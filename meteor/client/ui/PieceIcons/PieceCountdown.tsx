@@ -10,7 +10,6 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { findPieceInstanceToShow } from './utils'
 import { Timediff } from '../ClockView/Timediff'
 import { getCurrentTime } from '../../../lib/lib'
-import { FreezeFrameIcon } from '../../lib/ui/icons/freezeFrame'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId

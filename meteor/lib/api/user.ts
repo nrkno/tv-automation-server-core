@@ -20,7 +20,7 @@ interface NewUser {
 	password?: string
 	createOrganization?: DBOrganizationBase
 }
-export function createUser(newUser: NewUser): Promise<UserId> {
+export async function createUser(newUser: NewUser): Promise<UserId> {
 	// This is available both client-side and server side.
 	// The reason for that is that the client-side should use Accounts.createUser right away
 	// so that the password aren't sent in "plaintext" to the server.

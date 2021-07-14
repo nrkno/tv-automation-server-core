@@ -36,7 +36,7 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 			return callbackGetValue?.()
 		}
 
-		const key0 = (key as unknown) as string
+		const key0 = key as unknown as string
 		let o = this._store[key0]
 
 		if (!o) {
@@ -95,8 +95,8 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 	}
 	/** Remove a value from the store */
 	private removeValue(key: Key) {
-		const key0 = (key as unknown) as string
-		let o = this._store[key0]
+		const key0 = key as unknown as string
+		const o = this._store[key0]
 		if (o) {
 			o.computation?.stop()
 			delete this._store[key0]
@@ -122,7 +122,7 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 	}
 	clear() {
 		for (const key of Object.keys(this._store)) {
-			this.removeValue((key as unknown) as Key)
+			this.removeValue(key as unknown as Key)
 		}
 	}
 }

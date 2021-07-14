@@ -29,7 +29,7 @@ export const SwitchboardPopUp = withTranslation()(
 			const exclusivityGroups: {
 				[id: string]: Array<[string, StudioRouteSet]>
 			} = {}
-			for (let [id, routeSet] of this.props.availableRouteSets) {
+			for (const [id, routeSet] of this.props.availableRouteSets) {
 				const group = routeSet.exclusivityGroup || '__noGroup'
 				if (exclusivityGroups[group] === undefined) exclusivityGroups[group] = []
 				exclusivityGroups[group].push([id, routeSet])

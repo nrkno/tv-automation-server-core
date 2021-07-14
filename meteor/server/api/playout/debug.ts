@@ -46,7 +46,7 @@ if (!Settings.enableUserAccounts) {
 		debug_removeAllPlaylists() {
 			logger.debug('Remove all rundowns')
 
-			waitForPromiseAll(RundownPlaylists.find({}).map((playlist) => removeRundownPlaylistFromDb(playlist)))
+			waitForPromiseAll(RundownPlaylists.find({}).map(async (playlist) => removeRundownPlaylistFromDb(playlist)))
 		},
 
 		/**
@@ -58,13 +58,15 @@ if (!Settings.enableUserAccounts) {
 				check(studioId, String)
 				logger.info(`debug_updateTimeline: "${studioId}"`)
 
-				runStudioOperationWithCache(
-					'debug_updateTimeline',
-					studioId,
-					StudioLockFunctionPriority.USER_PLAYOUT,
-					(cache) => {
-						updateStudioOrPlaylistTimeline(cache)
-					}
+				waitForPromise(
+					runStudioOperationWithCache(
+						'debug_updateTimeline',
+						studioId,
+						StudioLockFunctionPriority.USER_PLAYOUT,
+						async (cache) => {
+							await updateStudioOrPlaylistTimeline(cache)
+						}
+					)
 				)
 			} catch (e) {
 				logger.error(e)
@@ -81,27 +83,29 @@ if (!Settings.enableUserAccounts) {
 				check(studioId, String)
 				logger.info(`debug_updateNext: "${studioId}"`)
 
-				runStudioOperationWithCache(
-					'debug_updateNext',
-					studioId,
-					StudioLockFunctionPriority.USER_PLAYOUT,
-					(cache) => {
-						const playlists = cache.getActiveRundownPlaylists()
-						if (playlists.length === 1) {
-							return runPlayoutOperationWithCacheFromStudioOperation(
-								'updateStudioOrPlaylistTimeline',
-								cache,
-								playlists[0],
-								PlayoutLockFunctionPriority.USER_PLAYOUT,
-								null,
-								(playlistCache) => {
-									ensureNextPartIsValid(playlistCache)
-								}
-							)
-						} else {
-							throw new Error('No playlist active')
+				waitForPromise(
+					runStudioOperationWithCache(
+						'debug_updateNext',
+						studioId,
+						StudioLockFunctionPriority.USER_PLAYOUT,
+						async (cache) => {
+							const playlists = cache.getActiveRundownPlaylists()
+							if (playlists.length === 1) {
+								await runPlayoutOperationWithCacheFromStudioOperation(
+									'updateStudioOrPlaylistTimeline',
+									cache,
+									playlists[0],
+									PlayoutLockFunctionPriority.USER_PLAYOUT,
+									null,
+									async (playlistCache) => {
+										await ensureNextPartIsValid(playlistCache)
+									}
+								)
+							} else {
+								throw new Error('No playlist active')
+							}
 						}
-					}
+					)
 				)
 			} catch (e) {
 				logger.error(e)
@@ -116,15 +120,17 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			runPlayoutOperationWithCache(
-				null,
-				'debug_syncPlayheadInfinitesForNextPartInstance',
-				id,
-				PlayoutLockFunctionPriority.MISC,
-				null,
-				async (cache) => {
-					await syncPlayheadInfinitesForNextPartInstance(cache)
-				}
+			waitForPromise(
+				runPlayoutOperationWithCache(
+					null,
+					'debug_syncPlayheadInfinitesForNextPartInstance',
+					id,
+					PlayoutLockFunctionPriority.MISC,
+					null,
+					async (cache) => {
+						await syncPlayheadInfinitesForNextPartInstance(cache)
+					}
+				)
 			)
 		},
 
@@ -157,25 +163,27 @@ if (!Settings.enableUserAccounts) {
 		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
 			logger.info('regenerateNextPartInstance')
 
-			runPlayoutOperationWithCache(
-				null,
-				'debug_regenerateNextPartInstance',
-				id,
-				PlayoutLockFunctionPriority.MISC,
-				null,
-				(cache) => {
-					const playlist = cache.Playlist.doc
-					if (playlist.nextPartInstanceId && playlist.activationId) {
-						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-						const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
-						if (part) {
-							setNextPart(cache, null)
-							setNextPart(cache, { part: part })
+			waitForPromise(
+				runPlayoutOperationWithCache(
+					null,
+					'debug_regenerateNextPartInstance',
+					id,
+					PlayoutLockFunctionPriority.MISC,
+					null,
+					async (cache) => {
+						const playlist = cache.Playlist.doc
+						if (playlist.nextPartInstanceId && playlist.activationId) {
+							const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+							const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
+							if (part) {
+								await setNextPart(cache, null)
+								await setNextPart(cache, { part: part })
 
-							updateTimeline(cache)
+								await updateTimeline(cache)
+							}
 						}
 					}
-				}
+				)
 			)
 		},
 	})

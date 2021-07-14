@@ -35,11 +35,9 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		this._translator = t
 
 		this._notificationList = new NotificationList([])
-		this._notifier = NotificationCenter.registerNotifier(
-			(): NotificationList => {
-				return this._notificationList
-			}
-		)
+		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
+			return this._notificationList
+		})
 
 		// internal registry for service messages
 		this._serviceMessageRegistry = {}
@@ -61,8 +59,8 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 				}
 			}
 
-			let systemNotification: Notification | undefined = createSystemNotification(cs)
-			let newNotification = this.createNewStatusNotification(meteorStatus)
+			const systemNotification: Notification | undefined = createSystemNotification(cs)
+			const newNotification = this.createNewStatusNotification(meteorStatus)
 
 			if (newNotification.persistent) {
 				this._notificationList.set(_.compact([newNotification, systemNotification]))

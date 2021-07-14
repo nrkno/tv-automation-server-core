@@ -54,7 +54,7 @@ export function postProcessPieces(
 	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
 		const i = externalIds.get(orgPiece.externalId) ?? 0
 		externalIds.set(orgPiece.externalId, i + 1)
-		let piece: Piece = {
+		const piece: Piece = {
 			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
 			continuesRefId: protectString(orgPiece.continuesRefId),
@@ -263,7 +263,7 @@ export function postProcessBucketAdLib(
 	rank: number | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLib {
-	let piece: BucketAdLib = {
+	const piece: BucketAdLib = {
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(
@@ -300,7 +300,7 @@ export function postProcessBucketAction(
 	rank: number | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLibAction {
-	let action: BucketAdLibAction = {
+	const action: BucketAdLibAction = {
 		...itemOrig,
 		_id: protectString(
 			innerContext.getHashId(

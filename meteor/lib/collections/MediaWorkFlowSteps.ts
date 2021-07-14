@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { PeripheralDeviceId } from './PeripheralDevices'
@@ -31,10 +30,7 @@ export abstract class MediaWorkFlowStep {
 	expectedLeft?: number
 }
 
-export const MediaWorkFlowSteps: TransformedCollection<
-	MediaWorkFlowStep,
-	MediaWorkFlowStep
-> = createMongoCollection<MediaWorkFlowStep>('mediaWorkFlowSteps')
+export const MediaWorkFlowSteps = createMongoCollection<MediaWorkFlowStep, MediaWorkFlowStep>('mediaWorkFlowSteps')
 registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
 
 registerIndex(MediaWorkFlowSteps, {

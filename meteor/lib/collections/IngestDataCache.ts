@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
@@ -51,10 +50,7 @@ export interface IngestDataCacheObjPart extends IngestDataCacheObjBase {
 }
 export type IngestDataCacheObj = IngestDataCacheObjRundown | IngestDataCacheObjSegment | IngestDataCacheObjPart
 
-export const IngestDataCache: TransformedCollection<
-	IngestDataCacheObj,
-	IngestDataCacheObj
-> = createMongoCollection<IngestDataCacheObj>('ingestDataCache')
+export const IngestDataCache = createMongoCollection<IngestDataCacheObj, IngestDataCacheObj>('ingestDataCache')
 registerCollection('IngestDataCache', IngestDataCache)
 
 registerIndex(IngestDataCache, {

@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/server-core-integration",
-	"version": "1.35.0",
+	"version": "1.37.0-in-development",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -32,7 +32,6 @@
 		}
 	],
 	"scripts": {
-		"info": "npm-scripts-info",
 		"build": "rimraf dist && yarn build:main && yarn copytypes",
 		"build:main": "tsc -p tsconfig.build.json",
 		"lint": "tslint --project tsconfig.json --config tslint.json",
@@ -47,22 +46,6 @@
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-2-Clause BSD-3-Clause 0BSD ISC Apache Apache-2.0 Unlicense"
-	},
-	"scripts-info": {
-		"info": "Display information about the scripts",
-		"build": "(Trash and re)build the library",
-		"build:main": "Builds main build command without trash.",
-		"lint": "Lint all typescript source files",
-		"unit": "Build the library and run unit tests",
-		"test": "Lint, build, and test the library",
-		"test:integration": "Integration tests. Work in progress",
-		"watch": "Watch source files, rebuild library on changes, rerun relevant tests",
-		"cov": "Run tests, generate the HTML coverage report, and open it in a browser",
-		"cov-open": "Open current test coverage",
-		"send-coverage": "send coverage to codecov",
-		"validate:dependencies": "Scan dependencies for vulnerabilities and check licenses",
-		"license-validate": "Validate licenses for dependencies.",
-		"precommit": "lint-staged"
 	},
 	"engines": {
 		"node": ">=12.20"
@@ -87,7 +70,7 @@
 		"production"
 	],
 	"dependencies": {
-		"data-store": "3.1.0",
+		"data-store": "^4.0.3",
 		"ejson": "^2.2.0",
 		"faye-websocket": "^0.11.4",
 		"got": "^11.8.2",

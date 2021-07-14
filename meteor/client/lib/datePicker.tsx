@@ -33,7 +33,7 @@ export const DatePickerFromTo = withTranslation()(
 		updateData = (o: Partial<IState>) => {
 			this.setState(o as any)
 
-			let newState: IState = _.extend(_.clone(this.state), o)
+			const newState: IState = _.extend(_.clone(this.state), o)
 			this.triggerOnchange(newState)
 		}
 		handleChangeFrom = (date: Date | null) => {
@@ -51,9 +51,9 @@ export const DatePickerFromTo = withTranslation()(
 			}
 		}
 		onClickPrevious = () => {
-			let from = this.state.dateFrom.valueOf()
-			let to = this.state.dateTo.valueOf()
-			let range = to - from
+			const from = this.state.dateFrom.valueOf()
+			const to = this.state.dateTo.valueOf()
+			const range = to - from
 
 			this.updateData({
 				dateFrom: new Date(from - range),
@@ -61,9 +61,9 @@ export const DatePickerFromTo = withTranslation()(
 			})
 		}
 		onClickNext = () => {
-			let from = this.state.dateFrom.valueOf()
-			let to = this.state.dateTo.valueOf()
-			let range = to - from
+			const from = this.state.dateFrom.valueOf()
+			const to = this.state.dateTo.valueOf()
+			const range = to - from
 
 			this.updateData({
 				dateFrom: new Date(from + range),

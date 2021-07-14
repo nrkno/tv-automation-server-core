@@ -5,7 +5,7 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { SaveIntoDbHooks, saveIntoDb, sumChanges, anythingChanged } from '../database'
 
 describe('server/lib', () => {
-	testInFiber('saveIntoDb', () => {
+	testInFiber('saveIntoDb', async () => {
 		const mystudioObjs: Array<TimelineObjGeneric> = [
 			{
 				id: 'abc',
@@ -54,24 +54,24 @@ describe('server/lib', () => {
 
 		const options: SaveIntoDbHooks<any, any> = {
 			beforeInsert: jest.fn((o) => o),
-			beforeUpdate: jest.fn((o, pre) => o),
+			beforeUpdate: jest.fn((o) => o),
 			beforeRemove: jest.fn((o) => o),
-			beforeDiff: jest.fn((o, oldObj) => o),
+			beforeDiff: jest.fn((o) => o),
 			// insert: jest.fn((o) => o),
 			// update: jest.fn((id, o,) => { return undefined }),
 			// remove: jest.fn((o) => { return undefined }),
-			afterInsert: jest.fn((o) => {
+			afterInsert: jest.fn((_o) => {
 				return undefined
 			}),
-			afterUpdate: jest.fn((o) => {
+			afterUpdate: jest.fn((_o) => {
 				return undefined
 			}),
-			afterRemove: jest.fn((o) => {
+			afterRemove: jest.fn((_o) => {
 				return undefined
 			}),
 		}
 
-		const changes = saveIntoDb(
+		const changes = await saveIntoDb(
 			Timeline,
 			{
 				_id: protectString('myStudio'),

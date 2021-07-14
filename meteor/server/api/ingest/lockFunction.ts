@@ -5,9 +5,9 @@ import { DBRundown } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
-import { waitForPromise, clone, protectString } from '../../../lib/lib'
+import { clone, protectString } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
-import { syncFunction } from '../../codeControl'
+import { pushWorkToQueue } from '../../codeControl'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from '../playout/lockFunction'
@@ -52,7 +52,7 @@ export enum UpdateIngestRundownAction {
  * @param calcFcn Function to run to update the Rundown. Return the blob of data about the change to help the post-update perform its duties. Return null to indicate that nothing changed
  */
 // runPlayoutOperationWithCacheFromStudioOperation
-export function runIngestOperationWithCache(
+export async function runIngestOperationWithCache(
 	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,
@@ -64,7 +64,7 @@ export function runIngestOperationWithCache(
 		newIngestRundown: LocalIngestRundown | undefined,
 		oldIngestRundown: LocalIngestRundown | undefined
 	) => Promise<CommitIngestData | null>
-): void {
+): Promise<void> {
 	return ingestLockFunctionInner(context, rundownExternalId, async () => {
 		const span = profiler.startSpan(`ingestLockFunction.${context}`)
 
@@ -126,11 +126,11 @@ export function runIngestOperationWithCache(
  * @param fcn Function to run while holding the lock
  * @param playlistLock If the playlist lock is already held, supply it here to avoid trying to reaquire the lock
  */
-export function runIngestOperationFromRundown(
+export async function runIngestOperationFromRundown(
 	context: string,
 	refRundown: DBRundown,
 	fcn: (ingestCache: CacheForIngest) => Promise<void>
-): void {
+): Promise<void> {
 	const refRundownId = refRundown._id
 	const studioId = refRundown.studioId
 	const rundownExternalId = refRundown.externalId
@@ -158,7 +158,7 @@ export function runIngestOperationFromRundown(
 				`RundownPlaylist id for Rundown "${ingestCache.RundownId}" cannot be changed during a ingestRundownOnlyLockFunction`
 			)
 
-		runPlayoutOperationWithLock(
+		await runPlayoutOperationWithLock(
 			null,
 			context,
 			beforeRundown.playlistId,
@@ -171,14 +171,12 @@ export function runIngestOperationFromRundown(
 	})
 }
 
-function ingestLockFunctionInner(context: string, rundownExternalId: string, fcn: () => Promise<void>): void {
-	return syncFunction(
-		() => {
-			waitForPromise(fcn())
-		},
-		context,
-		`rundown_ingest_${rundownExternalId}`
-	)()
+async function ingestLockFunctionInner(
+	context: string,
+	rundownExternalId: string,
+	fcn: () => Promise<void>
+): Promise<void> {
+	return pushWorkToQueue(`rundown_ingest_${rundownExternalId}`, context, fcn)
 }
 
 function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {

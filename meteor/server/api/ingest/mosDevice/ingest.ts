@@ -98,11 +98,11 @@ function groupedPartsToSegments(
 	})
 }
 
-export function handleMosRundownData(
+export async function handleMosRundownData(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	isCreateAction: boolean
-) {
+): Promise<void> {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrder.ID)
 	const rundownExternalId = parseMosString(mosRunningOrder.ID)
@@ -168,10 +168,10 @@ export function handleMosRundownData(
 		}
 	)
 }
-export function handleMosRundownMetadata(
+export async function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
-) {
+): Promise<void> {
 	const studio = getStudioFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(mosRunningOrderBase.ID)
@@ -199,7 +199,10 @@ export function handleMosRundownMetadata(
 	)
 }
 
-export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
+export async function handleMosFullStory(
+	peripheralDevice: PeripheralDevice,
+	story: MOS.IMOSROFullStory
+): Promise<void> {
 	fixIllegalObject(story)
 	// @ts-ignore
 	// logger.debug(story)
@@ -245,11 +248,11 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 		}
 	)
 }
-export function handleMosDeleteStory(
+export async function handleMosDeleteStory(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	stories: Array<MOS.MosString128>
-) {
+): Promise<void> {
 	if (stories.length === 0) return
 
 	const studio = getStudioFromDevice(peripheralDevice)
@@ -315,13 +318,13 @@ function getAnnotatedIngestParts(ingestRundown: LocalIngestRundown): AnnotatedIn
 	span?.end()
 	return ingestParts
 }
-export function handleMosInsertParts(
+export async function handleMosInsertParts(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	insertBeforeStoryId: MOS.MosString128 | null,
 	removePrevious: boolean,
 	newStories: MOS.IMOSROStory[]
-) {
+): Promise<void> {
 	// inserts stories and all of their defined items before the referenced story in a Running Order
 	// ...and roStoryReplace message replaces the referenced story with another story or stories
 
@@ -387,12 +390,12 @@ export function handleMosInsertParts(
 	)
 }
 
-export function handleMosSwapStories(
+export async function handleMosSwapStories(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	story0: MOS.MosString128,
 	story1: MOS.MosString128
-) {
+): Promise<void> {
 	const studio = getStudioFromDevice(peripheralDevice)
 
 	const story0Str = parseMosString(story0)
@@ -445,12 +448,12 @@ export function handleMosSwapStories(
 		diffAndApplyChanges
 	)
 }
-export function handleMosMoveStories(
+export async function handleMosMoveStories(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
-) {
+): Promise<void> {
 	const studio = getStudioFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)

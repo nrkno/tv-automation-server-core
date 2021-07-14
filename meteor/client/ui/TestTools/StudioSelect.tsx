@@ -15,7 +15,7 @@ interface IStudioSelectTrackedProps {
 	studios: Studio[]
 }
 const StudioSelect = translateWithTracker<IStudioSelectProps, IStudioSelectState, IStudioSelectTrackedProps>(
-	(props: IStudioSelectProps) => {
+	(_props: IStudioSelectProps) => {
 		return {
 			studios: Studios.find(
 				{},

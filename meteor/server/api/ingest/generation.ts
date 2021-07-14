@@ -4,6 +4,7 @@ import _ from 'underscore'
 import { SegmentNote, PartNote, RundownNote } from '../../../lib/api/notes'
 import { AdLibAction } from '../../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 import { DBPart, Part } from '../../../lib/collections/Parts'
 import { getExternalNRCSName, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { Piece } from '../../../lib/collections/Pieces'
@@ -21,6 +22,7 @@ import { sumChanges, anythingChanged } from '../../lib/database'
 import { logger } from '../../logging'
 import { WrappedShowStyleBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
 import { CommonContext, SegmentUserContext, ShowStyleUserContext, StudioUserContext } from '../blueprints/context'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessPieces,
 	postProcessAdLibPieces,
@@ -56,6 +58,20 @@ export interface UpdateSegmentsResult {
 	/** Blueprint, if loaded to reuse */
 	blueprint: WrappedShowStyleBlueprint | undefined
 }
+
+async function getWatchedPackagesHelper(
+	allRundownWatchedPackages0: WatchedPackagesHelper | null,
+	cache: CacheForIngest,
+	ingestSegments: LocalIngestSegment[]
+): Promise<WatchedPackagesHelper> {
+	if (allRundownWatchedPackages0) {
+		return allRundownWatchedPackages0
+	} else {
+		const segmentIds = new Set(ingestSegments.map((s) => getSegmentId(cache.RundownId, s.externalId)))
+		return WatchedPackagesHelper.createForIngest(cache, (p) => 'segmentId' in p && segmentIds.has(p.segmentId))
+	}
+}
+
 /**
  * Generate the content for some segments
  * @param cache The ingest cache of the rundown
@@ -64,7 +80,8 @@ export interface UpdateSegmentsResult {
  */
 export async function calculateSegmentsFromIngestData(
 	cache: CacheForIngest,
-	ingestSegments: LocalIngestSegment[]
+	ingestSegments: LocalIngestSegment[],
+	allRundownWatchedPackages0: WatchedPackagesHelper | null
 ): Promise<UpdateSegmentsResult> {
 	const span = profiler.startSpan('ingest.rundownInput.calculateSegmentsFromIngestData')
 
@@ -79,14 +96,25 @@ export async function calculateSegmentsFromIngestData(
 	}
 
 	if (ingestSegments.length > 0) {
-		const showStyle = await getShowStyleCompoundForRundown(rundown)
-		const blueprint = loadShowStyleBlueprint(showStyle)
+		const pShowStyle = getShowStyleCompoundForRundown(rundown)
+		const pAllRundownWatchedPackages = getWatchedPackagesHelper(allRundownWatchedPackages0, cache, ingestSegments)
 
-		for (let ingestSegment of ingestSegments) {
+		const showStyle = await pShowStyle
+		const pBlueprint = loadShowStyleBlueprint(showStyle)
+
+		const blueprint = await pBlueprint
+		const allRundownWatchedPackages = await pAllRundownWatchedPackages
+
+		for (const ingestSegment of ingestSegments) {
 			const segmentId = getSegmentId(cache.RundownId, ingestSegment.externalId)
 
 			// Ensure the parts are sorted by rank
 			ingestSegment.parts.sort((a, b) => a.rank - b.rank)
+
+			// Filter down to the packages for this segment
+			const watchedPackages = allRundownWatchedPackages.filter(
+				(p) => 'segmentId' in p && p.segmentId === segmentId
+			)
 
 			const context = new SegmentUserContext(
 				{
@@ -95,7 +123,8 @@ export async function calculateSegmentsFromIngestData(
 				},
 				cache.Studio.doc,
 				showStyle,
-				rundown
+				rundown,
+				watchedPackages
 			)
 
 			const blueprintRes = blueprint.blueprint.getSegment(context, ingestSegment)
@@ -309,7 +338,7 @@ export async function updateSegmentFromIngestData(
 	if (!isNewSegment && !segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
 	if (!canSegmentBeUpdated(rundown, segment, isNewSegment)) return null
 
-	const segmentChanges = await calculateSegmentsFromIngestData(cache, [ingestSegment])
+	const segmentChanges = await calculateSegmentsFromIngestData(cache, [ingestSegment], null)
 	saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	span?.end()
@@ -357,7 +386,8 @@ export async function regenerateSegmentsFromIngestData(
 		}
 	}
 
-	const segmentChanges = await calculateSegmentsFromIngestData(cache, ingestSegments)
+	const segmentChanges = await calculateSegmentsFromIngestData(cache, ingestSegments, null)
+
 	saveSegmentChangesToCache(cache, segmentChanges, false)
 
 	const result: CommitIngestData = {
@@ -398,20 +428,31 @@ export async function updateRundownFromIngestData(
 		cache.Studio.doc
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	const showStyle = selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
+	const showStyle = await selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base)
+	const pAllRundownWatchedPackages = WatchedPackagesHelper.createForIngest(cache, undefined)
+
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyle.base)
+	const allRundownWatchedPackages = await pAllRundownWatchedPackages
+
+	const rundownBaselinePackages = allRundownWatchedPackages.filter(
+		(pkg) =>
+			pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||
+			pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
+	)
+
 	const blueprintContext = new ShowStyleUserContext(
 		{
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
 		},
 		cache.Studio.doc,
-		showStyle.compound
+		showStyle.compound,
+		rundownBaselinePackages
 	)
 	const rundownRes = showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
 
@@ -485,8 +526,9 @@ export async function updateRundownFromIngestData(
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
 	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
 
+	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
 	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(cache.RundownBaselineObjs, {}, [
+		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(baselineObjects, {}, [
 			{
 				_id: protectString<RundownBaselineObjId>(Random.id(7)),
 				rundownId: dbRundown._id,
@@ -499,7 +541,7 @@ export async function updateRundownFromIngestData(
 		]),
 		// Save the global adlibs
 		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
-			cache.RundownBaselineAdLibPieces,
+			baselineAdlibPieces,
 			{},
 			postProcessAdLibPieces(
 				blueprintRundownContext,
@@ -510,7 +552,7 @@ export async function updateRundownFromIngestData(
 			)
 		),
 		saveIntoCache<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
-			cache.RundownBaselineAdLibActions,
+			baselineAdlibActions,
 			{},
 			postProcessGlobalAdLibActions(
 				blueprintRundownContext,
@@ -531,7 +573,11 @@ export async function updateRundownFromIngestData(
 
 	// TODO - store notes from rundownNotesContext
 
-	const segmentChanges = await calculateSegmentsFromIngestData(cache, ingestRundown.segments)
+	const segmentChanges = await calculateSegmentsFromIngestData(
+		cache,
+		ingestRundown.segments,
+		allRundownWatchedPackages
+	)
 
 	/** Don't remove segments for now, orphan them instead. The 'commit' phase will clean them up if possible */
 	const removedSegments = cache.Segments.findFetch({ _id: { $nin: segmentChanges.segments.map((s) => s._id) } })

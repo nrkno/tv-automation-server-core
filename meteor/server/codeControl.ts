@@ -1,237 +1,141 @@
-import { Random } from 'meteor/random'
-import * as _ from 'underscore'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { getHash } from '../lib/lib'
-// import * as callerModule from 'caller-module'
+import { getCurrentTime, getRandomId } from '../lib/lib'
+import PQueue from 'p-queue/dist/index'
 
 const ACCEPTABLE_WAIT_TIME = 200 // ms
 
-enum syncFunctionFcnStatus {
-	WAITING = 0,
-	RUNNING = 1,
-	DONE = 2,
-	TIMEOUT = 3,
+interface QueueInfo {
+	queue: PQueue
+	pendingJobNames: string[]
 }
-export type Callback = (err: Error | null, res?: any) => void
+const workQueues = new Map<string, QueueInfo>() // TODO - we will leak queues over time
 
-interface SyncFunctionFcn {
-	id: string
-	fcn: Function
-	name: string
-	args: Array<any>
-	cb: Callback
-	timeout: number
-	status: syncFunctionFcnStatus
-	priority: number
-	started?: number
-	queueTime: number
-	waitingOnFunctions: string[]
-}
-/** Queue of syncFunctions */
-const syncFunctionFcns: Array<SyncFunctionFcn> = []
-
-function getFunctionName<T extends Function>(context: string, fcn: T): string {
-	if (fcn.name) {
-		return `${context} - ${fcn.name}`
-	} else {
-		return context
-	}
-}
-export function MeteorWrapAsync(func: Function, context?: Object): any {
-	// A variant of Meteor.wrapAsync to fix the bug
-	// https://github.com/meteor/meteor/issues/11120
-
-	return Meteor.wrapAsync((...args: any[]) => {
-		// Find the callback-function:
-		for (let i = args.length - 1; i >= 0; i--) {
-			if (typeof args[i] === 'function') {
-				if (i < args.length - 1) {
-					// The callback is not the last argument, make it so then:
-					const callback = args[i]
-					const fixedArgs = args
-					fixedArgs[i] = undefined
-					fixedArgs.push(callback)
-
-					func.apply(context, fixedArgs)
-					return
-				} else {
-					// The callback is the last argument, that's okay
-					func.apply(context, args)
-					return
-				}
-			}
+export function isAnyQueuedWorkRunning(): boolean {
+	for (const queue of workQueues.values()) {
+		if (queue.queue.size > 0 || queue.queue.pending > 0) {
+			return true
 		}
-		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
-	})
+	}
+	return false
 }
 
 /**
- * Only allow one instane of the function (and its arguments) to run at the same time
- * If trying to run several at the same time, the subsequent are put on a queue and run later
- * @param fcn
- * @param context Description of the context where the sync function is executing, to assist with program flow analysis.
- * @param id0 (Optional) Id to determine which functions are to wait for each other. Can use "$0" to refer first argument. Example: "myFcn_$0,$1" will let myFcn(0, 0, 13) and myFcn(0, 1, 32) run in parallell, byt not myFcn(0, 0, 13) and myFcn(0, 0, 14)
- * @param timeout (Optional)
+ * Push a unit of work onto a queue.
+ * Allows only one item of work from each queue to be executing at a time (unless something times out)
  */
-export function syncFunction<T extends Function>(
-	fcn: T,
-	context: string,
-	id0?: string,
-	timeout: number = 10000,
-	priority: number = 1
-): T {
-	let id1 = Random.id()
-	return syncFunctionInner(id1, fcn, context, id0, timeout, priority)
-}
-function syncFunctionInner<T extends Function>(
-	id1: string,
-	fcn: T,
-	context: string,
-	id0?: string,
-	timeout: number = 10000,
-	priority: number = 1
-): T {
-	return MeteorWrapAsync((...args0: any[]) => {
-		const queueTime = Date.now()
-		let args = args0.slice(0, -1)
-		// @ts-ignore
-		let cb: Callback = _.last(args0) // the callback is the last argument
+export async function pushWorkToQueue<T>(
+	queueName: string,
+	jobContext: string,
+	fcn: () => Promise<T>,
+	priority: number = 1,
+	timeout?: number
+): Promise<T> {
+	// Note: this emulates the old syncFunction behaviour of timeouts. should we switch to a more traditional timeout handling of bubbling up the error?
+	const { resolve, reject, promise } = createManualPromise<T>()
+	let timedOut = false
 
-		if (!cb) throw new Meteor.Error(500, 'Callback is not defined')
-		if (!_.isFunction(cb)) {
-			logger.info(cb)
-			throw new Meteor.Error(500, 'Callback is not a function, it is a ' + typeof cb)
+	let queueInfo = workQueues.get(queueName)
+	if (!queueInfo) {
+		queueInfo = {
+			queue: new PQueue({
+				concurrency: 1,
+				timeout: 10000,
+				throwOnTimeout: true,
+			}),
+			pendingJobNames: [],
 		}
+		workQueues.set(queueName, queueInfo)
+	}
 
-		let id = id0 ? getId(id0, args) : getHash(id1 + JSON.stringify(args.join()))
-		const name = getFunctionName(context, fcn)
-		logger.debug(`syncFunction: ${id} (${name})`)
-		const waitingOnFunctions = getSyncFunctionsRunningOrWaiting(id)
-		syncFunctionFcns.push({
-			id: id,
-			fcn: fcn,
-			name: name,
-			args: args,
-			cb: cb,
-			queueTime: queueTime,
-			waitingOnFunctions: waitingOnFunctions,
-			timeout: timeout,
-			status: syncFunctionFcnStatus.WAITING,
-			priority: priority,
-		})
-		evaluateFunctions()
-	})
-}
-function evaluateFunctions() {
-	const groups = _.groupBy(syncFunctionFcns, (fcn) => fcn.id)
-	_.each(groups, (group, id) => {
-		const runningFcn = _.find(group, (fcn) => fcn.status === syncFunctionFcnStatus.RUNNING)
-		let startNext = false
-		if (runningFcn) {
-			let startTime = runningFcn.started
-			if (!startTime) {
-				startTime = runningFcn.started = Date.now()
-			}
-			if (Date.now() - startTime > runningFcn.timeout) {
-				// The function has run too long
-				logger.error(`syncFunction "${runningFcn.name}" took too long to evaluate`)
-				runningFcn.status = syncFunctionFcnStatus.TIMEOUT
-				startNext = true
-			} else {
-				// Do nothing, another is running
-			}
-		} else {
-			startNext = true
-		}
+	const jobId = getRandomId()
+	const queueTime = getCurrentTime()
 
-		if (startNext) {
-			const nextFcn = _.max(
-				_.filter(group, (fcn) => fcn.status === syncFunctionFcnStatus.WAITING),
-				(fcn) => fcn.priority
+	// Wrap the execution with a bindEnvironment, to make Meteor happy
+	const wrappedFcn = async () => {
+		// Remove self from pending list
+		queueInfo?.pendingJobNames?.shift()
+
+		logger.debug(`syncFunction "${jobContext}"("${queueName}") begun execution - ${jobId}`)
+
+		// Check if we have been waiting a long time
+		const waitTime = getCurrentTime() - queueTime
+		if (waitTime > ACCEPTABLE_WAIT_TIME) {
+			logger.warn(
+				`syncFunction "${jobContext}"("${queueName}") waited ${waitTime} ms for other functions to complete before starting: [${waitingOnFunctionsStr}] - ${jobId}`
 			)
-			if (_.isObject(nextFcn)) {
-				nextFcn.status = syncFunctionFcnStatus.RUNNING
-				nextFcn.started = Date.now()
-				const waitTime = nextFcn.started - nextFcn.queueTime
-				if (waitTime > ACCEPTABLE_WAIT_TIME) {
-					logger.warn(
-						`syncFunction ${nextFcn.id} "${
-							nextFcn.name
-						}" waited ${waitTime} ms for other functions to complete before starting: [${nextFcn.waitingOnFunctions.join(
-							', '
-						)}]`
-					)
+		}
+
+		try {
+			// wait for completion
+			const res = await fcn()
+
+			// defer resolve, to release queue lock
+			Meteor.defer(() => resolve(res))
+		} catch (e) {
+			// defer reject, to release queue lock
+			Meteor.defer(() => reject(e))
+		}
+
+		logger.debug(`syncFunction "${jobContext}"("${queueName}") done - ${jobId}`)
+		if (timedOut) {
+			const endTime = getCurrentTime()
+			logger.error(
+				`syncFunction "${jobContext}"("${queueName}") completed after timeout. took ${endTime - queueTime}ms`
+			)
+		}
+	}
+
+	const waitingOnFunctionsStr = queueInfo.pendingJobNames.join(', ')
+	queueInfo.pendingJobNames.push(jobContext)
+
+	logger.debug(`syncFunction "${jobContext}"("${queueName}") queued - ${jobId}`)
+
+	return (
+		queueInfo.queue
+			.add(
+				Meteor.bindEnvironment(async () => wrappedFcn()),
+				{
+					timeout,
+					priority,
 				}
-				Meteor.setTimeout(() => {
-					try {
-						let result = nextFcn.fcn(...nextFcn.args)
-						nextFcn.cb(null, result)
-					} catch (e) {
-						nextFcn.cb(e)
-					}
-					if (nextFcn.status === syncFunctionFcnStatus.TIMEOUT) {
-						const duration = nextFcn.started ? Date.now() - nextFcn.started : 0
-						logger.error(
-							`syncFunction ${nextFcn.id} "${nextFcn.name}" completed after timeout. took ${duration}ms`
-						)
-					}
-					nextFcn.status = syncFunctionFcnStatus.DONE
-					evaluateFunctions()
-				}, 0)
-				Meteor.setTimeout(() => {
-					if (nextFcn.status === syncFunctionFcnStatus.RUNNING) {
-						logger.error(`syncFunction "${nextFcn.name}" took too long to evaluate`)
-						nextFcn.status = syncFunctionFcnStatus.TIMEOUT
-						evaluateFunctions()
-					}
-				}, nextFcn.timeout)
-			}
+			)
+			.catch((e) => {
+				// Ignore the timeout, we simply want to log it and let it finish
+				if (e.toString().indexOf('TimeoutError') !== -1) {
+					timedOut = true
+					logger.error(
+						`syncFunction "${jobContext}"("${queueName}") took too long to evaluate. Unblocking the queue`
+					)
+					return null
+				} else {
+					// forward error, as this was not expected
+					return Promise.reject(e)
+				}
+			})
+			// Finally, return the result we manually tracked
+			.then(async () => promise)
+	)
+}
+
+export async function purgeWorkQueues(): Promise<void> {
+	const running: Array<Promise<void>> = []
+	for (const queue of workQueues.values()) {
+		queue.queue.clear()
+		if (queue.queue.pending) {
+			running.push(queue.queue.onEmpty())
 		}
+	}
+	await Promise.all(running)
+}
+
+function createManualPromise<T>() {
+	let resolve: (val: T) => void = () => null
+	let reject: (err: Error) => void = () => null
+	const promise = new Promise<T>((resolve0, reject0) => {
+		resolve = resolve0
+		reject = reject0
 	})
-	for (let i = syncFunctionFcns.length - 1; i >= 0; i--) {
-		if (syncFunctionFcns[i].status === syncFunctionFcnStatus.DONE) {
-			syncFunctionFcns.splice(i, 1)
-		}
-	}
-}
-// function isFunctionQueued(id: string): boolean {
-// 	let queued = _.find(syncFunctionFcns, (fcn) => {
-// 		return fcn.id === id && fcn.status === syncFunctionFcnStatus.WAITING
-// 	})
-// 	return !!queued
-// }
-export function isAnySyncFunctionsRunning(): boolean {
-	let found = false
-	for (const fcn of syncFunctionFcns) {
-		if (fcn.status === syncFunctionFcnStatus.RUNNING) {
-			found = true
-			break
-		}
-	}
-	return found
-}
-export function getSyncFunctionsRunningOrWaiting(id: string): string[] {
-	let names: string[] = []
-	for (const fcn of syncFunctionFcns) {
-		if (
-			fcn.id == id &&
-			(fcn.status === syncFunctionFcnStatus.RUNNING || fcn.status === syncFunctionFcnStatus.WAITING)
-		) {
-			names.push(fcn.name)
-		}
-	}
-	return names
-}
 
-function getId(id: string, args: Array<any>): string {
-	let str: string = id
-
-	if (str.indexOf('$') !== -1) {
-		_.each(args, (val, key) => {
-			str = str.replace('$' + key, JSON.stringify(val))
-		})
-		return getHash(str)
-	}
-	return str
+	return { resolve, reject, promise }
 }

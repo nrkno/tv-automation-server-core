@@ -12,13 +12,13 @@ import {
 	unpartialString,
 	protectStringArray,
 	unDeepString,
+	waitForPromise,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
 import { check } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
-	IUserNotesContext,
 	IStudioContext,
 	IStudioUserContext,
 	BlueprintMappings,
@@ -36,6 +36,8 @@ import {
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
 	PackageInfo,
+	IStudioBaselineContext,
+	IShowStyleUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -68,8 +70,7 @@ import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 import _ from 'underscore'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Meteor } from 'meteor/meteor'
-import { PackageInfos } from '../../../../lib/collections/PackageInfos'
-
+import { WatchedPackagesHelper } from './watchedPackages'
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
 	name: string
@@ -140,10 +141,10 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	}
 
 	getStudioConfig(): unknown {
-		return getStudioBlueprintConfig(this.studio)
+		return waitForPromise(getStudioBlueprintConfig(this.studio))
 	}
-	protected wipeCache() {
-		resetStudioBlueprintConfig(this.studio)
+	protected async wipeCache(): Promise<void> {
+		await resetStudioBlueprintConfig(this.studio)
 	}
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
@@ -152,11 +153,19 @@ export class StudioContext extends CommonContext implements IStudioContext {
 		// @ts-ignore ProtectedString deviceId not compatible with string
 		return this.studio.mappings
 	}
+}
+
+export class StudioBaselineContext extends StudioContext implements IStudioBaselineContext {
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		private readonly watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, studio)
+	}
+
 	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
-		return PackageInfos.find({
-			packageId: new RegExp(`${packageId}$`), // TODO: A temporary hack -- Jan Starzak, 2021-05-26
-			studioId: this.studioIdProtected,
-		}).fetch()
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 
@@ -208,25 +217,26 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 
 	getShowStyleConfig(): unknown {
-		return getShowStyleBlueprintConfig(this.showStyleCompound)
+		return waitForPromise(getShowStyleBlueprintConfig(this.showStyleCompound))
 	}
-	wipeCache() {
-		super.wipeCache()
-		resetShowStyleBlueprintConfig(this.showStyleCompound)
+	async wipeCache(): Promise<void> {
+		await super.wipeCache()
+		await resetShowStyleBlueprintConfig(this.showStyleCompound)
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleCompound.showStyleVariantId, configKey)
 	}
 }
 
-export class ShowStyleUserContext extends ShowStyleContext implements IUserNotesContext {
+export class ShowStyleUserContext extends ShowStyleContext implements IShowStyleUserContext {
 	public readonly notes: INoteBase[] = []
 	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(
 		contextInfo: UserContextInfo,
 		studio: ReadonlyDeep<Studio>,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, studio, showStyleCompound)
 	}
@@ -256,6 +266,10 @@ export class ShowStyleUserContext extends ShowStyleContext implements IUserNotes
 				},
 			})
 		}
+	}
+
+	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 
@@ -315,7 +329,8 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<Studio>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		rundown: ReadonlyDeep<Rundown>
+		rundown: ReadonlyDeep<Rundown>,
+		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, studio, showStyleCompound, rundown)
 	}
@@ -339,6 +354,10 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 			},
 			partExternalId: partExternalId,
 		})
+	}
+
+	getPackageInfo(packageId): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 

@@ -1,5 +1,4 @@
 import { RundownAPI } from '../api/rundown'
-import { TransformedCollection } from '../typings/meteor'
 import { PartId } from './Parts'
 import { registerCollection, ProtectedString } from '../lib'
 import { IBlueprintPieceGeneric, IBlueprintPieceDB } from '@sofie-automation/blueprints-integration'
@@ -44,7 +43,7 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 	invalid: boolean
 }
 
-export const Pieces: TransformedCollection<Piece, Piece> = createMongoCollection<Piece>('pieces')
+export const Pieces = createMongoCollection<Piece, Piece>('pieces')
 registerCollection('Pieces', Pieces)
 
 registerIndex(Pieces, {

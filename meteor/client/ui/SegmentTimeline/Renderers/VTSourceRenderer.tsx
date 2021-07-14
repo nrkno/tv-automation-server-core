@@ -66,7 +66,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const innerPiece = props.piece.instance.piece
 
-		let labelItems = innerPiece.name.split('||')
+		const labelItems = innerPiece.name.split('||')
 
 		this.state = {
 			noticeLevel: getNoticeLevelForPieceStatus(innerPiece.status),
@@ -143,9 +143,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			!outputLayer.collapsed &&
 			itemElement
 		) {
-			const liveLine = itemElement.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.querySelector(
-				'.segment-timeline__liveline'
-			)
+			const liveLine =
+				itemElement.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.querySelector(
+					'.segment-timeline__liveline'
+				)
 			if (liveLine) {
 				liveLine.appendChild(this.countdownContainer)
 				newState.sourceEndCountdownAppendage = true
@@ -224,7 +225,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			innerPiece.name !== prevProps.piece.instance.piece.name ||
 			innerPiece.status !== prevProps.piece.instance.piece.status
 		) {
-			let labelItems = innerPiece.name.split('||')
+			const labelItems = innerPiece.name.split('||')
 			newState.noticeLevel = getNoticeLevelForPieceStatus(innerPiece.status)
 			newState.begin = labelItems[0] || ''
 			newState.end = labelItems[1] || ''
@@ -325,11 +326,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				if (piece.contentPackageInfos[0]?.deepScan?.freezes) {
 					items = piece.contentPackageInfos[0].deepScan.freezes
 						.filter((i) => i.start < itemDuration)
-						.map(
-							(i): PackageInfo.Anomaly => {
-								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-							}
-						)
+						.map((i): PackageInfo.Anomaly => {
+							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+						})
 				}
 				return items
 			} else {
@@ -340,11 +339,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
 					items = metadata.mediainfo.freezes
 						.filter((i) => i.start < itemDuration)
-						.map(
-							(i): PackageInfo.Anomaly => {
-								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-							}
-						)
+						.map((i): PackageInfo.Anomaly => {
+							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+						})
 				}
 				return items
 			}
@@ -364,11 +361,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						...items,
 						...piece.contentPackageInfos[0].deepScan.blacks
 							.filter((i) => i.start < itemDuration)
-							.map(
-								(i): PackageInfo.Anomaly => {
-									return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-								}
-							),
+							.map((i): PackageInfo.Anomaly => {
+								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+							}),
 					]
 				}
 				return items
@@ -382,11 +377,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						...items,
 						...metadata.mediainfo.blacks
 							.filter((i) => i.start < itemDuration)
-							.map(
-								(i): PackageInfo.Anomaly => {
-									return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-								}
-							),
+							.map((i): PackageInfo.Anomaly => {
+								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+							}),
 					]
 				}
 				return items
@@ -487,7 +480,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	}
 
 	renderRightLabel() {
-		const { begin, end } = this.state
+		const { end } = this.state
 		const { isLiveLine, part } = this.props
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
@@ -594,7 +587,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 										<span
 											className="segment-timeline__piece__scene-marker"
 											key={i}
-											style={{ left: ((i - seek) * this.props.timeScale).toString() + 'px' }}
+											style={{ left: Math.round((i - seek) * this.props.timeScale).toString() + 'px' }}
 										></span>
 									)
 							)}
@@ -607,10 +600,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 											className="segment-timeline__piece__anomaly-marker"
 											key={i.start}
 											style={{
-												left: ((i.start - seek) * this.props.timeScale).toString() + 'px',
+												left: Math.round((i.start - seek) * this.props.timeScale).toString() + 'px',
 												width:
-													(Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale).toString() +
-													'px',
+													Math.round(
+														Math.min(itemDuration - i.start + seek, i.duration) * this.props.timeScale
+													).toString() + 'px',
 											}}
 										></span>
 									)

@@ -20,7 +20,11 @@
 		grid-template:
 			10em
 			4fr
-			6fr / 13vw auto;
+			6fr / 13vw auto; // allow a fallback for CasparCG
+		grid-template:
+			10em
+			4fr
+			6fr / #{'min(13vw, 27vh)'} auto;
 
 		.presenter-screen__segment-name {
 			grid-row: 1;
@@ -93,7 +97,8 @@
 
 			display: flex;
 			align-items: center;
-			font-size: 13em;
+			font-size: 13em; // Allow a fallback for CasparCG
+			font-size: #{'min(13em, 8vw)'};
 			padding: 0 0.2em;
 			line-height: 1em;
 
@@ -116,7 +121,8 @@
 			line-height: 1em;
 
 			> span {
-				font-size: 2em;
+				font-size: 2em; // Allow a fallback for CasparCG
+				font-size: #{'min(2em, 20vw)'};
 			}
 		}
 

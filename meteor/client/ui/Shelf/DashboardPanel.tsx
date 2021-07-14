@@ -30,7 +30,7 @@ import {
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { PieceId, Pieces } from '../../../lib/collections/Pieces'
+import { PieceId } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -50,9 +50,6 @@ interface IState {
 	selectedAdLib?: AdLibPieceUi
 	singleClickMode: boolean
 }
-
-const BUTTON_GRID_WIDTH = 1
-const BUTTON_GRID_HEIGHT = 0.61803
 
 export interface IDashboardPanelProps {
 	shouldQueue: boolean
@@ -130,11 +127,13 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	static getDerivedStateFromProps(props: IAdLibPanelProps, state: IState): Partial<IState> | null {
-		let tOLayers: {
+	static getDerivedStateFromProps(
+		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>
+	): Partial<IState> | null {
+		const tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
-		let tSLayers: {
+		const tSLayers: {
 			[key: string]: ISourceLayer
 		} = {}
 
@@ -232,7 +231,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			// If the outer selectedPiece is changing, we should check if it's present in this Panel. If it is
 			// we should change our inner selectedAdLib state. If it isn't, we should leave it be, so that it
 			// doesn't affect any selections the user may have made when using "displayTakeButtons".
-			let memberAdLib = DashboardPanelInner.filterOutAdLibs(this.props, this.state).find(
+			const memberAdLib = DashboardPanelInner.filterOutAdLibs(this.props, this.state).find(
 				(adLib) => adLib._id === selectedPiece._id
 			)
 			if (memberAdLib) {
@@ -284,7 +283,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
 
-		let preventDefault = (e) => {
+		const preventDefault = (e) => {
 			e.preventDefault()
 		}
 
@@ -426,7 +425,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			return
 		}
 
-		let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
+		const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
 
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
@@ -441,6 +440,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						MeteorCall.userAction.executeAction(
 							e,
 							this.props.playlist._id,
+							action._id,
 							action.actionId,
 							action.userData,
 							mode?.data
@@ -502,7 +502,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	protected onFilterChange = (filter: string) => {
+	protected onFilterChange = (filter: string | undefined) => {
 		this.setState({
 			searchFilter: filter,
 		})
@@ -512,13 +512,19 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
-			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 					if (piece.isAction && piece.adlibAction) {
 						const action = piece.adlibAction
 						doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-							MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+							MeteorCall.userAction.executeAction(
+								e,
+								this.props.playlist._id,
+								action._id,
+								action.actionId,
+								action.userData
+							)
 						)
 					} else if (!piece.isGlobal) {
 						doUserAction(t, e, UserAction.START_ADLIB, (e) =>
@@ -549,17 +555,16 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	protected onOut = (e: any, outButton?: boolean) => {
-		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
-			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 			if (sourceLayer && (sourceLayer.clearKeyboardHotkey || outButton)) {
 				this.onClearAllSourceLayers([sourceLayer], e)
 			}
 		}
 	}
 
-	protected onSelectAdLib = (piece: AdLibPieceUi, e: any) => {
+	protected onSelectAdLib = (piece: AdLibPieceUi, _e: any) => {
 		this.setState({
 			selectedAdLib: piece,
 		})
@@ -599,7 +604,9 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						style={dashboardElementPosition(filter)}
 					>
 						<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
-						{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
+						{filter.enableSearch && (
+							<AdLibPanelToolbar onFilterChange={this.onFilterChange} searchFilter={this.state.searchFilter} />
+						)}
 						<div
 							className={ClassNames('dashboard-panel__panel', {
 								'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
@@ -735,7 +742,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
 			const piece = pieceInstance.piece
-			let end: number | undefined =
+			const end: number | undefined =
 				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
 					? pieceInstance.userDuration.end
 					: typeof piece.enable.duration === 'number'

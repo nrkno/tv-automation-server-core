@@ -1,6 +1,5 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString, hashObj, assertNever } from '../lib'
+import { registerCollection, ProtectedString, hashObj, assertNever, Time } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { StudioId } from './Studios'
@@ -10,6 +9,7 @@ import { AdLibActionId } from './AdLibActions'
 import { BucketAdLibId } from './BucketAdlibs'
 import { BucketAdLibActionId } from './BucketAdlibActions'
 import { RundownBaselineAdLibActionId } from './RundownBaselineAdLibActions'
+import { SegmentId } from './Segments'
 /*
  Expected Packages are created from Pieces in the rundown.
  A "Package" is a generic term for a "thing that can be played", such as media files, audio, graphics etc..
@@ -25,6 +25,7 @@ export type ExpectedPackageFromRundown =
 	| ExpectedPackageDBFromPiece
 	| ExpectedPackageDBFromAdLibAction
 	| ExpectedPackageDBFromBaselineAdLibAction
+	| ExpectedPackageDBFromBaselineAdLibPiece
 
 export type ExpectedPackageDB =
 	| ExpectedPackageFromRundown
@@ -35,7 +36,9 @@ export type ExpectedPackageDB =
 
 export enum ExpectedPackageDBType {
 	PIECE = 'piece',
+	ADLIB_PIECE = 'adlib_piece',
 	ADLIB_ACTION = 'adlib_action',
+	BASELINE_ADLIB_PIECE = 'baseline_adlib_piece',
 	BASELINE_ADLIB_ACTION = 'baseline_adlib_action',
 	BUCKET_ADLIB = 'bucket_adlib',
 	BUCKET_ADLIB_ACTION = 'bucket_adlib_action',
@@ -44,6 +47,7 @@ export enum ExpectedPackageDBType {
 }
 export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'> {
 	_id: ExpectedPackageId
+	/** The local package id - as given by the blueprints */
 	blueprintPackageId: string
 
 	/** The studio of the Rundown of the Piece this package belongs to */
@@ -52,11 +56,23 @@ export interface ExpectedPackageDBBase extends Omit<ExpectedPackage.Base, '_id'>
 	/** Hash that changes whenever the content or version changes. See getContentVersionHash() */
 	contentVersionHash: string
 
-	pieceId: ProtectedString<any> | null
+	// pieceId: ProtectedString<any> | null
 	fromPieceType: ExpectedPackageDBType
+
+	created: Time
 }
 export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
-	fromPieceType: ExpectedPackageDBType.PIECE
+	fromPieceType: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
+	/** The Piece this package belongs to */
+	pieceId: PieceId
+	/** The Segment this package belongs to */
+	segmentId: SegmentId
+	/** The rundown of the Piece this package belongs to */
+	rundownId: RundownId
+}
+
+export interface ExpectedPackageDBFromBaselineAdLibPiece extends ExpectedPackageDBBase {
+	fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE
 	/** The Piece this package belongs to */
 	pieceId: PieceId
 	/** The rundown of the Piece this package belongs to */
@@ -65,8 +81,10 @@ export interface ExpectedPackageDBFromPiece extends ExpectedPackageDBBase {
 
 export interface ExpectedPackageDBFromAdLibAction extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.ADLIB_ACTION
-	/** The Piece this package belongs to */
+	/** The Adlib Action this package belongs to */
 	pieceId: AdLibActionId
+	/** The Segment this package belongs to */
+	segmentId: SegmentId
 	/** The rundown of the Piece this package belongs to */
 	rundownId: RundownId
 }
@@ -99,12 +117,13 @@ export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageD
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
 }
-export const ExpectedPackages: TransformedCollection<
-	ExpectedPackageDB,
-	ExpectedPackageDB
-> = createMongoCollection<ExpectedPackageDB>('expectedPackages')
+export const ExpectedPackages = createMongoCollection<ExpectedPackageDB, ExpectedPackageDB>('expectedPackages')
 registerCollection('ExpectedPackages', ExpectedPackages)
 
+registerIndex(ExpectedPackages, {
+	studioId: 1,
+	fromPieceType: 1,
+})
 registerIndex(ExpectedPackages, {
 	studioId: 1,
 	pieceId: 1,

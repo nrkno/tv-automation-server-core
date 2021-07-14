@@ -20,7 +20,7 @@ interface IEvaluationTrackedProps {
 }
 
 const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, IEvaluationTrackedProps>(
-	(props: IEvaluationProps) => {
+	(_props: IEvaluationProps) => {
 		return {
 			evaluations: Evaluations.find(
 				{},
@@ -55,7 +55,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 			this.updateSubscription()
 		}
 		updateSubscription() {
-			let h = this.state.dateFrom + '_' + this.state.dateTo
+			const h = this.state.dateFrom + '_' + this.state.dateTo
 			if (h !== this._currentsub) {
 				this._currentsub = h
 				if (this._sub) {

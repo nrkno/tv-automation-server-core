@@ -1,5 +1,4 @@
 import { allowAccessToAnything } from './lib/security'
-import { logNotAllowed } from './lib/lib'
 
 export namespace NoSecurityReadAccess {
 	export function any() {

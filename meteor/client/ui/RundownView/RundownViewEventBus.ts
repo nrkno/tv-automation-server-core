@@ -9,9 +9,6 @@ import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibItem } from '../Shelf/RundownViewBuckets'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
-import { AdLibAction } from '../../../lib/collections/AdLibActions'
-import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
-import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 
 export enum RundownViewEvents {
 	REWIND_SEGMENTS = 'rundownRewindSegments',

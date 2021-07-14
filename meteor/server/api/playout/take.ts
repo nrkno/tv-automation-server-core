@@ -26,7 +26,7 @@ import { reportPartInstanceHasStarted } from '../blueprints/events'
 import { profiler } from '../profiler'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { isAnySyncFunctionsRunning } from '../../codeControl'
+import { isAnyQueuedWorkRunning } from '../../codeControl'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 
@@ -37,7 +37,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		throw new Meteor.Error(404, `Rundown Playlist "${cache.Playlist.doc._id}" is not active!`)
 	const playlistActivationId = cache.Playlist.doc.activationId
 
-	let timeOffset: number | null = cache.Playlist.doc.nextTimeOffset || null
+	const timeOffset: number | null = cache.Playlist.doc.nextTimeOffset || null
 
 	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 
@@ -52,7 +52,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const isFirstTake = !cache.Playlist.doc.startedPlayback && !partInstance.part.untimed
 
 	const pShowStyle = cache.activationCache.getShowStyleCompound(currentRundown)
-	const pBlueprint = pShowStyle.then((s) => loadShowStyleBlueprint(s))
+	const pBlueprint = pShowStyle.then(async (s) => loadShowStyleBlueprint(s))
 
 	if (currentPartInstance) {
 		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition
@@ -81,7 +81,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		})
 		// If hold is active, then this take is to clear it
 	} else if (cache.Playlist.doc.holdState === RundownHoldState.ACTIVE) {
-		completeHold(cache, await pShowStyle, currentPartInstance)
+		await completeHold(cache, await pShowStyle, currentPartInstance)
 
 		return ClientAPI.responseSuccess(undefined)
 	}
@@ -147,7 +147,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	resetPreviousSegmentAndClearNextSegmentId(cache)
 
 	// Once everything is synced, we can choose the next part
-	libsetNextPart(cache, nextPart)
+	await libsetNextPart(cache, nextPart)
 
 	// Setup the parts for the HOLD we are starting
 	if (
@@ -156,7 +156,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	) {
 		startHold(cache, playlistActivationId, currentPartInstance, nextPartInstance)
 	}
-	afterTake(cache, takePartInstance, timeOffset)
+	await afterTake(cache, takePartInstance, timeOffset)
 
 	// Last:
 	const takeDoneTime = getCurrentTime()
@@ -312,7 +312,7 @@ export function updatePartInstanceOnTake(
 		logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
 	}
 
-	let partInstanceM: any = {
+	const partInstanceM: any = {
 		$set: {
 			isTaken: true,
 			// set transition properties to what will be used to generate timeline later:
@@ -326,7 +326,11 @@ export function updatePartInstanceOnTake(
 	cache.PartInstances.update(takePartInstance._id, partInstanceM)
 }
 
-export function afterTake(cache: CacheForPlayout, takePartInstance: PartInstance, timeOffset: number | null = null) {
+export async function afterTake(
+	cache: CacheForPlayout,
+	takePartInstance: PartInstance,
+	timeOffset: number | null = null
+): Promise<void> {
 	const span = profiler.startSpan('afterTake')
 	// This function should be called at the end of a "take" event (when the Parts have been updated)
 
@@ -335,7 +339,7 @@ export function afterTake(cache: CacheForPlayout, takePartInstance: PartInstance
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	updateTimeline(cache, forceNowTime)
+	await updateTimeline(cache, forceNowTime)
 
 	cache.deferAfterSave(() => {
 		Meteor.setTimeout(() => {
@@ -418,17 +422,17 @@ function startHold(
 			}
 
 			// This gets deleted once the nextpart is activated, so it doesnt linger for long
-			cache.PieceInstances.upsert(newInstance._id, newInstance)
+			cache.PieceInstances.replace(newInstance)
 		}
 	})
 	if (span) span.end()
 }
 
-function completeHold(
+async function completeHold(
 	cache: CacheForPlayout,
 	showStyleBase: ShowStyleBase,
 	currentPartInstance: PartInstance | undefined
-) {
+): Promise<void> {
 	cache.Playlist.update({
 		$set: {
 			holdState: RundownHoldState.COMPLETE,
@@ -448,7 +452,7 @@ function completeHold(
 		)
 	}
 
-	updateTimeline(cache)
+	await updateTimeline(cache)
 }
 
 export function triggerGarbageCollection() {
@@ -459,7 +463,7 @@ export function triggerGarbageCollection() {
 			// This can be done in prod by: node --expose_gc main.js
 			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
 
-			if (!isAnySyncFunctionsRunning()) {
+			if (!isAnyQueuedWorkRunning()) {
 				// by passing true, we're triggering the "full" collection
 				// @ts-ignore (typings not avaiable)
 				global.gc(true)

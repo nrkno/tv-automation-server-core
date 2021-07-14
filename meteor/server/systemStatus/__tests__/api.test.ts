@@ -1,15 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../__mocks__/helpers/database'
-import { getHash, waitForPromise, protectString, literal, unprotectString } from '../../../lib/lib'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
+import { literal, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
-import { StatusCode, status2ExternalStatus, setSystemStatus } from '../systemStatus'
-import { StatusResponse } from '../../../lib/api/systemStatus'
+import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
+import { StatusCode, StatusResponse } from '../../../lib/api/systemStatus'
 
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
@@ -51,8 +47,8 @@ describe('systemStatus API', () => {
 			return resStr
 		}
 
-		testInFiber('REST /health with state BAD', () => {
-			env = setupDefaultStudioEnvironment()
+		testInFiber('REST /health with state BAD', async () => {
+			env = await setupDefaultStudioEnvironment()
 			MeteorMock.mockRunMeteorStartup()
 
 			// The system is uninitialized, the status will be BAD
@@ -106,8 +102,8 @@ describe('systemStatus API', () => {
 			return resStr
 		}
 
-		testInFiber('REST /health with state GOOD', () => {
-			env = setupDefaultStudioEnvironment()
+		testInFiber('REST /health with state GOOD', async () => {
+			env = await setupDefaultStudioEnvironment()
 			MeteorMock.mockRunMeteorStartup()
 
 			// simulate initialized system

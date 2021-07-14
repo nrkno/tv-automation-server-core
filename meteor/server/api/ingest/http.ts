@@ -6,15 +6,15 @@ import { Studios, StudioId } from '../../../lib/collections/Studios'
 import { check } from '../../../lib/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getRundownId } from './lib'
-import { protectString } from '../../../lib/lib'
+import { protectString, waitForPromise } from '../../../lib/lib'
 import { PickerPOST } from '../http'
 import { getExternalNRCSName } from '../../../lib/collections/PeripheralDevices'
 
-PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
+PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 	check(params.studioId, String)
 	response.setHeader('Content-Type', 'text/plain')
 
-	let content = ''
+	const content = ''
 	try {
 		let ingestRundown = req.body
 		if (!ingestRundown) throw new Meteor.Error(400, 'Upload rundown: Missing request body')
@@ -51,5 +51,5 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
 			`Cannot replace existing rundown from '${existingDbRundown.externalNRCSName}' with http data`
 		)
 
-	handleUpdatedRundown(studio, undefined, ingestRundown, true)
+	waitForPromise(handleUpdatedRundown(studio, undefined, ingestRundown, true))
 }

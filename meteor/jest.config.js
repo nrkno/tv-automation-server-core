@@ -24,7 +24,7 @@ const commonConfig = {
 		'^.+\\.(ts|tsx)$': 'ts-jest',
 		'^.+\\.(js|jsx|mjs)$': path.resolve('./scripts/babel-jest.js'),
 	},
-	transformIgnorePatterns: ['node_modules/(?!(debounce-fn)/)', '\\.pnp\\.[^\\/]+$'],
+	transformIgnorePatterns: ['node_modules/(?!(debounce-fn|p-queue|p-timeout)/)', '\\.pnp\\.[^\\/]+$'],
 	globalSetup: './__mocks__/global-setup.js',
 	setupFilesAfterEnv: ['./__mocks__/_setupMocks.ts'],
 	coverageThreshold: {

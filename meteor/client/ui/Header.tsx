@@ -65,7 +65,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		})
 	}
 
-	onToggleSupportPanel = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onToggleSupportPanel = () => {
 		this.setState({
 			isSupportPanelOpen: !this.state.isSupportPanelOpen,
 		})
@@ -193,7 +193,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 	}
 }
 
-export default translateWithTracker((props: IPropsHeader & WithTranslation) => {
+export default translateWithTracker((_props: IPropsHeader & WithTranslation) => {
 	const coreSystem = CoreSystem.findOne()
 	let name: string | undefined = undefined
 

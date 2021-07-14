@@ -38,7 +38,7 @@ const fakeCoreSystem: CoreSystem.ICoreSystem = {
 }
 
 describe('Service messages internal API', () => {
-	const mockedGetCoreSystem: jest.Mock<typeof CoreSystem.getCoreSystem> = CoreSystem.getCoreSystem as any
+	// const mockedGetCoreSystem: jest.Mock<typeof CoreSystem.getCoreSystem> = CoreSystem.getCoreSystem as any
 
 	describe('readAllMessages', () => {
 		it('should throw when core system object cant be accessed', () => {
@@ -162,7 +162,7 @@ describe('Service messages internal API', () => {
 			})
 			cs.serviceMessages[message1.id] = convertExternalToServiceMessage(message1)
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
-			const actual = writeMessage(convertExternalToServiceMessage(message2))
+			writeMessage(convertExternalToServiceMessage(message2))
 
 			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, {
 				$set: {

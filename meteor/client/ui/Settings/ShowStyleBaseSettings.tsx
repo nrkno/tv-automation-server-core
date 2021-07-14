@@ -36,7 +36,6 @@ import RundownLayoutEditor from './RundownLayoutEditor'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { MeteorCall } from '../../../lib/api/methods'
-import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	match: {
@@ -58,7 +57,7 @@ interface ITrackedProps {
 	blueprintConfigManifest: ConfigManifestEntry[]
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
-	let showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
+	const showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
 	const compatibleStudios = showStyleBase
 		? Studios.find({
 				supportedShowStyleBase: {
@@ -122,7 +121,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 
 		getLayerMappingsFlat() {
-			let mappings: { [key: string]: MappingsExt } = {}
+			const mappings: { [key: string]: MappingsExt } = {}
 			_.each(this.props.compatibleStudios, (studio) => {
 				mappings[studio.name] = studio.mappings
 			})
@@ -294,7 +293,7 @@ const SourceLayerSettings = withTranslation()(
 		}
 
 		finishEditItem = (item: ISourceLayer) => {
-			let index = this.state.editedSources.indexOf(item._id)
+			const index = this.state.editedSources.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedSources.splice(index, 1)
 				this.setState({
@@ -407,7 +406,7 @@ const SourceLayerSettings = withTranslation()(
 			const { t } = this.props
 
 			return _.map(this.props.showStyleBase.sourceLayers, (item, index) => {
-				let newItem = _.clone(item) as ISourceLayer & { index: number }
+				const newItem = _.clone(item) as ISourceLayer & { index: number }
 				newItem.index = index
 				return newItem
 			})
@@ -753,7 +752,7 @@ const OutputSettings = withTranslation()(
 		}
 
 		finishEditItem = (item: IOutputLayer) => {
-			let index = this.state.editedOutputs.indexOf(item._id)
+			const index = this.state.editedOutputs.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedOutputs.splice(index, 1)
 				this.setState({
@@ -824,7 +823,7 @@ const OutputSettings = withTranslation()(
 		renderOutputs() {
 			const { t } = this.props
 			return _.map(this.props.showStyleBase.outputLayers, (item, index) => {
-				let newItem = _.clone(item) as IOutputLayer & { index: number }
+				const newItem = _.clone(item) as IOutputLayer & { index: number }
 				newItem.index = index
 				return newItem
 			})
@@ -1017,7 +1016,7 @@ const HotkeyLegendSettings = withTranslation()(
 			return this.state.editedItems.indexOf(item._id) >= 0
 		}
 		finishEditItem = (item: HotkeyDefinition) => {
-			let index = this.state.editedItems.indexOf(item._id)
+			const index = this.state.editedItems.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedItems.splice(index, 1)
 				this.setState({
@@ -1177,7 +1176,7 @@ const ShowStyleVariantsSettings = withTranslation()(
 			return this.state.editedMappings.indexOf(layerId) >= 0
 		}
 		finishEditItem = (layerId: ProtectedString<any>) => {
-			let index = this.state.editedMappings.indexOf(layerId)
+			const index = this.state.editedMappings.indexOf(layerId)
 			if (index >= 0) {
 				this.state.editedMappings.splice(index, 1)
 				this.setState({

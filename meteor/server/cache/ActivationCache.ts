@@ -8,7 +8,6 @@ import { Rundown } from '../../lib/collections/Rundowns'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ReadonlyDeep } from 'type-fest'
-import { asyncCollectionFindOne, asyncCollectionFindFetch } from '../lib/database'
 import { createShowStyleCompound } from '../api/showStyles'
 
 export function getActivationCache(studioId: StudioId, playlistId: RundownPlaylistId): ActivationCache {
@@ -29,7 +28,7 @@ export function getValidActivationCache(
 	studioId: StudioId,
 	playlistId?: RundownPlaylistId
 ): ActivationCache | undefined {
-	let activationCache = activationCaches.get(studioId)
+	const activationCache = activationCaches.get(studioId)
 	if (
 		activationCache &&
 		!activationCache.expired &&
@@ -121,7 +120,7 @@ export class ActivationCache {
 			)
 		this._playlist = clone<RundownPlaylist>(playlist)
 
-		const pStudio = asyncCollectionFindOne(Studios, this._playlist.studioId)
+		const pStudio = Studios.findOneAsync(this._playlist.studioId)
 
 		if (!playlist.activationId) {
 			// If the playlist is not active we won't do the pre-loading now
@@ -149,7 +148,7 @@ export class ActivationCache {
 			}
 			ps.push(this._getPeripheralDevices())
 
-			await Promise.allSettled(ps)
+			await Promise.all(ps)
 		}
 		const studio = await pStudio
 		if (!studio) {
@@ -210,7 +209,7 @@ export class ActivationCache {
 	private async _getShowStyleBase(rundown: Rundown): Promise<ShowStyleBase> {
 		if (!rundown.showStyleBaseId) throw new Meteor.Error(500, `Rundown.showStyleBaseId not set!`)
 		return this._getFromCache(this._showStyleBases, rundown.showStyleBaseId, '', async (id) => {
-			const showStyleBase = await asyncCollectionFindOne(ShowStyleBases, id)
+			const showStyleBase = await ShowStyleBases.findOneAsync(id)
 			if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${id}" not found`)
 			return showStyleBase
 		})
@@ -218,7 +217,7 @@ export class ActivationCache {
 	private async _getShowStyleVariant(rundown: Rundown): Promise<ShowStyleVariant> {
 		if (!rundown.showStyleVariantId) throw new Meteor.Error(500, `Rundown.showStyleVariantId not set!`)
 		return this._getFromCache(this._showStyleVariants, rundown.showStyleVariantId, '', async (id) => {
-			const showStyleVariant = await asyncCollectionFindOne(ShowStyleVariants, id)
+			const showStyleVariant = await ShowStyleVariants.findOneAsync(id)
 			if (!showStyleVariant) throw new Meteor.Error(404, `ShowStyleVariant "${id}" not found`)
 			return showStyleVariant
 		})
@@ -229,7 +228,7 @@ export class ActivationCache {
 			rundown._id,
 			rundown.baselineModifyHash || '',
 			async (id) => {
-				const rundownBaselineObjs = await asyncCollectionFindFetch(RundownBaselineObjs, { rundownId: id })
+				const rundownBaselineObjs = await RundownBaselineObjs.findFetchAsync({ rundownId: id })
 				return rundownBaselineObjs
 			}
 		)
@@ -239,7 +238,7 @@ export class ActivationCache {
 		if (!studioId) return []
 
 		return this._getFromCache(this._peripheralDevices, studioId, '', async (id) => {
-			const devices = await asyncCollectionFindFetch(PeripheralDevices, {
+			const devices = await PeripheralDevices.findFetchAsync({
 				studioId: id,
 			})
 			return devices
@@ -256,7 +255,7 @@ export class ActivationCache {
 		modifiedHash: string,
 		updateFcn: (identifier: ID) => Promise<T>
 	): Promise<T> {
-		const id = (identifier as any) as string
+		const id = identifier as any as string
 		let o = cache[id]
 		if (!o || o.modifiedHash !== modifiedHash) {
 			o = {

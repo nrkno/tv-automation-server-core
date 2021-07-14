@@ -1,5 +1,5 @@
 import '../../../../__mocks__/_extendJest'
-import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
@@ -13,11 +13,9 @@ import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { protectString, waitForPromise } from '../../../../lib/lib'
+import { protectString } from '../../../../lib/lib'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
-
-// const Timeline = mockupCollection(OrgTimeline)
 
 describe('Playout Actions', () => {
 	let env: DefaultEnvironment
@@ -26,12 +24,9 @@ describe('Playout Actions', () => {
 	function getPeripheralDeviceCommands(device: PeripheralDevice) {
 		return PeripheralDeviceCommands.find({ deviceId: device._id }, { sort: { time: 1 } }).fetch()
 	}
-	function clearPeripheralDeviceCommands(device: PeripheralDevice) {
-		return PeripheralDeviceCommands.remove({ deviceId: device._id })
-	}
 
-	beforeEachInFiber(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 
 		playoutDevice = setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -40,15 +35,13 @@ describe('Playout Actions', () => {
 			env.studio
 		)
 
-		waitForPromise(
-			removeRundownsFromDb(
-				Rundowns.find()
-					.fetch()
-					.map((r) => r._id)
-			)
+		await removeRundownsFromDb(
+			Rundowns.find()
+				.fetch()
+				.map((r) => r._id)
 		)
 	})
-	testInFiber('activateRundown', () => {
+	testInFiber('activateRundown', async () => {
 		const { playlistId: playlistId0 } = setupDefaultRundownPlaylist(env, protectString('ro0'))
 		expect(playlistId0).toBeTruthy()
 
@@ -64,7 +57,7 @@ describe('Playout Actions', () => {
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 		// Activating a rundown, to rehearsal
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlistId0,
@@ -75,7 +68,7 @@ describe('Playout Actions', () => {
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: true })
 
 		// Activating a rundown
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlistId0,
@@ -86,7 +79,7 @@ describe('Playout Actions', () => {
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: false })
 
 		// Activating a rundown, back to rehearsal
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlistId0,
@@ -97,7 +90,7 @@ describe('Playout Actions', () => {
 		expect(getPlaylist0()).toMatchObject({ activationId: expect.stringMatching(/^randomId/), rehearsal: true })
 
 		// Activating another rundown
-		expect(() => {
+		await expect(
 			runPlayoutOperationWithCache(
 				null,
 				'activateRundownPlaylist',
@@ -106,9 +99,9 @@ describe('Playout Actions', () => {
 				null,
 				async (cache) => activateRundownPlaylist(cache, false)
 			)
-		}).toThrowError(/only one rundown can be active/i)
+		).rejects.toMatchToString(/only one rundown can be active/i)
 	})
-	testInFiber('prepareStudioForBroadcast', () => {
+	testInFiber('prepareStudioForBroadcast', async () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
 		const { playlistId } = setupDefaultRundownPlaylist(env, protectString('ro0'))
@@ -119,13 +112,13 @@ describe('Playout Actions', () => {
 
 		// prepareStudioForBroadcast
 		const okToDestroyStuff = true
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'activateRundownPlaylist',
 			playlist._id,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => prepareStudioForBroadcast(cache, okToDestroyStuff)
+			async (cache) => prepareStudioForBroadcast(cache, okToDestroyStuff)
 		)
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(1)

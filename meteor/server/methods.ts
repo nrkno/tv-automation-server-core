@@ -73,9 +73,9 @@ export function registerClassToMeteorMethods(
  */
 function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 	// Wrap methods
-	let methods: Methods = {}
+	const methods: Methods = {}
 	_.each(orgMethods, (m, methodName: string) => {
-		let method = m.wrapped
+		const method = m.wrapped
 		if (method) {
 			methods[methodName] = function (...args: any[]) {
 				const i = runningMethodsId++
@@ -95,7 +95,7 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 							.finally(() => {
 								delete runningMethods[methodId]
 							})
-							.catch((e) => {
+							.catch(async (e) => {
 								if (!_suppressExtraErrorLogging) {
 									logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
 								}

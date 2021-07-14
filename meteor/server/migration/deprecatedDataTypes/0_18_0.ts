@@ -1,5 +1,3 @@
-import { Mongo } from 'meteor/mongo'
-import { TransformedCollection } from '../../../lib/typings/meteor'
 import { createMongoCollection } from '../../../lib/collections/lib'
 import { ProtectedString } from '../../../lib/lib'
 
@@ -22,4 +20,4 @@ export interface ShowStyle {
 	/** The name of the blueprint which is the post-process step to run on a segment after any part has changed */
 	postProcessBlueprint: string
 }
-export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle> = createMongoCollection<ShowStyle>('showStyles')
+export const ShowStyles = createMongoCollection<ShowStyle, ShowStyle>('showStyles')

@@ -47,13 +47,13 @@ export namespace MediaScannerIntegration {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = getStudioIdFromDevice(peripheralDevice)
 
-		let _id: MediaObjId = protectString(collectionId + '_' + objId)
+		const _id: MediaObjId = protectString(collectionId + '_' + objId)
 		if (_.isNull(doc)) {
 			MediaObjects.remove(_id)
 		} else if (doc) {
 			if (doc.mediaId !== doc.mediaId.toUpperCase())
 				throw new Meteor.Error(400, 'mediaId must only use uppercase characters')
-			let doc2 = _.extend(doc, {
+			const doc2 = _.extend(doc, {
 				studioId: studioId,
 				collectionId: collectionId,
 				objId: objId,
@@ -66,7 +66,7 @@ export namespace MediaScannerIntegration {
 		}
 	}
 	export function clearMediaObjectCollection(deviceId: PeripheralDeviceId, token: string, collectionId: string) {
-		let peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, this)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
 		const studioId = getStudioIdFromDevice(peripheralDevice)
 

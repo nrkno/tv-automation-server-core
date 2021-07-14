@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../../lib/EditAttribute'
@@ -7,7 +6,6 @@ import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
 import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { TransformedCollection } from '../../../../lib/typings/meteor'
-import { assertNever } from '../../../../lib/lib'
 
 export const renderEditAttribute = (
 	collection: TransformedCollection<any, any>,
@@ -15,7 +13,7 @@ export const renderEditAttribute = (
 	obj: object,
 	prefix?: string
 ) => {
-	let attribute = prefix + configField.id
+	const attribute = prefix + configField.id
 	const opts = {
 		modifiedClassName: 'bghl',
 		attribute,

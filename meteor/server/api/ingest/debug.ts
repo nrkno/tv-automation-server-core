@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { check } from '../../../lib/check'
 import { IngestActions } from './actions'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -10,7 +9,7 @@ import { Rundowns } from '../../../lib/collections/Rundowns'
 import { handleUpdatedSegment } from './rundownInput'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
-import { waitForPromise } from '../../../lib/lib'
+import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import { runIngestOperationFromRundown } from './lockFunction'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
@@ -45,11 +44,13 @@ if (!Settings.enableUserAccounts) {
 			const ingestSegment = ingestCache.fetchSegment(segment._id)
 			if (!ingestSegment) throw new Meteor.Error(404, 'Segment ingest data not found')
 
-			handleUpdatedSegment(
-				{ studioId: rundown.studioId } as PeripheralDevice,
-				rundown.externalId,
-				ingestSegment,
-				true
+			waitForPromise(
+				handleUpdatedSegment(
+					{ studioId: rundown.studioId } as PeripheralDevice,
+					rundown.externalId,
+					ingestSegment,
+					true
+				)
 			)
 		},
 		/**
@@ -59,9 +60,13 @@ if (!Settings.enableUserAccounts) {
 		debug_recreateExpectedMediaItems() {
 			const rundowns = Rundowns.find().fetch()
 
-			rundowns.forEach((rundown) => {
-				runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedMediaItemsOnRundown(cache))
-			})
+			waitForPromiseAll(
+				rundowns.map(async (rundown) =>
+					runIngestOperationFromRundown('', rundown, async (cache) =>
+						updateExpectedMediaItemsOnRundown(cache)
+					)
+				)
+			)
 		},
 		/**
 		 * Regenerate all the expected packages for all rundowns in the system
@@ -70,9 +75,11 @@ if (!Settings.enableUserAccounts) {
 		debug_recreateExpectedPackages() {
 			const rundowns = Rundowns.find().fetch()
 
-			rundowns.forEach((rundown) => {
-				runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
-			})
+			waitForPromiseAll(
+				rundowns.map(async (rundown) =>
+					runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
+				)
+			)
 		},
 	})
 }

@@ -1,11 +1,12 @@
 import * as mousetrap from 'mousetrap'
+import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 import { isEventInInputField } from './lib'
 import { isModalShowing } from './ModalDialog'
 
 interface IWrappedCallback {
 	allowInModal: boolean
 	isGlobal: boolean
-	original: (e: Event) => void
+	original: (e: mousetrap.ExtendedKeyboardEvent) => void
 	tag?: string
 }
 
@@ -28,7 +29,7 @@ export namespace mousetrapHelper {
 
 	export function bindGlobal(
 		keys: string,
-		callback: (e: Event) => void,
+		callback: (e: mousetrap.ExtendedKeyboardEvent) => void,
 		action?: string,
 		tag?: string,
 		allowInModal?: boolean
@@ -61,7 +62,7 @@ export namespace mousetrapHelper {
 
 	export function bind(
 		keys: string,
-		callback: (e: Event) => void,
+		callback: (e: mousetrap.ExtendedKeyboardEvent) => void,
 		action?: string,
 		tag?: string,
 		allowInModal?: boolean
@@ -101,12 +102,16 @@ export namespace mousetrapHelper {
 		})
 	}
 
-	export function unbind(keys: string, callbackOrTag: ((e: Event) => void) | string, action?: string) {
+	export function unbind(
+		keys: string,
+		callbackOrTag: ((e: mousetrap.ExtendedKeyboardEvent) => void) | string,
+		action?: string
+	) {
 		let index = keys
 		if (action) index = keys + '_' + action
 
-		let tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined
-		let callback = typeof callbackOrTag === 'function' ? callbackOrTag : undefined
+		const tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined
+		const callback = typeof callbackOrTag === 'function' ? callbackOrTag : undefined
 
 		if (!callback && !tag) {
 			throw new Error(`Need to provide either a callback or a tag`)
@@ -137,7 +142,7 @@ export namespace mousetrapHelper {
 			.replace(/(\w)\w*/gi, (substring: string) => {
 				return substring.substr(0, 1).toUpperCase() + substring.substr(1).toLowerCase()
 			})
-			.replace(/(\s*,\s*)/g, (separator: string) => {
+			.replace(/(\s*,\s*)/g, () => {
 				return ', '
 			})
 

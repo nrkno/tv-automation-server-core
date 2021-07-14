@@ -1,10 +1,8 @@
 import { PartInstanceId } from '../../../../lib/collections/PartInstances'
-import { Part, PartId } from '../../../../lib/collections/Parts'
-import { wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
-import { Piece } from '../../../../lib/collections/Pieces'
+import { Part } from '../../../../lib/collections/Parts'
 import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../lib/collections/Timeline'
-import { protectString } from '../../../../lib/lib'
 import { profiler } from '../../profiler'
+import { sortPieceInstancesByStart } from '../pieces'
 import { findLookaheadObjectsForPart } from './findObjects'
 import { PartAndPieces, PartInstanceAndPieceInstances } from './util'
 
@@ -17,8 +15,7 @@ export function findLookaheadForLayer(
 	currentPartInstanceId: PartInstanceId | null,
 	partInstancesInfo: PartInstanceAndPieceInstances[],
 	previousPartInstanceInfo: PartInstanceAndPieceInstances | undefined,
-	orderedPartsFollowingPlayhead: Part[],
-	piecesByPart: Map<PartId, Piece[]>,
+	orderedPartInfos: Array<PartAndPieces>,
 	layer: string,
 	lookaheadTargetFutureObjects: number,
 	lookaheadMaxSearchDistance: number
@@ -30,12 +27,9 @@ export function findLookaheadForLayer(
 	}
 
 	// Track the previous info for checking how the timeline will be built
-	let previousPartInfo: PartAndPieces | undefined
+	let previousPart: Part | undefined
 	if (previousPartInstanceInfo) {
-		previousPartInfo = {
-			part: previousPartInstanceInfo.part.part,
-			pieces: previousPartInstanceInfo.allPieces,
-		}
+		previousPart = previousPartInstanceInfo.part.part
 	}
 
 	// Generate timed/future objects for the partInstances
@@ -44,16 +38,15 @@ export function findLookaheadForLayer(
 
 		const partInfo: PartAndPieces = {
 			part: partInstanceInfo.part.part,
-			pieces: partInstanceInfo.allPieces,
+			pieces: sortPieceInstancesByStart(partInstanceInfo.allPieces, partInstanceInfo.nowInPart),
 		}
 
 		const objs = findLookaheadObjectsForPart(
 			currentPartInstanceId,
 			layer,
-			previousPartInfo?.part,
+			previousPart,
 			partInfo,
-			partInstanceInfo.part._id,
-			partInstanceInfo.nowInPart
+			partInstanceInfo.part._id
 		)
 
 		if (partInstanceInfo.onTimeline) {
@@ -62,29 +55,20 @@ export function findLookaheadForLayer(
 			res.future.push(...objs)
 		}
 
-		previousPartInfo = partInfo
+		previousPart = partInfo.part
 	}
 
 	if (lookaheadMaxSearchDistance > 1 && lookaheadTargetFutureObjects > 0) {
-		for (const part of orderedPartsFollowingPlayhead.slice(0, lookaheadMaxSearchDistance - 1)) {
+		for (const partInfo of orderedPartInfos.slice(0, lookaheadMaxSearchDistance - 1)) {
 			// Stop if we have enough objects already
 			if (res.future.length >= lookaheadTargetFutureObjects) {
 				break
 			}
-			const pieces = piecesByPart.get(part._id) ?? []
-			if (pieces.length > 0 && part.isPlayable()) {
-				const tmpPieces = pieces.map((p) => wrapPieceToInstance(p, protectString(''), protectString(''), true))
-				const partInfo: PartAndPieces = { part, pieces: tmpPieces }
-				const objs = findLookaheadObjectsForPart(
-					currentPartInstanceId,
-					layer,
-					previousPartInfo?.part,
-					partInfo,
-					null,
-					0
-				)
+
+			if (partInfo.pieces.length > 0 && partInfo.part.isPlayable()) {
+				const objs = findLookaheadObjectsForPart(currentPartInstanceId, layer, previousPart, partInfo, null)
 				res.future.push(...objs)
-				previousPartInfo = partInfo
+				previousPart = partInfo.part
 			}
 		}
 	}

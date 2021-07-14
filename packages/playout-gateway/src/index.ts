@@ -1,5 +1,5 @@
 import { Connector } from './connector'
-import { config, logPath, disableWatchdog } from './config'
+import { config, logPath, disableWatchdog, logLevel } from './config'
 import * as Winston from 'winston'
 export interface LoggerInstance extends Winston.LoggerInstance {
 	warning: never // logger.warning is not a function
@@ -11,12 +11,12 @@ const logger = new Winston.Logger({}) as LoggerInstance
 if (logPath) {
 	// Log json to file, human-readable to console
 	logger.add(Winston.transports.Console, {
-		level: 'verbose',
+		level: logLevel || 'verbose',
 		handleExceptions: true,
 		json: false,
 	})
 	logger.add(Winston.transports.File, {
-		level: 'debug',
+		level: logLevel || 'debug',
 		handleExceptions: true,
 		json: true,
 		filename: logPath,
@@ -37,6 +37,7 @@ if (logPath) {
 	logger.add(Winston.transports.Console, {
 		handleExceptions: true,
 		json: true,
+		level: logLevel,
 		stringify: (obj) => {
 			obj.localTimestamp = getCurrentTime()
 			obj.randomId = Math.round(Math.random() * 10000)

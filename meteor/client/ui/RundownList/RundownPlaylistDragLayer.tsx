@@ -41,7 +41,7 @@ function RundownPlaylistDragLayer(props) {
 
 	function renderItem(type: RundownListDragDropTypes, item: IRundownDragObject) {
 		switch (type) {
-			case RundownListDragDropTypes.RUNDOWN:
+			case RundownListDragDropTypes.RUNDOWN: {
 				const rundown = Rundowns.findOne(item.id)
 				const showStyle = ShowStyleBases.findOne(rundown?.showStyleBaseId)
 				const classNames = ['drag-preview'].concat(props.draggedClassNames || [])
@@ -59,6 +59,7 @@ function RundownPlaylistDragLayer(props) {
 						showStyleName={showStyle?.name || ''}
 					/>
 				)
+			}
 		}
 	}
 

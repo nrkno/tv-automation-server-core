@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedStringProperties, ProtectedString, ArrayElement } from '../lib'
 import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
@@ -33,9 +32,7 @@ export interface AdLibAction extends AdLibActionCommon {
 	partId: PartId
 }
 
-export const AdLibActions: TransformedCollection<AdLibAction, AdLibAction> = createMongoCollection<AdLibAction>(
-	'adLibActions'
-)
+export const AdLibActions = createMongoCollection<AdLibAction, AdLibAction>('adLibActions')
 registerCollection('AdLibActions', AdLibActions)
 registerIndex(AdLibActions, {
 	rundownId: 1,

@@ -1,2 +1,2 @@
-METEOR@2.1
+METEOR@2.1.1
 # Note: Remember to update the versions in .github/setup-meteor/action.yaml and Dockerfile when updating this!

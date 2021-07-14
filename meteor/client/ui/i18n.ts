@@ -55,8 +55,8 @@ function toI18NextData(translations: Translation[]): I18NextData {
 	return data
 }
 
-function getAndCacheTranslationBundle(bundleId: TranslationsBundleId) {
-	return new Promise<TranslationsBundle>((resolve, reject) =>
+async function getAndCacheTranslationBundle(bundleId: TranslationsBundleId) {
+	return new Promise<TranslationsBundle>((resolve, reject) => {
 		MeteorCall.system.getTranslationBundle(bundleId).then(
 			(response) => {
 				if (ClientAPI.isClientResponseSuccess(response) && response.result) {
@@ -70,7 +70,7 @@ function getAndCacheTranslationBundle(bundleId: TranslationsBundleId) {
 				reject(reason)
 			}
 		)
-	)
+	})
 }
 
 class I18nContainer extends WithManagedTracker {
@@ -97,7 +97,7 @@ class I18nContainer extends WithManagedTracker {
 			const bundlesInfo = TranslationsBundles.find().fetch() as Omit<TranslationsBundle, 'data'>[]
 
 			Promise.allSettled(
-				bundlesInfo.map((bundleMetadata) =>
+				bundlesInfo.map(async (bundleMetadata) =>
 					new Promise<TranslationsBundle>((resolve) => {
 						const bundleString = localStorage.getItem(`i18n.translationBundles.${bundleMetadata._id}`)
 						if (bundleString) {

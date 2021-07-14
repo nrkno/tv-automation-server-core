@@ -3,7 +3,6 @@ import {
 	allowAccessToCoreSystem,
 	allowAccessToStudio,
 	allowAccessToShowStyleBase,
-	allowAccessToRundown,
 	allowAccessToOrganization,
 } from './lib/security'
 import { logNotAllowed, allowOnlyFields, rejectFields } from './lib/lib'
@@ -13,7 +12,7 @@ import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { Snapshots } from '../../lib/collections/Snapshots'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
@@ -37,7 +36,7 @@ import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { Timeline } from '../../lib/collections/Timeline'
 import { rundownContentAllowWrite, pieceContentAllowWrite } from './rundown'
-import { SystemReadAccess, SystemWriteAccess } from './system'
+import { SystemWriteAccess } from './system'
 import { Buckets } from '../../lib/collections/Buckets'
 import { studioContentAllowWrite } from './studio'
 
@@ -48,7 +47,7 @@ CoreSystem.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(userId, doc, fields, _modifier) {
 		const access = allowAccessToCoreSystem({ userId: userId })
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
 		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'apm', 'cron'])
@@ -58,10 +57,10 @@ CoreSystem.allow({
 	},
 })
 Users.allow({
-	insert(userId, doc) {
+	insert(_userId, _doc) {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(userId, doc, fields, _modifier) {
 		const access = SystemWriteAccess.currentUser(userId, { userId })
 		if (!access) return logNotAllowed('CurrentUser', '')
 		return rejectFields(doc, fields, [
@@ -74,80 +73,80 @@ Users.allow({
 			'superAdmin',
 		])
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 
 // Owned by Organization:
 Organizations.allow({
-	insert(userId, doc): boolean {
+	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(userId, doc, fields, _modifier) {
 		const access = allowAccessToOrganization({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Organization', access.reason)
 		return allowOnlyFields(doc, fields, ['userRoles'])
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 
 UserActionsLog.allow({
-	insert(userId, doc): boolean {
+	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 Evaluations.allow({
-	insert(userId, doc): boolean {
+	insert(_userId, _doc): boolean {
 		return true
 	},
-	update(userId, doc, fields, modifier) {
+	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 Snapshots.allow({
-	insert(userId, doc): boolean {
+	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(userId, doc, fields, _modifier) {
 		return allowOnlyFields(doc, fields, ['comment'])
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 Blueprints.allow({
-	insert(userId, doc): boolean {
+	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
-		return allowOnlyFields(doc, fields, ['name'])
+	update(userId, doc, fields, _modifier) {
+		return allowOnlyFields(doc, fields, ['name', 'disableVersionChecks'])
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 // Owned by Studio:
 RundownPlaylists.allow({
-	insert(userId, doc: RundownPlaylist): boolean {
+	insert(_userId, _doc: DBRundownPlaylist): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(_userId, _doc, _fields, _modifier) {
 		// return true // tmp!
 		return false
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
@@ -157,7 +156,7 @@ Studios.allow({
 		if (!access.insert) return logNotAllowed('Studio', access.reason)
 		return true
 	},
-	update(userId, doc, fields, modifier) {
+	update(userId, doc, fields, _modifier) {
 		const access = allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Studio', access.reason)
 		return rejectFields(doc, fields, ['_id'])
@@ -170,48 +169,48 @@ Studios.allow({
 })
 
 ExternalMessageQueue.allow({
-	insert(userId, doc): boolean {
+	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 
 MediaObjects.allow({
-	insert(userId, doc): boolean {
+	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(_userId, _doc, _fields, _modifier) {
 		// return true // tmp!
 		return false
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 Timeline.allow({
-	insert(userId, doc): boolean {
+	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 Buckets.allow({
-	insert(userId, doc): boolean {
+	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(userId, doc, fields, _modifier) {
 		return studioContentAllowWrite(userId, doc) && rejectFields(doc, fields, ['_id'])
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
@@ -260,15 +259,14 @@ RundownLayouts.allow({
 
 // Owned by PeripheralDevice
 PeripheralDevices.allow({
-	insert(userId, doc: PeripheralDevice): boolean {
+	insert(_userId, _doc: PeripheralDevice): boolean {
 		return true
 	},
-	update(userId, doc, fields, modifier) {
+	update(userId, doc, fields, _modifier) {
 		return rejectFields(doc, fields, [
 			'type',
 			'parentDeviceId',
 			'versions',
-			'expectedVersions',
 			'created',
 			'status',
 			'lastSeen',
@@ -280,43 +278,43 @@ PeripheralDevices.allow({
 		])
 	},
 
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 
 PeripheralDeviceCommands.allow({
-	insert(userId, doc: PeripheralDeviceCommand): boolean {
+	insert(_userId, _doc: PeripheralDeviceCommand): boolean {
 		return true // TODO
 	},
-	update(userId, doc, fields, modifier) {
+	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return true // TODO
 	},
 })
 
 // Media work flows:
 MediaWorkFlowSteps.allow({
-	insert(userId, doc: MediaWorkFlowStep): boolean {
+	insert(_userId, _doc: MediaWorkFlowStep): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })
 MediaWorkFlows.allow({
-	insert(userId, doc: MediaWorkFlow): boolean {
+	insert(_userId, _doc: MediaWorkFlow): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
-	remove(userId, doc) {
+	remove(_userId, _doc) {
 		return false
 	},
 })

@@ -9,7 +9,7 @@ export function withRenderLimiter<IProps, IState>(
 ) => new (props: IProps, context: any) => React.Component<IProps, IState> {
 	return (WrappedComponent) => {
 		return class WithRenderLimiterHOCComponent extends React.Component<IProps, IState> {
-			shouldComponentUpdate(nextProps: IProps, nextState: IState): boolean {
+			shouldComponentUpdate(nextProps: IProps, _nextState: IState): boolean {
 				return shouldComponentUpdate(this.props, nextProps)
 			}
 

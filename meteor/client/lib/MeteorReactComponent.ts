@@ -17,7 +17,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		// @ts-ignore
 		return Tracker.nonreactive(() => {
 			// let id = name + '_' + JSON.stringify(args.join())
-			let id = name + '_' + stringifyObjects(args)
+			const id = name + '_' + stringifyObjects(args)
 
 			const callbacks = {
 				onError: console.error,
@@ -25,7 +25,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 			if (Tracker.active) {
 				// if in a reactive context, Meteor will keep track of duplicates of subscriptions
 
-				let sub = Meteor.subscribe(name, ...args, callbacks)
+				const sub = Meteor.subscribe(name, ...args, callbacks)
 				this._subscriptions[id] = sub
 				return sub
 			} else {
@@ -33,7 +33,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 					// already subscribed to that
 					return this._subscriptions[id]
 				} else {
-					let sub = Meteor.subscribe(name, ...args, callbacks)
+					const sub = Meteor.subscribe(name, ...args, callbacks)
 					this._subscriptions[id] = sub
 					return sub
 				}
@@ -41,7 +41,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		})
 	}
 	autorun(cb: (computation: Tracker.Computation) => void, options?: any): Tracker.Computation {
-		let computation = Tracker.nonreactive(() => {
+		const computation = Tracker.nonreactive(() => {
 			return Tracker.autorun(cb, options)
 		})
 		this._computations.push(computation)

@@ -1,5 +1,3 @@
-import { isArray } from 'util'
-
 const PackageInfo = require('../../../../package.json')
 
 export enum AckStatus {
@@ -108,7 +106,7 @@ function addNodes(obj: object, rootNode: Node): void {
 				for (const attrName of Object.keys(value)) {
 					rootNode.appendChild(createAttribute(attrName, value[attrName], doc))
 				}
-			} else if (isArray(value)) {
+			} else if (Array.isArray(value)) {
 				value.forEach((element) => {
 					rootNode.appendChild(createNode(name, element, doc))
 				})

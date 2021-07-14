@@ -2,10 +2,12 @@
 	"extends": "./tsconfig-meteor.json",
 	"compilerOptions": {
 		/* At the time of writing we are not ready for stricter rules */
-		"strict": false,
+		"strict": true,
 		"noImplicitAny": false,
+		"noImplicitThis": false,
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
+		"strictPropertyInitialization": false,
 
 		"skipLibCheck": true,
 		"sourceMap": true,

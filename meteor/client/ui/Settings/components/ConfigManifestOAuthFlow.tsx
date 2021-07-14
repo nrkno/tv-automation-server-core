@@ -37,7 +37,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 					uploadFileKey: Date.now(),
 				})
 
-				let uploadFileContents = (e2.target as any).result
+				const uploadFileContents = (e2.target as any).result
 
 				fetchFrom(`/devices/${this.props.device._id}/uploadCredentials`, {
 					method: 'POST',
@@ -46,7 +46,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 						'content-type': 'text/javascript',
 					},
 				})
-					.then((res) => {
+					.then(() => {
 						NotificationCenter.push(
 							new Notification(
 								undefined,
@@ -117,8 +117,8 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 		}
 		render() {
 			const { t } = this.props
-			let settings = (this.props.device.settings || {}) as IngestDeviceSettings
-			let device = this.props.device
+			const settings = (this.props.device.settings || {}) as IngestDeviceSettings
+			const device = this.props.device
 			return (
 				<div>
 					<div className="mod mvs mhn">
@@ -127,7 +127,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 							<div className="mdi">
 								<div>{t(device.configManifest.deviceOAuthFlow!.credentialsHelp)}</div>
 								<div>
-									<a href={device.configManifest.deviceOAuthFlow!.credentialsURL} target="_blank">
+									<a href={device.configManifest.deviceOAuthFlow!.credentialsURL} target="_blank" rel="noreferrer">
 										{device.configManifest.deviceOAuthFlow!.credentialsURL}
 									</a>
 								</div>
@@ -151,7 +151,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 									</div>
 									<div>
 										{device.accessTokenUrl ? (
-											<a href={device.accessTokenUrl} target="_blank">
+											<a href={device.accessTokenUrl} target="_blank" rel="noreferrer">
 												{device.accessTokenUrl}
 											</a>
 										) : (

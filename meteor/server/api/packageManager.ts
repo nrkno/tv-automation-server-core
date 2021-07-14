@@ -40,7 +40,7 @@ export namespace PackageManagerAPI {
 		}).fetch()
 
 		waitForPromiseAll(
-			packageManagerDevices.map((packageManagerDevice) => {
+			packageManagerDevices.map(async (packageManagerDevice) => {
 				return makePromise(() => restartAllExpectations(context, packageManagerDevice._id))
 			})
 		)

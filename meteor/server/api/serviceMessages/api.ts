@@ -1,7 +1,5 @@
-import { CoreSystem } from '../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
 import { postHandler } from './postHandler'
-import { logger } from '../../logging'
 import { deleteMessage, readAllMessages } from './serviceMessagesApi'
 import { PickerPOST, PickerGET, PickerDELETE } from '../http'
 
@@ -15,7 +13,7 @@ PickerDELETE.route('/serviceMessages/:id', deleteHandler)
 /**
  * List all current messages stored on this instance
  */
-function getHandler(params, req: IncomingMessage, res: ServerResponse, next: () => void) {
+function getHandler(params, req: IncomingMessage, res: ServerResponse) {
 	try {
 		const valuesArray = readAllMessages()
 		res.setHeader('Content-Type', 'application/json; charset-utf8')
@@ -30,7 +28,7 @@ function getHandler(params, req: IncomingMessage, res: ServerResponse, next: () 
 /**
  * Delete a message
  */
-function deleteHandler(params, req: IncomingMessage, res: ServerResponse, next: () => void) {
+function deleteHandler(params, req: IncomingMessage, res: ServerResponse) {
 	const { id } = params
 	try {
 		if (readAllMessages().find((m) => m.id === id)) {
@@ -50,7 +48,7 @@ function deleteHandler(params, req: IncomingMessage, res: ServerResponse, next: 
 /**
  * Retrieves a single message based on a given id
  */
-function getMessageHandler(params, req: IncomingMessage, res: ServerResponse, next: () => void) {
+function getMessageHandler(params, req: IncomingMessage, res: ServerResponse) {
 	const { id } = params
 	try {
 		const message = readAllMessages().find((m) => m.id === id)

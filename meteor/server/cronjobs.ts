@@ -2,7 +2,7 @@ import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { getCurrentTime, makePromise, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
@@ -14,10 +14,10 @@ import { Studios } from '../lib/collections/Studios'
 import { removeEmptyPlaylists } from './api/rundownPlaylist'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 
-let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
+const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
 	Meteor.setTimeout(() => {
-		fcn(...args)
+		fcn()
 	}, Math.random() * 10 * 1000)
 }
 
@@ -26,14 +26,14 @@ Meteor.startup(() => {
 	let failedRetries = 0
 
 	function nightlyCronjob() {
-		let d = new Date(getCurrentTime())
-		let timeSinceLast = getCurrentTime() - lastNightlyCronjob
+		const d = new Date(getCurrentTime())
+		const timeSinceLast = getCurrentTime() - lastNightlyCronjob
 		if (
 			d.getHours() >= 4 &&
 			d.getHours() < 5 && // It is nighttime
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
-			let previousLastNightlyCronjob = lastNightlyCronjob
+			const previousLastNightlyCronjob = lastNightlyCronjob
 			lastNightlyCronjob = getCurrentTime()
 			logger.info('Nightly cronjob: starting...')
 			const system = getCoreSystem()
@@ -41,11 +41,13 @@ Meteor.startup(() => {
 			// Clean up Rundown data cache:
 			// Remove caches not related to rundowns:
 			let rundownCacheCount = 0
-			let rundownIds = _.map(Rundowns.find().fetch(), (rundown) => rundown._id)
+			const rundownIds = _.map(Rundowns.find().fetch(), (rundown) => rundown._id)
 			IngestDataCache.find({
 				rundownId: { $nin: rundownIds },
 			}).forEach((roc) => {
-				lowPrioFcn(IngestDataCache.remove, roc._id)
+				lowPrioFcn(() => {
+					IngestDataCache.remove(roc._id)
+				})
 				rundownCacheCount++
 			})
 			if (rundownCacheCount)
@@ -79,7 +81,7 @@ Meteor.startup(() => {
 				})
 			}
 
-			let ps: Array<Promise<any>> = []
+			const ps: Array<Promise<any>> = []
 			// restart casparcg
 			if (system?.cron?.casparCGRestart?.enabled) {
 				PeripheralDevices.find({
@@ -146,13 +148,7 @@ Meteor.startup(() => {
 	function cleanupPlaylists() {
 		// Ensure there are no empty playlists on an interval
 		const studios = Studios.find().fetch()
-		waitForPromiseAll(
-			studios.map((studio) =>
-				makePromise(() => {
-					removeEmptyPlaylists(studio._id)
-				})
-			)
-		)
+		waitForPromiseAll(studios.map(async (studio) => removeEmptyPlaylists(studio._id)))
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
 	cleanupPlaylists()

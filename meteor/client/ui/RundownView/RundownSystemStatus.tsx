@@ -114,12 +114,12 @@ export const RundownSystemStatus = translateWithTracker(
 		}).fetch()
 		attachedDevices = attachedDevices.concat(subDevices)
 
-		let ingestDevices = attachedDevices.filter(
+		const ingestDevices = attachedDevices.filter(
 			(i) =>
 				i.category === PeripheralDeviceAPI.DeviceCategory.INGEST ||
 				i.category === PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
 		)
-		let playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
+		const playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
 		const [ingest, playout] = [ingestDevices, playoutDevices].map((devices) => {
 			const status = devices

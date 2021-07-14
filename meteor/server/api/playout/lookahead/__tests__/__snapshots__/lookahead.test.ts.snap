@@ -6,6 +6,7 @@ Array [
     "content": Object {
       "id": "obj0",
     },
+    "disabled": false,
     "enable": Object {
       "end": "#piece0obj0.start",
       "start": 1,
@@ -21,6 +22,7 @@ Array [
     "content": Object {
       "id": "obj1",
     },
+    "disabled": false,
     "enable": Object {
       "end": "#piece1obj1.start",
       "start": "#piece0obj0.start + 0",
@@ -36,6 +38,7 @@ Array [
     "content": Object {
       "id": "obj2",
     },
+    "disabled": false,
     "enable": Object {
       "while": "1",
     },
@@ -50,6 +53,7 @@ Array [
     "content": Object {
       "id": "obj3",
     },
+    "disabled": false,
     "enable": Object {
       "while": "1",
     },
@@ -64,6 +68,7 @@ Array [
     "content": Object {
       "id": "obj4",
     },
+    "disabled": false,
     "enable": Object {
       "while": "1",
     },
@@ -78,6 +83,7 @@ Array [
     "content": Object {
       "id": "obj5",
     },
+    "disabled": false,
     "enable": Object {
       "end": "#piece1obj5.start",
       "start": 1,
@@ -92,6 +98,7 @@ Array [
     "content": Object {
       "id": "obj6",
     },
+    "disabled": false,
     "enable": Object {
       "end": "#piece0obj6.start",
       "start": "#piece1obj5.start + 0",
@@ -106,6 +113,7 @@ Array [
     "content": Object {
       "id": "obj7",
     },
+    "disabled": false,
     "enable": Object {
       "start": "#piece0obj6.start + 0",
     },
@@ -119,6 +127,7 @@ Array [
     "content": Object {
       "id": "obj8",
     },
+    "disabled": true,
     "enable": Object {
       "while": "1",
     },
@@ -132,6 +141,7 @@ Array [
     "content": Object {
       "id": "obj9",
     },
+    "disabled": true,
     "enable": Object {
       "while": "1",
     },

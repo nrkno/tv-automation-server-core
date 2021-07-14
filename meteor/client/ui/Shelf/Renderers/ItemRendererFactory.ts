@@ -23,7 +23,7 @@ export interface ILayerItemRendererProps {
 }
 
 export default function renderItem(props: ILayerItemRendererProps): JSX.Element {
-	const { adLibListItem, layer } = props
+	const { layer } = props
 	switch (layer?.type) {
 		case SourceLayerType.LIVE_SPEAK:
 		case SourceLayerType.VT:

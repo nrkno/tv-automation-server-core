@@ -69,7 +69,7 @@ export namespace RundownReadAccess {
 		}
 		if (!rundownContent(selector, cred)) return null
 
-		let mediaManagerDevice = PeripheralDevices.findOne({
+		const mediaManagerDevice = PeripheralDevices.findOne({
 			type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
 			token: cred.token,
 		})
@@ -96,7 +96,7 @@ export namespace RundownReadAccess {
 
 		if (!rundownContent(selector, cred)) return null
 
-		let playoutDevice = PeripheralDevices.findOne({
+		const playoutDevice = PeripheralDevices.findOne({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			token: cred.token,
 		})

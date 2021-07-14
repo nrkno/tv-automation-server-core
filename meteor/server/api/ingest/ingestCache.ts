@@ -52,14 +52,15 @@ export function makeNewIngestPart(ingestPart: IngestPart): LocalIngestPart {
 }
 
 export class RundownIngestDataCache {
-	private readonly collection = new DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache)
-
-	private constructor(private readonly rundownId: RundownId) {}
+	private constructor(
+		private readonly rundownId: RundownId,
+		private readonly collection: DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>
+	) {}
 
 	static async create(rundownId: RundownId): Promise<RundownIngestDataCache> {
-		const ingestObjCache = new RundownIngestDataCache(rundownId)
+		const col = await DbCacheWriteCollection.createFromDatabase(IngestDataCache, { rundownId })
 
-		await ingestObjCache.collection.prepareInit({ rundownId }, true)
+		const ingestObjCache = new RundownIngestDataCache(rundownId, col)
 
 		return ingestObjCache
 	}
@@ -145,7 +146,7 @@ export class RundownIngestDataCache {
 		this.collection.remove({})
 	}
 
-	saveToDatabase(): Promise<Changes> {
+	async saveToDatabase(): Promise<Changes> {
 		return this.collection.updateDatabaseWithData()
 	}
 }

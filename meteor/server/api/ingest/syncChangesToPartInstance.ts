@@ -11,7 +11,7 @@ import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { unprotectObject, unprotectObjectArray, waitForPromise, literal, clone } from '../../../lib/lib'
+import { unprotectObject, unprotectObjectArray, literal, clone } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { logger } from '../../logging'
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
@@ -24,13 +24,13 @@ import {
 import { isTooCloseToAutonext } from '../playout/lib'
 import { CacheForIngest } from './cache'
 
-export function syncChangesToPartInstances(
+export async function syncChangesToPartInstances(
 	cache: CacheForPlayout,
 	ingestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'>,
 	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>,
 	rundown: ReadonlyDeep<Rundown>
-) {
+): Promise<void> {
 	if (cache.Playlist.doc.activationId) {
 		if (blueprint.syncIngestUpdateToPartInstance) {
 			const playlistPartInstances = getSelectedPartInstancesFromCache(cache)
@@ -96,7 +96,7 @@ export function syncChangesToPartInstances(
 					previousPartInstance,
 					rundown,
 					newPart,
-					waitForPromise(piecesThatMayBeActive),
+					await piecesThatMayBeActive,
 					existingPartInstance._id,
 					false
 				)
@@ -167,7 +167,7 @@ export function syncChangesToPartInstances(
 
 				if (existingPartInstance._id === cache.Playlist.doc.currentPartInstanceId) {
 					// This should be run after 'current', before 'next':
-					waitForPromise(syncPlayheadInfinitesForNextPartInstance(cache))
+					await syncPlayheadInfinitesForNextPartInstance(cache)
 				}
 			}
 		} else {

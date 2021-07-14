@@ -5,7 +5,7 @@
 if (typeof window.requestIdleCallback !== 'function') {
 	window.requestIdleCallback = (
 		clb: Function,
-		options?: {
+		_options?: {
 			timeout: number
 		}
 	) => {

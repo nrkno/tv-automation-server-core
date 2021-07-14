@@ -3,7 +3,7 @@ import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 
 Meteor.onConnection((conn: Meteor.Connection) => {
-	let connectionId = conn.id
+	const connectionId = conn.id
 	// var clientAddress = conn.clientAddress; // ip-adress
 
 	conn.onClose(() => {

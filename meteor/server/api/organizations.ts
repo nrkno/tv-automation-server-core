@@ -1,5 +1,4 @@
-import * as _ from 'underscore'
-import { literal, getRandomId, makePromise, getCurrentTime } from '../../lib/lib'
+import { literal, getRandomId, makePromise, getCurrentTime, waitForPromise } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'
 import { registerClassToMeteorMethods } from '../methods'
@@ -20,7 +19,7 @@ function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
 	let studioBlueprintId: BlueprintId | undefined
 	let showStyleBlueprintId: BlueprintId | undefined
 	const studioId = insertStudioInner(orgId)
-	const showStyleId = insertShowStyleBaseInner(orgId)
+	const showStyleId = waitForPromise(insertShowStyleBaseInner(orgId))
 
 	const core = CoreSystem.findOne()
 	Blueprints.find()
@@ -78,7 +77,7 @@ export function removeOrganization(context: MethodContext, organizationId: Organ
 }
 
 class ServerOrganizationAPI extends MethodContextAPI implements NewOrganizationAPI {
-	removeOrganization(organizationId: OrganizationId) {
+	async removeOrganization(organizationId: OrganizationId) {
 		return makePromise(() => removeOrganization(this, organizationId))
 	}
 }

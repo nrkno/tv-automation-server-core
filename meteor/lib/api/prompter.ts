@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
 import { getRandomId, normalizeArrayToMap } from '../lib'
-import { SegmentId, Segments } from '../collections/Segments'
+import { SegmentId } from '../collections/Segments'
 import { PieceId } from '../collections/Pieces'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
 import { PartInstanceId } from '../collections/PartInstances'
@@ -51,32 +51,24 @@ export namespace PrompterAPI {
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 		const rundowns = playlist.getRundowns()
 		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
-		for (let rundown of rundowns) {
+		for (const rundown of rundowns) {
 			rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
 		}
 		const rundownMap = normalizeArrayToMap(rundowns, '_id')
 
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 
-		const groupedParts = getSegmentsWithPartInstances(
-			playlist,
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			{
-				fields: {
-					isTaken: 0,
-					previousPartEndState: 0,
-					takeCount: 0,
-				},
-			}
-		)
+		const groupedParts = getSegmentsWithPartInstances(playlist, undefined, undefined, undefined, undefined, undefined, {
+			fields: {
+				isTaken: 0,
+				previousPartEndState: 0,
+				takeCount: 0,
+			},
+		})
 
 		// const groupedParts = _.groupBy(parts, (p) => p.segmentId)
 
-		let data: PrompterData = {
+		const data: PrompterData = {
 			title: playlist.name,
 			currentPartInstanceId: currentPartInstance ? currentPartInstance._id : null,
 			nextPartInstanceId: nextPartInstance ? nextPartInstance._id : null,
@@ -169,7 +161,7 @@ export namespace PrompterAPI {
 					if (piece.content) {
 						const content = piece.content as ScriptContent
 						if (content.fullScript) {
-							if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) > 0) {
+							if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) >= 0) {
 								return // piece already included in prompter script
 							}
 							piecesIncluded.push(piece.continuesRefId || piece._id)

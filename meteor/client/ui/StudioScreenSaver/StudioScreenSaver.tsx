@@ -1,10 +1,9 @@
 import * as React from 'react'
-import { translateWithTracker, Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { StudioId, Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../../lib/lib'
 import { invalidateAfter } from '../../lib/invalidatingTime'
-import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import classNames from 'classnames'
@@ -214,8 +213,8 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			const frameTime = timestamp - this.lastFrameTime
 			const { infoElement, infoElementSize } = this.state
 			let { targetSpeedVector } = this.state
-			let { x, y } = this.position
-			let speedVector = this.speedVector
+			const { x, y } = this.position
+			const speedVector = this.speedVector
 			const windowWidth = window.innerWidth
 			const windowHeight = window.innerHeight
 			if (infoElement && infoElementSize.width && infoElementSize.height) {

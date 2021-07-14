@@ -8,61 +8,58 @@ import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { parseMosString } from './lib'
-import { IngestActions } from '../actions'
-import { WrapAsyncCallback } from '../../../../lib/lib'
+import { waitForPromise, WrapAsyncCallback } from '../../../../lib/lib'
 import * as _ from 'underscore'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 
 export namespace MOSDeviceActions {
-	export const reloadRundown: (
-		peripheralDevice: PeripheralDevice,
-		rundown: Rundown
-	) => TriggerReloadDataResponse = Meteor.wrapAsync(function reloadRundown(
-		peripheralDevice: PeripheralDevice,
-		rundown: Rundown,
-		cb: WrapAsyncCallback<TriggerReloadDataResponse>
-	): void {
-		logger.info('reloadRundown ' + rundown._id)
+	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => TriggerReloadDataResponse =
+		Meteor.wrapAsync(function reloadRundown(
+			peripheralDevice: PeripheralDevice,
+			rundown: Rundown,
+			cb: WrapAsyncCallback<TriggerReloadDataResponse>
+		): void {
+			logger.info('reloadRundown ' + rundown._id)
 
-		PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-			peripheralDevice._id,
-			(err: Error, mosRunningOrder: MOS.IMOSRunningOrder) => {
-				if (err) {
-					if (_.isString(err) && err.match(/rundown does not exist/i)) {
-						// Don't throw an error, instead return MISSING value
-						cb(null, TriggerReloadDataResponse.MISSING)
-					} else {
-						logger.error('Error in MOSDeviceActions.reloadRundown', err)
-						cb(err)
-					}
-				} else {
-					try {
-						logger.info('triggerGetRunningOrder reply ' + mosRunningOrder.ID)
-						logger.debug(mosRunningOrder)
-
-						if (parseMosString(mosRunningOrder.ID) !== rundown.externalId) {
-							throw new Meteor.Error(
-								401,
-								`Expected triggerGetRunningOrder reply for ${
-									rundown.externalId
-								} but got ${parseMosString(mosRunningOrder.ID)}`
-							)
+			PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+				peripheralDevice._id,
+				(err: Error, mosRunningOrder: MOS.IMOSRunningOrder) => {
+					if (err) {
+						if (_.isString(err) && err.match(/rundown does not exist/i)) {
+							// Don't throw an error, instead return MISSING value
+							cb(null, TriggerReloadDataResponse.MISSING)
+						} else {
+							logger.error('Error in MOSDeviceActions.reloadRundown', err)
+							cb(err)
 						}
+					} else {
+						try {
+							logger.info('triggerGetRunningOrder reply ' + mosRunningOrder.ID)
+							logger.debug(mosRunningOrder)
 
-						handleMosRundownData(peripheralDevice, mosRunningOrder, false)
+							if (parseMosString(mosRunningOrder.ID) !== rundown.externalId) {
+								throw new Meteor.Error(
+									401,
+									`Expected triggerGetRunningOrder reply for ${
+										rundown.externalId
+									} but got ${parseMosString(mosRunningOrder.ID)}`
+								)
+							}
 
-						// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
-						cb(null, TriggerReloadDataResponse.WORKING)
-					} catch (e) {
-						cb(e)
+							waitForPromise(handleMosRundownData(peripheralDevice, mosRunningOrder, false))
+
+							// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
+							cb(null, TriggerReloadDataResponse.WORKING)
+						} catch (e) {
+							cb(e)
+						}
 					}
-				}
-			},
-			10 * 1000, // 10 seconds, sometimes the NRCS is pretty slow in returning a response
-			'triggerGetRunningOrder',
-			rundown.externalId
-		)
-	})
+				},
+				10 * 1000, // 10 seconds, sometimes the NRCS is pretty slow in returning a response
+				'triggerGetRunningOrder',
+				rundown.externalId
+			)
+		})
 	export function notifyCurrentPlayingPart(
 		peripheralDevice: PeripheralDevice,
 		rundown: Rundown,
@@ -70,23 +67,17 @@ export namespace MOSDeviceActions {
 		newPlayingPartExternalId: string | null
 	) {
 		if (oldPlayingPartExternalId) {
-			setStoryStatus(
-				peripheralDevice._id,
-				rundown,
-				oldPlayingPartExternalId,
-				MOS.IMOSObjectStatus.STOP
-			).catch((e) => logger.error('Error in setStoryStatus', e))
+			setStoryStatus(peripheralDevice._id, rundown, oldPlayingPartExternalId, MOS.IMOSObjectStatus.STOP).catch(
+				(e) => logger.error('Error in setStoryStatus', e)
+			)
 		}
 		if (newPlayingPartExternalId) {
-			setStoryStatus(
-				peripheralDevice._id,
-				rundown,
-				newPlayingPartExternalId,
-				MOS.IMOSObjectStatus.PLAY
-			).catch((e) => logger.error('Error in setStoryStatus', e))
+			setStoryStatus(peripheralDevice._id, rundown, newPlayingPartExternalId, MOS.IMOSObjectStatus.PLAY).catch(
+				(e) => logger.error('Error in setStoryStatus', e)
+			)
 		}
 	}
-	function setStoryStatus(
+	async function setStoryStatus(
 		deviceId: PeripheralDeviceId,
 		rundown: Rundown,
 		storyId: string,
@@ -112,7 +103,7 @@ export namespace MOSDeviceActions {
 		})
 	}
 
-	export function setPieceInOutPoint(
+	export async function setPieceInOutPoint(
 		rundown: Rundown,
 		piece: Piece,
 		partCache: IngestPart,

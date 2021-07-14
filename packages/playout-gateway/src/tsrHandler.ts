@@ -45,7 +45,7 @@ export interface TSRSettings {
 }
 export interface TSRDevice {
 	coreConnection: CoreConnection
-	device: Device
+	device: Device<DeviceOptionsAny>
 }
 
 // ----------------------------------------------------------------------------
@@ -197,17 +197,6 @@ export class TSRHandler {
 				}
 
 				this.logger.debug(msg)
-			}
-		})
-
-		this.tsr.on('command', (id: string, cmd: any) => {
-			// This is an deprecated event emitter, to be removed soon
-			if (this._coreHandler.logDebug) {
-				this.logger.info('TSR: Command', {
-					device: id,
-					cmdName: cmd.constructor ? cmd.constructor.name : undefined,
-					cmd: JSON.parse(JSON.stringify(cmd)),
-				})
 			}
 		})
 
@@ -503,7 +492,7 @@ export class TSRHandler {
 			})
 
 			_.each(devices, (deviceOptions: DeviceOptionsAny, deviceId: string) => {
-				const oldDevice: DeviceContainer = this.tsr.getDevice(deviceId)
+				const oldDevice: DeviceContainer<DeviceOptionsAny> | undefined = this.tsr.getDevice(deviceId)
 
 				deviceOptions = _.extend(
 					{
@@ -552,7 +541,7 @@ export class TSRHandler {
 				}
 			})
 
-			_.each(this.tsr.getDevices(), async (oldDevice: DeviceContainer) => {
+			_.each(this.tsr.getDevices(), async (oldDevice: DeviceContainer<DeviceOptionsAny>) => {
 				const deviceId = oldDevice.deviceId
 				if (!devices[deviceId]) {
 					this.logger.info('Un-initializing device: ' + deviceId)
@@ -584,7 +573,7 @@ export class TSRHandler {
 				throw new Error(`There is already a _coreTsrHandlers for deviceId "${deviceId}"!`)
 			}
 
-			const devicePr: Promise<DeviceContainer> = this.tsr.addDevice(deviceId, options)
+			const devicePr: Promise<DeviceContainer<DeviceOptionsAny>> = this.tsr.addDevice(deviceId, options)
 
 			const coreTsrHandler = new CoreTSRDeviceHandler(this._coreHandler, devicePr, deviceId, this)
 
@@ -621,7 +610,7 @@ export class TSRHandler {
 					deviceType === DeviceType.ATEM &&
 					!disableAtemUpload
 				) {
-					const assets = (options as DeviceOptionsAtem).options.mediaPoolAssets
+					const assets = (options as DeviceOptionsAtem).options?.mediaPoolAssets
 					if (assets && assets.length > 0) {
 						try {
 							this.uploadFilesToAtem(
@@ -754,7 +743,7 @@ export class TSRHandler {
 	 * // @todo: proper atem media management
 	 * /Balte - 22-08
 	 */
-	private uploadFilesToAtem(device: DeviceContainer, files: AtemMediaPoolAsset[]) {
+	private uploadFilesToAtem(device: DeviceContainer<DeviceOptionsAny>, files: AtemMediaPoolAsset[]) {
 		if (device && device.deviceType === DeviceType.ATEM) {
 			this.logger.info('try to load ' + JSON.stringify(files.map((f) => f.path).join(', ')) + ' to atem')
 			const options = device.deviceOptions.options as { host: string }

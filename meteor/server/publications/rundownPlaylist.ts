@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'

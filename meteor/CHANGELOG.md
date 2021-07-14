@@ -2,6 +2,88 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
+
+## [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
+
+## [1.36.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
+
+## [1.36.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
+
+## [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
+
+
+### Features
+
+* add "Troubleshoot" button for Package Manager in GUI, used to data-dump and troubleshoot things in Package Manager ([76919ff](https://github.com/nrkno/tv-automation-server-core/commit/76919ffe413dba65388db6a47ed4ad4fb079ef96))
+* add checkbox to blueprints and peripheral devices to disable version checks. The flag gets unset whenever the blueprint/device changes its version ([e2ffccb](https://github.com/nrkno/tv-automation-server-core/commit/e2ffccbf95f84e1f10f5fa697a880f35b231a0d2))
+* add FTP package accessors type to blueprint-integrations ([412d2f1](https://github.com/nrkno/tv-automation-server-core/commit/412d2f1ec86586860d56e07f311668332c7117e8))
+* blueprint getPackageInfo implementation based on cache ([74b40ad](https://github.com/nrkno/tv-automation-server-core/commit/74b40ad7925f97041697d6c5b9c91c7af3ff0f68))
+* expand FTP accessor with options for explicit login and encrypted connections [publish] ([a4e77bd](https://github.com/nrkno/tv-automation-server-core/commit/a4e77bd78b2184e335fb0e2762dbf5cfef1f1ad4))
+* implement async wrapper to TransformedCollection ([#528](https://github.com/nrkno/tv-automation-server-core/issues/528)) ([301d306](https://github.com/nrkno/tv-automation-server-core/commit/301d30686ff4611ff4a5922f49541bf6db2ab6fe))
+* initial implementation of new Package Manager GUI ([93f2b8c](https://github.com/nrkno/tv-automation-server-core/commit/93f2b8c2590e7add973ad36476b5dcc3eef32dfa))
+* package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy ([52592b6](https://github.com/nrkno/tv-automation-server-core/commit/52592b68b3bd6cb5fd49fb7803057d29e0c7d3f4))
+* package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) ([191fcde](https://github.com/nrkno/tv-automation-server-core/commit/191fcde244589859c248de8b3db6fe169d01a17b))
+* refactor lookahead logic to remove amount of loop iterations ([6648ff6](https://github.com/nrkno/tv-automation-server-core/commit/6648ff6a8081e7a88440791ab5601afcb80d079e))
+* Remove delayed initialisation from DbCacheReadObject ([b15f306](https://github.com/nrkno/tv-automation-server-core/commit/b15f306dd620e92cab0cd43ae394abd57302a3ec))
+* Remove lazy initialisation from DbCacheReadCollection, making the class be fully synchronous ([209c36b](https://github.com/nrkno/tv-automation-server-core/commit/209c36b4f2af48058640b801f0862be81ca7b2a2))
+* remove old expectedVersion migrations ([c664433](https://github.com/nrkno/tv-automation-server-core/commit/c664433acd65243300dfbdaed2a7f71f57391b4b))
+* rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
+* rework the blueprint version checks to be looser around ^1.32.1 vs 1.32.0 ([1375437](https://github.com/nrkno/tv-automation-server-core/commit/13754376e4cc1899bfd76fd5edbd573342e662df))
+* show Viz loading status in MSE on the Piece ([#538](https://github.com/nrkno/tv-automation-server-core/issues/538)) ([2c1d3a3](https://github.com/nrkno/tv-automation-server-core/commit/2c1d3a3e1fc86c8224aba0c05ce857e33cb6c9fc))
+* speed and re-rendering optimisations ([89a93a1](https://github.com/nrkno/tv-automation-server-core/commit/89a93a1c79be707b88ea264457ae20366d8cbb34))
+* speed and re-rendering optimisations ([a0a0d6c](https://github.com/nrkno/tv-automation-server-core/commit/a0a0d6cfb2686ae353463b2d7bbf3773280cd8a4))
+* speedoptimize - added CURRENT_TIME_GRANULARITY const ([4edd282](https://github.com/nrkno/tv-automation-server-core/commit/4edd2829dd01f291916ba84ea43b26423bc27937))
+* update typescript to 4.2 to match meteor-babel ([94788fb](https://github.com/nrkno/tv-automation-server-core/commit/94788fb1855fa6ee6e25d8dc66b330d8a308c9b7))
+* when showing *On Air On* in Segment header, and not active, use expectedStart and not current time as base ([6d6cf38](https://github.com/nrkno/tv-automation-server-core/commit/6d6cf38f27669a27aef3c80b0fb4f7bb489d1bba))
+
+
+### Bug Fixes
+
+* add created property to expectedPackages ([5f05199](https://github.com/nrkno/tv-automation-server-core/commit/5f05199829149569cfb5e74cfbfe3feefe368b7f))
+* AfterBroadcastForm crashes when sending evaluations ([2dddb22](https://github.com/nrkno/tv-automation-server-core/commit/2dddb22925ac951e068d5a561589904e960a3af6))
+* CacheObject missing transforms ([02207f1](https://github.com/nrkno/tv-automation-server-core/commit/02207f114c82a4d5e7fbcf9208a95a73f8efdc86))
+* Cannot use 'in' operator to search for 'getIfLoaded' ([ac0038c](https://github.com/nrkno/tv-automation-server-core/commit/ac0038cabe6ba5c317a7a934cbb04015b50fb25c))
+* catch/ignore async logged errors when running tests ([4b51ab9](https://github.com/nrkno/tv-automation-server-core/commit/4b51ab96588ef2288cbb7fcfda60c55951275e07))
+* fix bug in displayFormattedTime ([ea4a666](https://github.com/nrkno/tv-automation-server-core/commit/ea4a666f2f569e4cdcde178348ddff5c524213ea))
+* improve Package statuses GUI page [publish] ([4985606](https://github.com/nrkno/tv-automation-server-core/commit/4985606cfa56cc549348f3a8cf54eb42aa9ba7d3))
+* infinite pieces losing their startedPlayback time on their second take ([4fbde9d](https://github.com/nrkno/tv-automation-server-core/commit/4fbde9dfba3fcb5416707b24187b1b295825354c))
+* invalid notifications ([#545](https://github.com/nrkno/tv-automation-server-core/issues/545)) ([f414831](https://github.com/nrkno/tv-automation-server-core/commit/f4148317d3c8350c805ff3257173cac2e60dfa43))
+* iterateDeeply for arrays [publish] ([9a64fd3](https://github.com/nrkno/tv-automation-server-core/commit/9a64fd347d715ca41b5b703415663fa02996fd5c))
+* orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([3113937](https://github.com/nrkno/tv-automation-server-core/commit/31139376d2bf2c9a105f0c3bc502f00111317a9e))
+* package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] ([22b29d9](https://github.com/nrkno/tv-automation-server-core/commit/22b29d9ebe58e88db6438ad084d1f12182f6a4e5))
+* Package status GUI updates ([cdcafde](https://github.com/nrkno/tv-automation-server-core/commit/cdcafde9acb09df64b65f9c87fd3319b3d131cb4))
+* pixelPosition should be a const ([cc9a0cf](https://github.com/nrkno/tv-automation-server-core/commit/cc9a0cf05f0b1f9eaa56a3526ab51c1185628612))
+* plumb in pieceId when executing an action ([a8ccdea](https://github.com/nrkno/tv-automation-server-core/commit/a8ccdead3eaadd5e43ca0c468bdfd270836324a7))
+* PM add WorkStatusState, for stronger typings [publish] ([51788bc](https://github.com/nrkno/tv-automation-server-core/commit/51788bc31a26ce720b829508399a4a20737f2b66))
+* prevPartId was initialized with = '' instead of null ([3cbb8ee](https://github.com/nrkno/tv-automation-server-core/commit/3cbb8ee53335b1331863615b7244e48f4b53f05c))
+* prioritize showing end of script Piece right-hand label ([8ea0f4f](https://github.com/nrkno/tv-automation-server-core/commit/8ea0f4f4a2ca9548d53ffdb633a5b8b32c2a90a9))
+* reinsert isExpectedToPlay in SegmentTimelineContainer and raised SIMULATED_PLAYBACK_HARD_MARGIN to 3500 ([2b0861d](https://github.com/nrkno/tv-automation-server-core/commit/2b0861d06ce3a6a3bc926b7256eb744c59c8b49d))
+* remove duplicate migration ([8ad5512](https://github.com/nrkno/tv-automation-server-core/commit/8ad5512cff52000ff6ebb6d41d600582e49b02bd))
+* rundown baseline objects should trigger listenToPackageInfoUpdates ([84ea181](https://github.com/nrkno/tv-automation-server-core/commit/84ea181578cd425ac789beacc237403afe3c5180))
+* scrollLeft gave flickering when pressing take. ([14b05c3](https://github.com/nrkno/tv-automation-server-core/commit/14b05c320b68a401023137cf0db5e79c8feb082f))
+* scrollLeft gave flickering when pressing take. ([644dc17](https://github.com/nrkno/tv-automation-server-core/commit/644dc17c4991d937404b89bbd6fa539b4444498e))
+* search bar cleared when switching tabs in shelf ([#544](https://github.com/nrkno/tv-automation-server-core/issues/544)) ([f7a4ee0](https://github.com/nrkno/tv-automation-server-core/commit/f7a4ee07455dc81f90a4812239447a98674190a3))
+* sending an evaluation on a looping rundown deactivates it ([c88b9c0](https://github.com/nrkno/tv-automation-server-core/commit/c88b9c0e173efe3522120bfd1f2863009f03c11c))
+* setState missing ([1be49cd](https://github.com/nrkno/tv-automation-server-core/commit/1be49cdc2bc83ca275dab296f2bb11faa48a6b3e))
+* setState missing ([2482600](https://github.com/nrkno/tv-automation-server-core/commit/2482600d2358c26424a0c027052eac5d5a427fcf))
+* show adlibs for hidden layers when dev flags makes the layers visible ([587c17b](https://github.com/nrkno/tv-automation-server-core/commit/587c17b6cf411ebdddd36bb74f17d8e9853de2c6))
+* solid background behind right-hand-side Piece labels to cover any stray left-hand-side labels ([68d3acb](https://github.com/nrkno/tv-automation-server-core/commit/68d3acb7ac60175c9f33b592838f85c93fd3a0fc))
+* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props ([b52ebf3](https://github.com/nrkno/tv-automation-server-core/commit/b52ebf3372c75fa2ada77d10dabb136aa1d8cbc2))
+* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props ([16487c6](https://github.com/nrkno/tv-automation-server-core/commit/16487c69a033b2e5a0d6d8304051babbfbeb0b03))
+* timeline not considering userDuration for pieces properly ([9afa233](https://github.com/nrkno/tv-automation-server-core/commit/9afa233720ab814f8e4558e68e7fee493be70d78))
+* update data-store dep (fixing a bug where device-apps/gateways wouldn't work when started from a different drive than C (on windows) ([9a9846b](https://github.com/nrkno/tv-automation-server-core/commit/9a9846b8b73a0fb75ba3cf03764f280d633d38b2))
+* Update Package Manager GUI, add "working state" to the icons ([5dcedea](https://github.com/nrkno/tv-automation-server-core/commit/5dcedea75f26e23e7ef5a8542634fcd7c35deebb))
+* various typescript errors ([0d08d87](https://github.com/nrkno/tv-automation-server-core/commit/0d08d8737088c74d7207466cac3963e34f391dd2))
+
+### [1.35.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.0...v1.35.1-0) (2021-07-12)
+
+
+### Bug Fixes
+
+* always run typedoc, but skip publish if not a tag ([f92251d](https://github.com/nrkno/tv-automation-server-core/commit/f92251de8eafd138a10b4a0530ed5ee09e134617))
+* LOWER_THIRD pieces can use takeNow not GRAPHICS pieces ([d702336](https://github.com/nrkno/tv-automation-server-core/commit/d702336a25a471fad6eb4b4a80e87bdb9c66b2c5))
+
 ## [1.35.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.34.0...v1.35.0) (2021-07-07)
 
 ## [1.35.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.3...v1.35.0-in-testing.1) (2021-06-10)

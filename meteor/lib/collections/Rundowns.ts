@@ -2,8 +2,8 @@ import * as _ from 'underscore'
 import { Time, applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
-import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
-import { Studios, Studio, StudioId } from './Studios'
+import { FindOptions, MongoQuery } from '../typings/meteor'
+import { StudioId } from './Studios'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
@@ -111,33 +111,26 @@ export class Rundown implements DBRundown {
 	public baselineModifyHash?: string
 
 	constructor(document: DBRundown) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}
 	getRundownPlaylist(): RundownPlaylist {
 		if (!this.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
-		let pls = RundownPlaylists.findOne(this.playlistId)
+		const pls = RundownPlaylists.findOne(this.playlistId)
 		if (pls) {
 			return pls
 		} else throw new Meteor.Error(404, `Rundown Playlist "${this.playlistId}" not found!`)
 	}
 	getShowStyleVariant(): ShowStyleVariant {
-		let showStyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
+		const showStyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
 		if (!showStyleVariant) throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
 		return showStyleVariant
 	}
 	getShowStyleBase(): ShowStyleBase {
-		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
+		const showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
 		return showStyleBase
-	}
-	getStudio(): Studio {
-		if (!this.studioId) throw new Meteor.Error(500, 'Rundown is not in a studio!')
-		let studio = Studios.findOne(this.studioId)
-		if (studio) {
-			return studio
-		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
 	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
 		selector = selector || {}
@@ -219,17 +212,10 @@ export class Rundown implements DBRundown {
 			)
 		).fetch()
 	}
-	appendNote(note: RundownNote): void {
-		Rundowns.update(this._id, {
-			$push: {
-				notes: note,
-			},
-		})
-	}
 }
 
 // export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
-export const Rundowns: TransformedCollection<Rundown, DBRundown> = createMongoCollection<Rundown>('rundowns', {
+export const Rundowns = createMongoCollection<Rundown, DBRundown>('rundowns', {
 	transform: (doc) => applyClassToDocument(Rundown, doc),
 })
 registerCollection('Rundowns', Rundowns)

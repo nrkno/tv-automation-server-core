@@ -1,5 +1,4 @@
 import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
-import { TransformedCollection } from '../typings/meteor'
 import { ProtectedString, registerCollection, Time } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -29,10 +28,9 @@ export interface ExpectedPackageWorkStatusFromPackage
 	id: ExpectedPackageDBBase['_id']
 }
 
-export const ExpectedPackageWorkStatuses: TransformedCollection<
-	ExpectedPackageWorkStatus,
-	ExpectedPackageWorkStatus
-> = createMongoCollection<ExpectedPackageWorkStatus>('expectedPackageWorkStatuses')
+export const ExpectedPackageWorkStatuses = createMongoCollection<ExpectedPackageWorkStatus, ExpectedPackageWorkStatus>(
+	'expectedPackageWorkStatuses'
+)
 registerCollection('ExpectedPackageStatuses', ExpectedPackageWorkStatuses)
 
 registerIndex(ExpectedPackageWorkStatuses, {

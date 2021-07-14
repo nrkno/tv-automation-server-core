@@ -14,9 +14,9 @@
 		"dev": "yarn build:packages && yarn meteor:run",
 		"build:packages": "cd packages && yarn build",
 		"meteor:run": "cd meteor && meteor npm run start",
-		"validate:release": "yarn install && yarn build:packages && yarn validate:release:meteor",
+		"validate:release": "yarn install && yarn build:packages && yarn validate:release:packages && yarn validate:release:meteor",
 		"validate:release:meteor": "cd meteor && meteor npm run validate:prod-dependencies && meteor npm run license-validate && meteor npm run lint && meteor npm run test",
-		"validate:release:packages": "cd packages && yarn lint && yarn test",
+		"validate:release:packages": "cd packages && yarn validate:dependencies && yarn lint && yarn test",
 		"meteor": "cd meteor && meteor"
 	}
 }

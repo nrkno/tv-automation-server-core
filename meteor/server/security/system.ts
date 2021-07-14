@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { UserId } from '../../lib/collections/Users'
 import { Credentials, resolveCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'

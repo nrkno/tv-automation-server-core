@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { TransitionContent } from '@sofie-automation/blueprints-integration'
@@ -9,7 +8,7 @@ import { FloatingInspector } from '../../FloatingInspector'
 
 // type KeyValue = { key: string, value: string }
 
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 interface IState {
 	iconFailed: boolean
 }

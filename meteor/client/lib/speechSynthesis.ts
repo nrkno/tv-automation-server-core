@@ -65,7 +65,7 @@ class SpeechSynthesisClass {
 			return
 		}
 
-		let utterThis = new SpeechSynthesisUtterance(textCommand.text)
+		const utterThis = new SpeechSynthesisUtterance(textCommand.text)
 		utterThis.onend = () => {
 			this._checkQueue()
 		}
@@ -79,7 +79,7 @@ class SpeechSynthesisClass {
 		speechSynthesis.speak(utterThis)
 	}
 	private _checkQueue() {
-		let textCommand = this._queue.shift()
+		const textCommand = this._queue.shift()
 		if (textCommand) {
 			this._speak(textCommand)
 		}

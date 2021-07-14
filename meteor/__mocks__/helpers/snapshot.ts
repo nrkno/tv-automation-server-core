@@ -1,8 +1,8 @@
 import * as _ from 'underscore'
 import { TimelineObjGeneric, TimelineComplete, StatObjectMetadata } from '../../lib/collections/Timeline'
-import { DBRundown, RundownImportVersions } from '../../lib/collections/Rundowns'
+import { DBRundown } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
-import { Part, DBPart } from '../../lib/collections/Parts'
+import { DBPart } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
@@ -28,7 +28,7 @@ type Data =
  */
 export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 	if (_.isArray(data)) {
-		let dataArray = _.map(data, fixSnapshot)
+		const dataArray = _.map(data, fixSnapshot)
 		if (sortData) {
 			dataArray.sort((a: Data, b: Data) => {
 				if (!a && b) return 1
@@ -50,7 +50,7 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 		}
 		return dataArray
 	} else {
-		let o = cloneOrg(data)
+		const o = cloneOrg(data)
 		if (!o) return o
 		if (isTimelineComplete(o)) {
 			if (o.generated) o.generated = 12345
@@ -85,9 +85,9 @@ function isTimelineComplete(o): o is TimelineComplete {
 	const o2 = o as TimelineComplete
 	return !!(o2.timeline && o2._id && o2.generated)
 }
-function isTimelineObj(o): o is TimelineObjGeneric {
-	return o.enable && o._id && o.id && o.studioId
-}
+// function isTimelineObj(o): o is TimelineObjGeneric {
+// 	return o.enable && o._id && o.id && o.studioId
+// }
 function isPlaylist(o): o is DBRundownPlaylist {
 	return o._id && _.has(o, 'currentPartInstanceId')
 }
@@ -97,9 +97,9 @@ function isRundown(o): o is DBRundown {
 function isSegment(o): o is DBSegment {
 	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'name')
 }
-function isPart(o): o is Part {
-	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'segmentId') && _.has(o, 'title')
-}
-function isPiece(o): o is Piece {
-	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'partId')
-}
+// function isPart(o): o is Part {
+// 	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'segmentId') && _.has(o, 'title')
+// }
+// function isPiece(o): o is Piece {
+// 	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'partId')
+// }

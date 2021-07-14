@@ -1,9 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import * as _ from 'underscore'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import * as semver from 'semver'
-import { Mongo } from 'meteor/mongo'
 import {
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatuses,
@@ -11,8 +9,6 @@ import {
 import { MongoSelector } from '../../lib/typings/meteor'
 import { literal } from '../../lib/lib'
 import { dropDeprecatedDatabase, getDeprecatedDatabase } from './deprecatedDatabases/1_35_0'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { setExpectedVersion } from './lib'
 
 /*
  * **************************************************************************************
@@ -25,12 +21,20 @@ import { setExpectedVersion } from './lib'
  */
 // Release X
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
-	setExpectedVersion(
-		'expectedVersion.mediaManager',
-		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-		'_process',
-		'^1.10.0'
-	),
+	//                     ^--- To be set to an absolute version number when doing the release
+	// add steps here:
+	// {
+	// 	id: 'my fancy step',
+	// 	canBeRunAutomatically: true,
+	// 	validate: () => {
+	// 		return false
+	// 	},
+	// 	migrate: () => {
+	// 		//
+	// 	}
+	// },
+	//
+	//
 
 	{
 		id: 'Fix badly named collection PackageContainerStatuses',
@@ -39,7 +43,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			// Note: in versions <1.35, the collection PackageContainerPackageStatuses had mistankenly been created at the mongo-collection
 			// "packageContainerStatuses" instead of "packageContainerPackageStatuses"
 
-			let databaseSystem = getCoreSystem()
+			const databaseSystem = getCoreSystem()
 
 			// Only run this if version is under 1.33.0, in order to not create the deprecated databases
 			if (databaseSystem && semver.satisfies(databaseSystem.version, '<1.33.0')) {

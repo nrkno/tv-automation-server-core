@@ -1,7 +1,7 @@
 import React from 'react'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Studio } from '../../../lib/collections/Studios'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
@@ -10,7 +10,6 @@ import {
 	ConnectDragSource,
 	ConnectDropTarget,
 	DragElementWrapper,
-	DragLayerCollector,
 	DragPreviewOptions,
 	DragSource,
 	DragSourceCollector,
@@ -22,7 +21,6 @@ import {
 	DropTargetConnector,
 	DropTargetMonitor,
 	DropTargetSpec,
-	XYCoord,
 } from 'react-dnd'
 import {
 	IRundownDragObject,
@@ -67,7 +65,7 @@ interface IRundownDragSourceProps {
 }
 
 const dragSpec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
-	beginDrag: (props: IRundownListItemProps, monitor, component: React.Component) => {
+	beginDrag: (props: IRundownListItemProps, _monitor, _component: React.Component) => {
 		const id = props.rundown._id
 		return { id, rundownLayouts: props.rundownLayouts }
 	},
@@ -79,7 +77,7 @@ const dragSpec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
 const dragCollector: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function (
 	connect: DragSourceConnector,
 	monitor: DragSourceMonitor,
-	props: IRundownListItemProps
+	_props: IRundownListItemProps
 ): IRundownDragSourceProps {
 	return {
 		connectDragSource: connect.dragSource(),
@@ -141,36 +139,34 @@ const dropSpec: DropTargetSpec<IRundownListItemProps> = {
 
 const dropCollect: DropTargetCollector<IRundownDropTargetProps, IRundownListItemProps> = (
 	connect: DropTargetConnector,
-	monitor: DropTargetMonitor,
-	props: IRundownListItemProps
+	_monitor: DropTargetMonitor,
+	_props: IRundownListItemProps
 ) => {
 	return {
 		connectDropTarget: connect.dropTarget(),
 	}
 }
 
-interface IRundownDragLayerProps {
-	currentOffset: XYCoord | null
-	clientOffset: XYCoord | null
-}
+// interface IRundownDragLayerProps {
+// 	currentOffset: XYCoord | null
+// 	clientOffset: XYCoord | null
+// }
 
-const dragLayerCollect: DragLayerCollector<
-	IRundownDragSourceProps & IRundownListItemProps,
-	IRundownDragLayerProps
-> = function (monitor, props) {
-	let currentOffset: XYCoord | null = null
-	let clientOffset: XYCoord | null = null
+// const dragLayerCollect: DragLayerCollector<IRundownDragSourceProps & IRundownListItemProps, IRundownDragLayerProps> =
+// 	function (monitor, props) {
+// 		let currentOffset: XYCoord | null = null
+// 		let clientOffset: XYCoord | null = null
 
-	if (monitor.getItem()?.id === props.rundown._id) {
-		currentOffset = monitor.getDifferenceFromInitialOffset()
-		clientOffset = monitor.getClientOffset()
-	}
+// 		if (monitor.getItem()?.id === props.rundown._id) {
+// 			currentOffset = monitor.getDifferenceFromInitialOffset()
+// 			clientOffset = monitor.getClientOffset()
+// 		}
 
-	return {
-		currentOffset,
-		clientOffset,
-	}
-}
+// 		return {
+// 			currentOffset,
+// 			clientOffset,
+// 		}
+// 	}
 
 export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
 	(props: Translated<IRundownListItemProps>) => {
@@ -179,7 +175,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 		let showStyleVariant: ShowStyleVariant | undefined = undefined
 
 		try {
-			studio = props.rundown.getStudio()
+			studio = Studios.findOne(props.rundown.studioId)
 		} catch (e) {
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}

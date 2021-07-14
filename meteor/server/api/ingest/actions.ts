@@ -10,7 +10,7 @@ import { regenerateRundown } from './rundownInput'
 import { logger } from '../../logging'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
-import { makePromise, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
+import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
 import {
@@ -111,56 +111,57 @@ export namespace IngestActions {
 	) {
 		check(rundownPlaylistId, String)
 
-		const ingestData = runPlayoutOperationWithLock(
-			access,
-			'regenerateRundownPlaylist',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.MISC,
-			(playlistLock) => {
-				const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
-				if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
+		const ingestData = waitForPromise(
+			runPlayoutOperationWithLock(
+				access,
+				'regenerateRundownPlaylist',
+				rundownPlaylistId,
+				PlayoutLockFunctionPriority.MISC,
+				async (playlistLock) => {
+					const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+					if (!rundownPlaylist)
+						throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
 
-				const studio = rundownPlaylist.getStudio()
-				if (!studio) {
-					throw new Meteor.Error(
-						404,
-						`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`
-					)
+					const studio = rundownPlaylist.getStudio()
+					if (!studio) {
+						throw new Meteor.Error(
+							404,
+							`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`
+						)
+					}
+
+					logger.info(`Regenerating rundown playlist ${rundownPlaylist.name} (${rundownPlaylist._id})`)
+
+					const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
+					if (rundowns.length === 0) return []
+
+					// Cleanup old state
+					if (purgeExisting) {
+						await removeRundownsFromDb(rundowns.map((r) => r._id))
+					} else {
+						await runPlayoutOperationWithCacheFromStudioOperation(
+							'regenerateRundownPlaylist:init',
+							playlistLock,
+							rundownPlaylist,
+							PlayoutLockFunctionPriority.MISC,
+							null,
+							async (cache) => resetRundownPlaylist(cache)
+						)
+					}
+
+					// exit the sync function, so the cache is written back
+					return rundowns.map((rundown) => ({
+						rundownExternalId: rundown.externalId,
+						studio,
+					}))
 				}
-
-				logger.info(`Regenerating rundown playlist ${rundownPlaylist.name} (${rundownPlaylist._id})`)
-
-				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
-				if (rundowns.length === 0) return []
-
-				// Cleanup old state
-				if (purgeExisting) {
-					waitForPromise(removeRundownsFromDb(rundowns.map((r) => r._id)))
-				} else {
-					runPlayoutOperationWithCacheFromStudioOperation(
-						'regenerateRundownPlaylist:init',
-						playlistLock,
-						rundownPlaylist,
-						PlayoutLockFunctionPriority.MISC,
-						null,
-						(cache) => resetRundownPlaylist(cache)
-					)
-				}
-
-				// exit the sync function, so the cache is written back
-				return rundowns.map((rundown) => ({
-					rundownExternalId: rundown.externalId,
-					studio,
-				}))
-			}
+			)
 		)
 
 		// Fire off all the updates in parallel, in their own low-priority tasks
 		waitForPromiseAll(
-			ingestData.map(({ rundownExternalId, studio }) =>
-				makePromise(() => {
-					regenerateRundown(studio, rundownExternalId, undefined)
-				})
+			ingestData.map(async ({ rundownExternalId, studio }) =>
+				regenerateRundown(studio, rundownExternalId, undefined)
 			)
 		)
 	}

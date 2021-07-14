@@ -1,11 +1,9 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
 import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'
 import { PartId } from './Parts'
-import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
 
 /** A string, identifying a Rundown
@@ -39,10 +37,9 @@ export interface ExpectedPlayoutItemStudio extends ExpectedPlayoutItemBase {
 export type ExpectedPlayoutItem = ExpectedPlayoutItemStudio | ExpectedPlayoutItemRundown
 
 /** @deprecated */
-export const ExpectedPlayoutItems: TransformedCollection<
-	ExpectedPlayoutItem,
-	ExpectedPlayoutItem
-> = createMongoCollection<ExpectedPlayoutItem>('expectedPlayoutItems')
+export const ExpectedPlayoutItems = createMongoCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>(
+	'expectedPlayoutItems'
+)
 registerCollection('ExpectedPlayoutItems', ExpectedPlayoutItems)
 
 registerIndex(ExpectedPlayoutItems, {

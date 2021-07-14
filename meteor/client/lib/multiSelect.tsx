@@ -58,7 +58,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 	refreshChecked() {
 		if (this.props.value && _.isArray(this.props.value)) {
 			const checkedValues: _.Dictionary<boolean> = {}
-			_.forEach(this.props.value, (value, index) => {
+			_.forEach(this.props.value, (value) => {
 				checkedValues[value] = true
 			})
 

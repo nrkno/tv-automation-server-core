@@ -49,6 +49,7 @@ export type SomeContent =
 	| SplitsContent
 	| LiveSpeakContent
 	| TransitionContent
+	| GraphicsContent
 	| UnknownContent
 export type SomeTimelineContent = WithTimeline<SomeContent>
 
@@ -61,6 +62,10 @@ export interface VTContent extends BaseContent {
 	mediaFlowIds?: string[]
 	seek?: number
 	editable?: VTEditableParameters
+}
+
+export interface GraphicsContent extends BaseContent {
+	fileName: string
 }
 
 export interface CameraContent extends BaseContent {
@@ -79,14 +84,6 @@ export interface ScriptContent extends BaseContent {
 	fullScript?: string
 	lastModified?: Time | null
 }
-
-// export interface GraphicsContent extends BaseContent {
-// 	fileName: string
-// 	path: string
-// 	mediaFlowIds?: string[]
-// 	thumbnail?: string
-// 	templateData?: object
-// }
 
 /** Data describing a Nora template's step attributes */
 export interface NoraPayloadStepData {

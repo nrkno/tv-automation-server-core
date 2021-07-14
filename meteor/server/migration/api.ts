@@ -38,10 +38,10 @@ function resetDatabaseVersions(context: MethodContext) {
 }
 
 class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
-	getMigrationStatus() {
+	async getMigrationStatus() {
 		return makePromise(() => getMigrationStatus(this))
 	}
-	runMigration(
+	async runMigration(
 		chunks: Array<MigrationChunk>,
 		hash: string,
 		inputResults: Array<MigrationStepInputResult>,
@@ -49,10 +49,10 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 	) {
 		return makePromise(() => runMigration(this, chunks, hash, inputResults, isFirstOfPartialMigrations))
 	}
-	forceMigration(chunks: Array<MigrationChunk>) {
+	async forceMigration(chunks: Array<MigrationChunk>) {
 		return makePromise(() => forceMigration(this, chunks))
 	}
-	resetDatabaseVersions() {
+	async resetDatabaseVersions() {
 		return makePromise(() => resetDatabaseVersions(this))
 	}
 }

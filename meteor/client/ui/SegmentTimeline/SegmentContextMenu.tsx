@@ -8,7 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
-import { SegmentId, Segment } from '../../../lib/collections/Segments'
+import { SegmentId } from '../../../lib/collections/Segments'
 import { Settings } from '../../../lib/Settings'
 
 interface IProps {
@@ -131,12 +131,12 @@ export const SegmentContextMenu = withTranslation()(
 		}
 
 		onSetAsNextFromHere = (part: Part, e) => {
-			let offset = this.getTimePosition()
+			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0)
 		}
 
 		onPlayFromHere = (part: Part, e) => {
-			let offset = this.getTimePosition()
+			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0, true)
 		}
 

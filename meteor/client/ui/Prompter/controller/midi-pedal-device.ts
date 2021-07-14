@@ -4,7 +4,7 @@ import Spline from 'cubic-spline'
 
 import webmidi, { Input, InputEventControlchange } from 'webmidi'
 
-const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
+// const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
 
 /**
  * This class handles control of the prompter using
@@ -77,23 +77,23 @@ export class MidiPedalController extends ControllerAbstract {
 	public destroy() {
 		webmidi.disable()
 	}
-	public onKeyDown(e: KeyboardEvent) {
+	public onKeyDown(_e: KeyboardEvent) {
 		// Nothing
 	}
-	public onKeyUp(e: KeyboardEvent) {
+	public onKeyUp(_e: KeyboardEvent) {
 		// Nothing
 	}
-	public onMouseKeyDown(e: MouseEvent) {
+	public onMouseKeyDown(_e: MouseEvent) {
 		// Nothing
 	}
-	public onMouseKeyUp(e: MouseEvent) {
+	public onMouseKeyUp(_e: MouseEvent) {
 		// Nothing
 	}
-	public onWheel(e: WheelEvent) {
+	public onWheel(_e: WheelEvent) {
 		// Nothing
 	}
 
-	private setupMidiListeners(err: Error) {
+	private setupMidiListeners(err: Error | undefined) {
 		if (err) {
 			console.error('Error enabling WebMIDI', err)
 			return

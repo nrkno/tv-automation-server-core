@@ -1,9 +1,9 @@
 {
 	"name": "automation-core",
-	"version": "1.35.0",
+	"version": "1.37.0-in-development",
 	"private": true,
 	"engines": {
-		"node": "^12.21.0 || 14"
+		"node": "^12.22.1 || 14"
 	},
 	"scripts": {
 		"start": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run debug --\" \"npm run watch-types -- --preserveWatchOutput\"",
@@ -24,8 +24,8 @@
 		"cov": "meteor npm run unitcov && meteor npm run cov-open",
 		"send-coverage": "codecov -p ..",
 		"test-i": "npm run integration-test",
-		"license-validate": "node ../scripts/checkLicenses.js --allowed=\"MIT,BSD,ISC,Apache,Unlicense,CC0,LGPL,CC BY 3.0,CC BY 4.0,MPL 2.0\" --excludePackages=timecode,rxjs/ajax,rxjs/fetch,rxjs/internal-compatibility,nw-pre-gyp-module-test,rxjs/operators,rxjs/testing,rxjs/webSocket,undefined,i18next-conv,@fortawesome/fontawesome-common-types,argv,indexof",
-		"lint": "tslint --project tsconfig.json --config tslint.json",
+		"license-validate": "node ../scripts/checkLicenses.js --allowed=\"MIT,BSD,ISC,Apache,Unlicense,CC0,LGPL,CC BY 3.0,CC BY 4.0,MPL 2.0\" --excludePackages=timecode,rxjs/ajax,rxjs/fetch,rxjs/internal-compatibility,nw-pre-gyp-module-test,rxjs/operators,rxjs/testing,rxjs/webSocket,undefined,i18next-conv,@fortawesome/fontawesome-common-types,argv,indexof,custom-license,private,public-domain-module",
+		"lint": "eslint . --ext .ts --ext .js --ext .tsx --ext .jsx",
 		"lintfix": "npm run lint -- --fix",
 		"quickformat": "prettier \"__mocks__/**\" --write ; prettier \"lib/**\" --write ; prettier \"server/**\" --write ; prettier \"client/**\" --write ; prettier \"*.json\" --write ; prettier \"*.js\" --write ; prettier \"*.md\" --write",
 		"i18n-extract-pot": "node ./scripts/extract-i18next-pot.js -f \"{./client/ui/**/*.+(ts|tsx),./lib/mediaObjects.ts,./lib/rundownNotifications.ts}\" -o i18n/template.pot",
@@ -63,6 +63,7 @@
 		"debounce-fn": "^5.0.0",
 		"deep-extend": "0.6.0",
 		"deepmerge": "^4.2.2",
+		"eslint-plugin-custom-rules": "file:eslint-rules",
 		"fast-clone": "^1.5.13",
 		"html-entities": "^1.4.0",
 		"i18next": "^19.9.2",
@@ -77,6 +78,8 @@
 		"mousetrap": "^1.6.5",
 		"ntp-client": "^0.5.3",
 		"object-path": "^0.11.5",
+		"p-lazy": "^3.1.0",
+		"p-queue": "^7.1.0",
 		"promise.allsettled": "^1.0.4",
 		"prop-types": "^15.7.2",
 		"query-string": "^6.14.1",
@@ -106,9 +109,11 @@
 		"vm2": "^3.9.3",
 		"webmidi": "^2.5.2",
 		"winston": "^3.3.3",
-		"xml2json": "^0.12.0"
+		"xml2json": "^0.12.0",
+		"xmlbuilder": "^15.1.1"
 	},
 	"devDependencies": {
+		"@sofie-automation/code-standard-preset": "^0.4.2",
 		"@types/amqplib": "^0.5.17",
 		"@types/body-parser": "^1.19.0",
 		"@types/classnames": "^2.3.1",
@@ -118,7 +123,7 @@
 		"@types/jest": "^26.0.23",
 		"@types/meteor": "1.4.47",
 		"@types/mongodb": "^3.6.18",
-		"@types/mousetrap": "^1.6.5",
+		"@types/mousetrap": "^1.6.8",
 		"@types/node": "^12.20.15",
 		"@types/prop-types": "^15.7.3",
 		"@types/react": "^16.14.8",
@@ -139,31 +144,26 @@
 		"concurrently": "^6.2.0",
 		"conventional-changelog-conventionalcommits": "4.4.0",
 		"ejson": "^2.2.1",
+		"eslint-plugin-react": "^7.24.0",
 		"fibers-npm": "npm:fibers@4.0.3",
 		"glob": "^7.1.7",
-		"husky": "^4.3.8",
 		"i18next-conv": "^10.2.0",
 		"i18next-scanner": "^3.0.0",
 		"jest": "^26.6.3",
 		"legally": "^3.5.10",
-		"lint-staged": "^10.5.4",
 		"meteor-babel": "^7.10.7",
 		"meteor-promise": "0.8.7",
 		"mock-http": "^1.1.0",
 		"open-cli": "^6.0.1",
-		"prettier": "^2.2.1",
 		"simple-git": "^2.40.0",
 		"sinon": "^9.2.4",
 		"standard-version": "^9.3.0",
 		"ts-jest": "^26.5.6",
-		"tslint": "^6.1.3",
-		"tslint-config-prettier": "^1.18.0",
-		"tslint-plugin-prettier": "^2.1.0",
-		"typescript": "~4.1.5",
-		"typescript-tslint-plugin": "^0.5.5",
+		"typescript": "~4.2.4",
 		"xmldom": "^0.6.0",
 		"yargs": "^16.2.0"
 	},
+	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"husky": {
 		"hooks": {
 			"pre-commit": "lint-staged"

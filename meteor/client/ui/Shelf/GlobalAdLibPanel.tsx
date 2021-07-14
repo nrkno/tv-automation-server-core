@@ -42,6 +42,7 @@ import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
+import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -83,10 +84,10 @@ const AdLibListView = withTranslation()(
 		}
 
 		static getDerivedStateFromProps(props: IListViewPropsHeader) {
-			let tOLayers: {
+			const tOLayers: {
 				[key: string]: IOutputLayer
 			} = {}
-			let tSLayers: {
+			const tSLayers: {
 				[key: string]: ISourceLayer
 			} = {}
 
@@ -271,7 +272,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
-	let sourceHotKeyUse: {
+	const sourceHotKeyUse: {
 		[key: string]: number
 	} = {}
 
@@ -292,7 +293,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 		}
 
-		let rundownAdLibItems = RundownBaselineAdLibPieces.find(
+		const rundownAdLibItems = RundownBaselineAdLibPieces.find(
 			{
 				rundownId: currentRundown._id,
 			},
@@ -364,11 +365,13 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		rundownAdLibs = rundownAdLibs.concat(globalAdLibActions).sort((a, b) => a._rank - b._rank)
 
+		const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 		rundownAdLibs.forEach((uiAdLib) => {
 			// automatically assign hotkeys based on adLibItem index
-			let sourceLayer = uiAdLib.sourceLayerId && sourceLayerLookup[uiAdLib.sourceLayerId]
+			const sourceLayer = uiAdLib.sourceLayerId && sourceLayerLookup[uiAdLib.sourceLayerId]
 			if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
-				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+				const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 				const sourceHotKeyUseLayerId =
 					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || uiAdLib.sourceLayerId
 				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
@@ -378,14 +381,14 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				}
 			}
 
-			if (sourceLayer && sourceLayer.isHidden) {
+			if (sourceLayer && sourceLayer.isHidden && !showHiddenSourceLayers) {
 				uiAdLib.isHidden = true
 			}
 			return uiAdLib
 		})
 	}
 
-	for (let [key, value] of Object.entries(sourceHotKeyUse)) {
+	for (const [key, value] of Object.entries(sourceHotKeyUse)) {
 		GlobalAdLibHotkeyUseMap.set(key, value)
 	}
 
@@ -426,7 +429,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 		}
 
-		componentDidUpdate(prevProps: IProps & ITrackedProps) {
+		componentDidUpdate(_prevProps: IProps & ITrackedProps) {
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 			this.usedHotkeys.length = 0
@@ -447,7 +450,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		refreshKeyboardHotkeys() {
 			if (!this.props.studioMode) return
 
-			let preventDefault = (e) => {
+			const preventDefault = (e) => {
 				e.preventDefault()
 			}
 
@@ -529,7 +532,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 		}
 
-		onFilterChange = (filter: string) => {
+		onFilterChange = (filter: string | undefined) => {
 			this.setState({
 				filter,
 			})
@@ -596,6 +599,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						MeteorCall.userAction.executeAction(
 							e,
 							this.props.playlist._id,
+							action._id,
 							action.actionId,
 							action.userData,
 							mode?.data
@@ -659,7 +663,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		renderListView() {
 			return (
 				<React.Fragment>
-					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={true} />
+					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={true} searchFilter={this.state.filter} />
 					<AdLibListView
 						onSelectAdLib={this.onSelectAdLib}
 						onToggleAdLib={this.onToggleAdLib}

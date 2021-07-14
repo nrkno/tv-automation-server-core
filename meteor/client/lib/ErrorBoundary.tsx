@@ -139,15 +139,15 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 		})
 	}
 
-	toggleComponentStack = (e) => {
+	toggleComponentStack = () => {
 		this.setState({ expandedComponentStack: !this.state.expandedComponentStack })
 	}
 
-	toggleStack = (e) => {
+	toggleStack = () => {
 		this.setState({ expandedStack: !this.state.expandedStack })
 	}
 
-	resetComponent = (e) => {
+	resetComponent = () => {
 		this.setState({ hasError: false })
 	}
 

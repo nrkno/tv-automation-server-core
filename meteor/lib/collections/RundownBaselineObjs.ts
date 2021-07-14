@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { TimelineObjGeneric } from './Timeline'
 import { createMongoCollection } from './lib'
@@ -16,10 +15,7 @@ export interface RundownBaselineObj {
 	objects: TimelineObjGeneric[]
 }
 
-export const RundownBaselineObjs: TransformedCollection<
-	RundownBaselineObj,
-	RundownBaselineObj
-> = createMongoCollection<RundownBaselineObj>('rundownBaselineObjs')
+export const RundownBaselineObjs = createMongoCollection<RundownBaselineObj, RundownBaselineObj>('rundownBaselineObjs')
 registerCollection('RundownBaselineObjs', RundownBaselineObjs)
 registerIndex(RundownBaselineObjs, {
 	rundownId: 1,

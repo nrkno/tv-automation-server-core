@@ -50,7 +50,7 @@ export class KeyboardController extends ControllerAbstract {
 			if (scrollPosition !== undefined) {
 				if (e.code === 'ArrowLeft' || e.code === 'ArrowUp' || e.code === 'PageUp') {
 					e.preventDefault()
-					let newPosition = scrollPosition - scrollBy
+					const newPosition = scrollPosition - scrollBy
 					this._targetPosition =
 						this._prompterView.findAnchorPosition(newPosition, scrollPosition - 10, -1) || newPosition
 					this._continousScrolling = -1
@@ -63,7 +63,7 @@ export class KeyboardController extends ControllerAbstract {
 				) {
 					e.preventDefault()
 
-					let newPosition = scrollPosition + scrollBy
+					const newPosition = scrollPosition + scrollBy
 					this._targetPosition =
 						this._prompterView.findAnchorPosition(scrollPosition + 10, newPosition, 1) || newPosition
 					this._continousScrolling = 1
@@ -99,14 +99,14 @@ export class KeyboardController extends ControllerAbstract {
 					if (timeSincePress > LONGPRESS_TIME) {
 						setNewPosition = true
 					} else {
-						let dp = this._targetPosition - this._currentPosition
+						const dp = this._targetPosition - this._currentPosition
 						if (Math.sign(this._currentSpeed) !== Math.sign(dp)) {
 							// we've overshot..
 							setNewPosition = true
 						}
 					}
 					if (setNewPosition) {
-						let stopAcceleration = Math.sign(this._currentSpeed) * this._acceleration
+						const stopAcceleration = Math.sign(this._currentSpeed) * this._acceleration
 						const d = this._getDistanceToStop(this._currentSpeed, stopAcceleration)
 						this._targetPosition = scrollPosition + d / 4
 					}
@@ -122,13 +122,13 @@ export class KeyboardController extends ControllerAbstract {
 			lastEvent: 'keyUp: ' + e.code,
 		})
 	}
-	public onMouseKeyDown(e: MouseEvent) {
+	public onMouseKeyDown(_e: MouseEvent) {
 		// Nothing
 	}
-	public onMouseKeyUp(e: MouseEvent) {
+	public onMouseKeyUp(_e: MouseEvent) {
 		// Nothing
 	}
-	public onWheel(e: WheelEvent) {
+	public onWheel(_e: WheelEvent) {
 		// Nothing
 	}
 
@@ -141,12 +141,12 @@ export class KeyboardController extends ControllerAbstract {
 	}
 	private _getDistanceToStop(currentSpeed, stopAcceleration): number {
 		if (!stopAcceleration) return 0
-		let timeToStop = currentSpeed / stopAcceleration // (not in seconds, but frames!)
+		const timeToStop = currentSpeed / stopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
 		return (stopAcceleration * Math.pow(timeToStop, 2)) / 2 + currentSpeed * timeToStop
 	}
 	private _getAccelerationToStopInTime(currentSpeed, normalStopAcceleration, distanceLeft): number {
-		let timeToStop = currentSpeed / normalStopAcceleration // (not in seconds, but frames!)
+		const timeToStop = currentSpeed / normalStopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
 		return (2 * (distanceLeft - currentSpeed * timeToStop)) / Math.pow(timeToStop, 2)
 	}
@@ -158,17 +158,17 @@ export class KeyboardController extends ControllerAbstract {
 		const scrollPosition = window.scrollY
 		if (scrollPosition !== undefined) {
 			this._currentPosition = scrollPosition
-			let dp = this._continousScrolling
+			const dp = this._continousScrolling
 				? 99999 * this._continousScrolling
 				: this._targetPosition - this._currentPosition
 			if (dp !== 0) {
-				let acceleration = Math.sign(dp) * this._acceleration
-				let stopAcceleration = Math.sign(this._currentSpeed) * this._acceleration
+				const acceleration = Math.sign(dp) * this._acceleration
+				const stopAcceleration = Math.sign(this._currentSpeed) * this._acceleration
 				const distanceToStop = this._getDistanceToStop(this._currentSpeed, stopAcceleration)
 				if (Math.abs(dp) <= Math.abs(distanceToStop)) {
 					// We should deccelerate
 
-					let actualStopAcceleration = this._getAccelerationToStopInTime(
+					const actualStopAcceleration = this._getAccelerationToStopInTime(
 						this._currentSpeed,
 						stopAcceleration,
 						dp
@@ -186,7 +186,7 @@ export class KeyboardController extends ControllerAbstract {
 					}
 					if (newSpeed !== this._currentSpeed) {
 						// Check so we won't overshoot next iteration of we do:
-						let dp2 = dp - this._currentSpeed
+						const dp2 = dp - this._currentSpeed
 						const distanceToStop = this._getDistanceToStop(newSpeed, stopAcceleration)
 						if (Math.abs(dp2) > Math.abs(distanceToStop)) {
 							// Looks good

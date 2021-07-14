@@ -1,7 +1,5 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, Time } from '../lib'
 import { TimelineObjectCoreExt, TSR, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
-import * as _ from 'underscore'
 import { createMongoCollection } from './lib'
 import { StudioId, ResultingMappingRoutes } from './Studios'
 import { PartInstanceId } from './PartInstances'
@@ -105,7 +103,7 @@ export function getRoutedTimeline(
 ): TimelineObjGeneric[] {
 	const outputTimelineObjs: TimelineObjGeneric[] = []
 
-	for (let obj of inputTimelineObjs) {
+	for (const obj of inputTimelineObjs) {
 		let inputLayer = obj.layer + ''
 		if (obj.isLookahead && obj.lookaheadForLayer) {
 			// For lookahead objects, .layer doesn't point to any real layer
@@ -156,10 +154,7 @@ export interface TimelineComplete {
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
-export const Timeline: TransformedCollection<
-	TimelineComplete,
-	TimelineComplete
-> = createMongoCollection<TimelineComplete>('timeline')
+export const Timeline = createMongoCollection<TimelineComplete, TimelineComplete>('timeline')
 registerCollection('Timeline', Timeline)
 
 // Note: this index is always created by default, so it's not needed.

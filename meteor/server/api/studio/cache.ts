@@ -31,28 +31,31 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 	public readonly RundownPlaylists: DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>
 	public readonly Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
 
-	private constructor() {
+	private constructor(
+		studio: DbCacheReadObject<Studio, Studio>,
+		peripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>,
+		rundownPlaylists: DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>,
+		timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
+	) {
 		super()
 
-		this.Studio = new DbCacheReadObject(Studios, false)
-		this.PeripheralDevices = new DbCacheReadCollection(PeripheralDevices)
+		this.Studio = studio
+		this.PeripheralDevices = peripheralDevices
 
-		this.RundownPlaylists = new DbCacheReadCollection(RundownPlaylists)
-		this.Timeline = new DbCacheWriteCollection(Timeline)
+		this.RundownPlaylists = rundownPlaylists
+		this.Timeline = timeline
 	}
 
 	static async create(studioId: StudioId): Promise<CacheForStudio> {
-		const res = new CacheForStudio()
+		const studio = await DbCacheReadObject.createFromDatabase(Studios, false, studioId)
 
-		await res.Studio._initialize(studioId)
-
-		await Promise.allSettled([
-			res.PeripheralDevices.prepareInit({ studioId }, true),
-			res.RundownPlaylists.prepareInit({ studioId }, true),
-			res.Timeline.prepareInit({ _id: studioId }, true),
+		const collections = await Promise.all([
+			DbCacheReadCollection.createFromDatabase(PeripheralDevices, { studioId }),
+			DbCacheReadCollection.createFromDatabase(RundownPlaylists, { studioId }),
+			DbCacheWriteCollection.createFromDatabase(Timeline, { _id: studioId }),
 		])
 
-		return res
+		return new CacheForStudio(studio, ...collections)
 	}
 
 	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): RundownPlaylist[] {

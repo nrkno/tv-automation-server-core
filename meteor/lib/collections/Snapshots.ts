@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
@@ -56,9 +55,7 @@ export interface SnapshotDebug extends SnapshotBase {
 	type: SnapshotType.DEBUG
 }
 
-export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem> = createMongoCollection<SnapshotItem>(
-	'snapshots'
-)
+export const Snapshots = createMongoCollection<SnapshotItem, SnapshotItem>('snapshots')
 registerCollection('Snapshots', Snapshots)
 
 registerIndex(Snapshots, {

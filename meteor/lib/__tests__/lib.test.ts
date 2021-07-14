@@ -428,7 +428,7 @@ describe('lib/lib', () => {
 			// ])
 		})
 
-		test('fields', () => {
+		test('fields2', () => {
 			expect(mongoFindOptions(rawDocs2, { sort: { val: 1 } } as FindOptions<SomeDoc>)).toEqual([
 				{
 					_id: '1',

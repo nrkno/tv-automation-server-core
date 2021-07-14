@@ -1,14 +1,6 @@
 import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-// import {
-// 	faStepForward,
-// 	faStepBackward,
-// 	faPlay,
-// 	faFastForward,
-// 	faFastBackward
-// } from '@fortawesome/free-solid-svg-icons'
 import ClassNames from 'classnames'
 
 export interface IProps {
@@ -48,7 +40,7 @@ export const VideoEditMonitor = withTranslation()(
 			this.lastPosition = e.pageX
 		}
 
-		videoMouseUp = (e: MouseEvent): void => {
+		videoMouseUp = (_e: MouseEvent): void => {
 			this.setState({
 				isMouseDown: false,
 			})
@@ -96,7 +88,7 @@ export const VideoEditMonitor = withTranslation()(
 			}
 		}
 
-		handleStepBack = (e: React.MouseEvent<HTMLButtonElement>) => {
+		handleStepBack = (_e: React.MouseEvent<HTMLButtonElement>) => {
 			if (this.props.fps) {
 				this.internalTime = Math.max(0, this.internalTime - 1 / this.props.fps)
 				this.videoEl.currentTime = this.internalTime
@@ -106,15 +98,15 @@ export const VideoEditMonitor = withTranslation()(
 			}
 		}
 
-		handleFastBackward = (e: React.MouseEvent<HTMLButtonElement>) => {
+		handleFastBackward = (_e: React.MouseEvent<HTMLButtonElement>) => {
 			// TODO
 		}
 
-		handlePlay = (e: React.MouseEvent<HTMLButtonElement>) => {
+		handlePlay = (_e: React.MouseEvent<HTMLButtonElement>) => {
 			this.videoEl.play().catch(() => console.error('Could not start playback'))
 		}
 
-		handleStepForward = (e: React.MouseEvent<HTMLButtonElement>) => {
+		handleStepForward = (_e: React.MouseEvent<HTMLButtonElement>) => {
 			if (this.props.fps) {
 				this.internalTime = Math.min(
 					this.props.duration || this.videoEl.duration,
@@ -127,7 +119,7 @@ export const VideoEditMonitor = withTranslation()(
 			}
 		}
 
-		handleFastForward = (e: React.MouseEvent<HTMLButtonElement>) => {
+		handleFastForward = (_e: React.MouseEvent<HTMLButtonElement>) => {
 			// TODO
 		}
 

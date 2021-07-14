@@ -32,7 +32,7 @@ const dropTargetSpec: DropTargetSpec<IRundownDropZoneProps> = {
 	drop: (
 		props: IRundownDropZoneProps,
 		monitor: DropTargetMonitor,
-		component: any
+		_component: any
 	): IRundownPlaylistUiAction | undefined => {
 		const dropped = monitor.getItem()
 
@@ -52,7 +52,7 @@ const dropTargetSpec: DropTargetSpec<IRundownDropZoneProps> = {
 const dropTargetCollector: DropTargetCollector<IRundownDropZoneDropTargetProps, IRundownDropZoneProps> = function (
 	connect: DropTargetConnector,
 	monitor: DropTargetMonitor,
-	props: IRundownDropZoneProps
+	_props: IRundownDropZoneProps
 ) {
 	return {
 		connectDropTarget: connect.dropTarget(),

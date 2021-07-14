@@ -9,8 +9,7 @@ import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline } from '../../lib/collections/Timeline'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { ensureCollectionProperty, removeCollectionProperty, setExpectedVersion } from './lib'
+import { ensureCollectionProperty, removeCollectionProperty } from './lib'
 
 // Release 24
 export const addSteps = addMigrationSteps('1.12.0', [
@@ -39,7 +38,7 @@ export const addSteps = addMigrationSteps('1.12.0', [
 				rundownId: { $exists: true },
 				partId: { $exists: true },
 			}).forEach((piece0) => {
-				const piece = (piece0 as any) as Piece_1_11_0
+				const piece = piece0 as any as Piece_1_11_0
 
 				let part: Part | undefined = parts[unprotectString(piece.partId)]
 				if (!part) {
@@ -89,15 +88,6 @@ export const addSteps = addMigrationSteps('1.12.0', [
 		},
 	},
 	//
-	//
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.11.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.5.0'),
-	setExpectedVersion(
-		'expectedVersion.mediaManager',
-		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-		'_process',
-		'^1.2.1'
-	),
 ])
 
 function migrateConfigToBlueprintConfig<

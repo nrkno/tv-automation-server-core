@@ -8,7 +8,7 @@ const webHookCache: { [webhookURL: string]: IncomingWebhook } = {}
  * @param message
  * @param webhookURL
  */
-export function sendSlackMessageToWebhook(message: string, webhookURL: string): Promise<IncomingWebhookResult> {
+export async function sendSlackMessageToWebhook(message: string, webhookURL: string): Promise<IncomingWebhookResult> {
 	let webhook: IncomingWebhook = webHookCache[webhookURL]
 	if (!webhook) {
 		webhook = new IncomingWebhook(webhookURL)
@@ -16,17 +16,15 @@ export function sendSlackMessageToWebhook(message: string, webhookURL: string): 
 	}
 	return webhook.send(message)
 }
-export const sendSlackMessageToWebhookSync: (
-	message: string,
-	webhookURL: string
-) => IncomingWebhookResult = Meteor.wrapAsync(
-	(
-		message: string,
-		webhookURL: string,
-		callback: (err: Error | undefined, result?: IncomingWebhookResult) => void
-	) => {
-		sendSlackMessageToWebhook(message, webhookURL)
-			.then((result) => callback(undefined, result))
-			.catch((err) => callback(err))
-	}
-)
+export const sendSlackMessageToWebhookSync: (message: string, webhookURL: string) => IncomingWebhookResult =
+	Meteor.wrapAsync(
+		(
+			message: string,
+			webhookURL: string,
+			callback: (err: Error | undefined, result?: IncomingWebhookResult) => void
+		) => {
+			sendSlackMessageToWebhook(message, webhookURL)
+				.then((result) => callback(undefined, result))
+				.catch((err) => callback(err))
+		}
+	)

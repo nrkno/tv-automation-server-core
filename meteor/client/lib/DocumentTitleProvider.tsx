@@ -29,7 +29,7 @@ interface ITrackedProps {
  * This component should be placed in the App root. It will maintain the document title
  * and will restore it to the default when it's unmounted.
  */
-export const DocumentTitleProvider = translateWithTracker((props: IProps) => {
+export const DocumentTitleProvider = translateWithTracker((_props: IProps) => {
 	return {
 		cs: CoreSystem.findOne(),
 		doc: documentTitle.get(),

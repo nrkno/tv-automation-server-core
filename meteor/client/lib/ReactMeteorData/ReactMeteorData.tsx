@@ -1,4 +1,3 @@
-/* global Package */
 /* eslint-disable react/prefer-stateless-function */
 
 import React, { useState, useEffect } from 'react'
@@ -157,7 +156,7 @@ class MeteorDataManager {
 			throw new Error('Expected object returned from getMeteorData')
 		}
 		// update componentData in place based on newData
-		for (let key in newData) {
+		for (const key in newData) {
 			component.data[key] = newData[key]
 		}
 		// if there is oldData (which is every time this method is called
@@ -166,7 +165,7 @@ class MeteorDataManager {
 		// co-existing with something else that writes to a component's
 		// this.data.
 		if (oldData) {
-			for (let key in oldData) {
+			for (const key in oldData) {
 				if (!(key in newData)) {
 					delete component.data[key]
 				}
@@ -230,20 +229,17 @@ export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 }
 // @todo: add withTrackerPure()
 type IWrappedComponent<IProps, IState, TrackedProps> =
-	| (new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>)
+	| React.ComponentClass<IProps & TrackedProps, IState>
+	// | (new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>)
 	| ((props: IProps & TrackedProps) => JSX.Element)
 export function withTracker<IProps, IState, TrackedProps>(
 	autorunFunction: (props: IProps) => TrackedProps,
-	checkUpdate?:
-		| ((data: any, props: IProps, nextProps: IProps) => boolean)
-		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
+	checkUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean,
 	queueTrackerUpdates?: boolean
 ): (
 	WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>
 ) => new (props: IProps) => React.Component<IProps, IState> {
-	let expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps>
-
-	expandedOptions = {
+	const expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps> = {
 		getMeteorData: autorunFunction,
 		shouldComponentUpdate: checkUpdate,
 		queueTrackerUpdates,
@@ -267,7 +263,7 @@ export function withTracker<IProps, IState, TrackedProps>(
 				return true
 			}
 			render() {
-				let content = <WrappedComponent {...this.props} {...this.data} />
+				const content = <WrappedComponent {...this.props} {...this.data} />
 				// this._renderedContent = content
 				return content
 			}
@@ -279,16 +275,16 @@ export function withTracker<IProps, IState, TrackedProps>(
 	}
 }
 export function translateWithTracker<IProps, IState, TrackedProps>(
-	autorunFunction: (props: IProps, state?: IState) => TrackedProps,
-	checkUpdate?:
-		| ((data: any, props: IProps, nextProps: IProps) => boolean)
-		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
+	autorunFunction: (props: Translated<IProps>, state?: IState) => TrackedProps,
+	checkUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean,
 	queueTrackerUpdates?: boolean
 ) {
 	return (WrappedComponent: IWrappedComponent<Translated<IProps>, IState, TrackedProps>) => {
-		const inner = withTracker(autorunFunction, checkUpdate, queueTrackerUpdates)(WrappedComponent) as new (
-			props: IProps & WithTranslation
-		) => React.Component<IProps & WithTranslation, IState, any>
+		const inner = withTracker<Translated<IProps>, IState, TrackedProps>(
+			autorunFunction,
+			checkUpdate,
+			queueTrackerUpdates
+		)(WrappedComponent)
 		return withTranslation()(inner)
 	}
 }

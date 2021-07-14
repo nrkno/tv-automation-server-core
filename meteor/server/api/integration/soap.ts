@@ -26,9 +26,9 @@ export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & Extern
 	if (!msg.message.clip_key) throwFatalError(msg, new Meteor.Error(401, 'attribute .message.clip_key missing!'))
 	if (!msg.message.clip) throwFatalError(msg, new Meteor.Error(401, 'attribute .message.clip missing!'))
 
-	let url = msg.receiver.url
+	const url = msg.receiver.url
 
-	let soapClient: soap.Client = await new Promise((resolve: (soapClient: soap.Client) => any, reject) => {
+	const soapClient: soap.Client = await new Promise((resolve: (soapClient: soap.Client) => any, reject) => {
 		soap.createClient(url, (err, client: soap.Client) => {
 			if (err) reject(err)
 			else resolve(client)
@@ -36,11 +36,11 @@ export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & Extern
 	})
 
 	// Prepare data, resolve the special {_fcn: {}} - functions:
-	let iteratee = async (val: any) => {
+	const iteratee = async (val: any) => {
 		if (_.isObject(val)) {
 			if (val['_fcn']) {
-				let valFcn = val as ExternalMessageQueueObjSOAPMessageAttrFcn
-				let result = await resolveSOAPFcnData(soapClient, valFcn)
+				const valFcn = val as ExternalMessageQueueObjSOAPMessageAttrFcn
+				const result = await resolveSOAPFcnData(soapClient, valFcn)
 
 				return result
 			} else {
@@ -59,16 +59,16 @@ export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & Extern
 	// Send the message:
 
 	await new Promise((resolve, reject) => {
-		let fcn = soapClient[msg.message.fcn] as soap.ISoapMethod | undefined
+		const fcn = soapClient[msg.message.fcn] as soap.ISoapMethod | undefined
 		if (fcn) {
-			let args = _.omit(msg.message, ['fcn'])
+			const args = _.omit(msg.message, ['fcn'])
 
-			fcn(args, (err: any, result: any, raw: any, soapHeader: any) => {
+			fcn(args, (err: any, result: any, _raw: any, _soapHeader: any) => {
 				if (err) {
 					logger.debug('Sent SOAP message', args)
 					reject(err)
 				} else {
-					let resultValue = result[msg.message.fcn + 'Result']
+					const resultValue = result[msg.message.fcn + 'Result']
 					resolve(resultValue)
 				}
 			})
@@ -80,16 +80,16 @@ export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & Extern
 async function resolveSOAPFcnData(soapClient: soap.Client, valFcn: ExternalMessageQueueObjSOAPMessageAttrFcn) {
 	return new Promise((resolve, reject) => {
 		if (valFcn._fcn.soapFetchFrom) {
-			let fetchFrom = valFcn._fcn.soapFetchFrom
-			let fcn = soapClient[fetchFrom.fcn] as soap.ISoapMethod | undefined
+			const fetchFrom = valFcn._fcn.soapFetchFrom
+			const fcn = soapClient[fetchFrom.fcn] as soap.ISoapMethod | undefined
 			if (fcn) {
-				let args = fetchFrom.attrs
+				const args = fetchFrom.attrs
 
-				fcn(args, (err: any, result: any, raw: any, soapHeader: any) => {
+				fcn(args, (err: any, result: any, _raw: any, _soapHeader: any) => {
 					if (err) {
 						reject(err)
 					} else {
-						let resultValue = result[fetchFrom.fcn + 'Result']
+						const resultValue = result[fetchFrom.fcn + 'Result']
 						resolve(resultValue)
 					}
 				})
@@ -97,7 +97,7 @@ async function resolveSOAPFcnData(soapClient: soap.Client, valFcn: ExternalMessa
 				reject(new Meteor.Error(401, 'SOAP method "' + fetchFrom.fcn + '" missing on endpoint!'))
 			}
 		} else if (valFcn._fcn.xmlEncode) {
-			let val = valFcn._fcn.xmlEncode.value
+			const val = valFcn._fcn.xmlEncode.value
 
 			// Convert into an object that parser.toXml can use:
 			if (_.isObject(val)) {
@@ -119,7 +119,7 @@ async function resolveSOAPFcnData(soapClient: soap.Client, valFcn: ExternalMessa
 					}
 				})
 			}
-			let xml: string = parser.toXml(val)
+			const xml: string = parser.toXml(val)
 			// resolve(entities.encode(xml))
 			resolve(xml)
 		} else {

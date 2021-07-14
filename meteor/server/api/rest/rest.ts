@@ -84,8 +84,8 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 	const route: Router = routeType === 'POST' ? PickerPOST : PickerGET
 
 	index.push(routeType + ' ' + indexResource)
-	route.route(resource, (params: Params, req: IncomingMessage, res: ServerResponse, next) => {
-		let p: any[] = []
+	route.route(resource, (params: Params, req: IncomingMessage, res: ServerResponse) => {
+		const p: any[] = []
 		for (let i = 0; i < 20; i++) {
 			if (_.has(params, 'param' + i)) {
 				p.push(params['param' + i])
@@ -94,7 +94,7 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 			}
 		}
 		try {
-			let p: any[] = []
+			const p: any[] = []
 			for (let i = 0; i < 20; i++) {
 				if (_.has(params, 'param' + i)) {
 					p.push(params['param' + i])
@@ -127,12 +127,12 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 	})
 }
 
-PickerGET.route('/api', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerGET.route('/api', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.statusCode = 301
 	res.setHeader('Location', '/api/0') // redirect to latest API version
 	res.end()
 })
-PickerGET.route('/api/0', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerGET.route('/api/0', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'application/json')
 	res.statusCode = 200
 	res.end(JSON.stringify(index, undefined, 2))

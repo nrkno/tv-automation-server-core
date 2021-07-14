@@ -21,37 +21,37 @@ export class AccountsBaseMock {
 		AccountsBaseMock.mockUsers[userId].username = newUsername
 		throw new Error('Mocked function not implemented')
 	}
-	static removeEmail(userId, email): void {
+	static removeEmail(_userId, _email): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static verifyEmail(token, cb: (err: any | undefined, result?: any) => void): void {
+	static verifyEmail(_token, _cb: (err: any | undefined, result?: any) => void): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static findUserByUsername(username, [options]): void {
+	static findUserByUsername(_username): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static findUserByEmail(email, [options]): void {
+	static findUserByEmail(_email): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static changePassword(oldPassword, newPassword, cb: (err: any | undefined, result?: any) => void): void {
+	static changePassword(_oldPassword, _newPassword, _cb: (err: any | undefined, result?: any) => void): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static forgotPassword(options, cb: (err: any | undefined, result?: any) => void): void {
+	static forgotPassword(_options, _cb: (err: any | undefined, result?: any) => void): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static resetPassword(token, newPassword, cb: (err: any | undefined, result?: any) => void): void {
+	static resetPassword(_token, _newPassword, _cb: (err: any | undefined, result?: any) => void): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static setPassword(userId, newPassword, [options]): void {
+	static setPassword(_userId, _newPassword, _options): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static sendResetPasswordEmail(userId, [email], [extraTokenData]): void {
+	static sendResetPasswordEmail(_userId, _email): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static sendEnrollmentEmail(userId, [email], [extraTokenData]): void {
+	static sendEnrollmentEmail(_userId, _email): void {
 		throw new Error('Mocked function not implemented')
 	}
-	static sendVerificationEmail(userId, [email], [extraTokenData]): void {
+	static sendVerificationEmail(_userId, _email): void {
 		throw new Error('Mocked function not implemented')
 	}
 	static onResetPasswordLink?: () => void

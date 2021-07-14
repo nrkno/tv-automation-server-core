@@ -28,7 +28,7 @@ export interface SplitSubItem {
 	content?: SplitsContentBoxProperties['geometry']
 }
 
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 
 interface IState {
 	subItems: Array<SplitSubItem>
@@ -134,9 +134,9 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	}
 
 	render() {
-		let labelItems = this.props.piece.instance.piece.name.split('||')
-		let begin = labelItems[0] || ''
-		let end = labelItems[1] || ''
+		const labelItems = this.props.piece.instance.piece.name.split('||')
+		const begin = labelItems[0] || ''
+		const end = labelItems[1] || ''
 
 		return (
 			<React.Fragment>

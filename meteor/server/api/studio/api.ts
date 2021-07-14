@@ -86,10 +86,10 @@ export function removeStudio(context: MethodContext, studioId: StudioId): void {
 }
 
 class ServerStudiosAPI extends MethodContextAPI implements NewStudiosAPI {
-	insertStudio() {
+	async insertStudio() {
 		return makePromise(() => insertStudio(this))
 	}
-	removeStudio(studioId: StudioId) {
+	async removeStudio(studioId: StudioId) {
 		return makePromise(() => removeStudio(this, studioId))
 	}
 }

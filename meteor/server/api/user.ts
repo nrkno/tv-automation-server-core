@@ -8,7 +8,7 @@ import { registerClassToMeteorMethods } from '../methods'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { logNotAllowed } from '../../server/security/lib/lib'
-import { UserProfile, User, UserId, Users } from '../../lib/collections/Users'
+import { User, UserId, Users } from '../../lib/collections/Users'
 import { createOrganization } from './organizations'
 import { DBOrganizationBase, Organizations, OrganizationId } from '../../lib/collections/Organization'
 import { resetCredentials } from '../security/lib/credentials'
@@ -89,13 +89,13 @@ export function removeUser(context: MethodContext) {
 }
 
 class ServerUserAPI extends MethodContextAPI implements NewUserAPI {
-	enrollUser(email: string, name: string) {
+	async enrollUser(email: string, name: string) {
 		return makePromise(() => enrollUser(email, name))
 	}
-	requestPasswordReset(email: string) {
+	async requestPasswordReset(email: string) {
 		return makePromise(() => requestResetPassword(email))
 	}
-	removeUser() {
+	async removeUser() {
 		return makePromise(() => removeUser(this))
 	}
 }

@@ -101,7 +101,7 @@ export function withTiming<IProps, IState>(
 				// To bring it back to sync, we mark the component as dirty, which will
 				// force an update on the next low resoluton tick, regardless of what
 				// the filter says.
-				if (this.filterGetter && durations.isLowResolution !== !expandedOptions.isHighResolution) {
+				if (!!this.filterGetter && durations.isLowResolution !== !expandedOptions.isHighResolution) {
 					this.isDirty = true
 				}
 

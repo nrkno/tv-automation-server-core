@@ -1,6 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
@@ -11,7 +8,6 @@ import {
 	checkPieceContentStatus,
 } from '../mediaObjects'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream, MediaStreamType } from './../collections/MediaObjects'
-
 import { literal, protectString } from '../lib'
 import {
 	ISourceLayer,

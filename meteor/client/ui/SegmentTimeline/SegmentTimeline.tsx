@@ -158,8 +158,12 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		return this.props.isLiveSegment ? this.calculateSegmentDuration() : this.state.totalSegmentDuration
 	}
 
+	convertTimeToPixels = (time: number) => {
+		return Math.round(this.props.timeScale * time)
+	}
+
 	renderZoomTimeline() {
-		return this.props.parts.map((part, index, array) => {
+		return this.props.parts.map((part) => {
 			return (
 				<SegmentTimelinePart
 					key={unprotectString(part.partId)}
@@ -367,6 +371,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		this.timeline = el
 	}
 
+	convertTimeToPixels = (time: number) => {
+		return Math.round(this.props.timeScale * time)
+	}
+
 	onTimelineResize = (size: number[]) => {
 		this.setState({
 			timelineWidth: size[0],
@@ -389,12 +397,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	onTimelineTouchMove = (e: TouchEvent) => {
 		if (e.touches.length === 2) {
-			let newSize = e.touches[1].clientX - e.touches[0].clientX
-			let prop = newSize / this._touchSize
+			const newSize = e.touches[1].clientX - e.touches[0].clientX
+			const prop = newSize / this._touchSize
 			this.props.onZoomChange(Math.min(500, this.props.timeScale * prop), e)
 			this._touchSize = newSize
 		} else if (e.touches.length === 1 && this._lastPointer) {
-			let scrollAmount = this._lastPointer.clientX - e.touches[0].clientX
+			const scrollAmount = this._lastPointer.clientX - e.touches[0].clientX
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 			this._lastPointer = {
 				clientX: e.touches[0].clientX,
@@ -456,7 +464,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> & any) => {
-		let scrollAmount = e.movementX * -1 || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
+		const scrollAmount = e.movementX * -1 || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
 		this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 		if (e.movementX === 0) {
 			this._lastPointer = {
@@ -487,7 +495,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		this._lastClick = this._mouseMoved ? 0 : now
 	}
 
-	onTimelinePointerLockChange = (e: Event) => {
+	onTimelinePointerLockChange = () => {
 		if (!document.pointerLockElement) {
 			hidePointerLockCursor()
 			document.removeEventListener('pointerlockchange', this.onTimelinePointerLockChange)
@@ -495,7 +503,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelinePointerError = (e: Event) => {
+	onTimelinePointerError = () => {
 		hidePointerLockCursor()
 		document.removeEventListener('pointerlockchange', this.onTimelinePointerLockChange)
 		document.removeEventListener('pointerlockerror', this.onTimelinePointerError)
@@ -530,7 +538,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	// doubleclick is simulated by onTimelineMouseUp, because we use pointer lock and that prevents dblclick events
-	onTimelineDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+	onTimelineDoubleClick = (_e: React.MouseEvent<HTMLDivElement>) => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined || SegmentTimelineClass._zoomOutLatchId !== this.props.id) {
 			this.onTimelineZoomOn()
 		} else {
@@ -538,7 +546,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimeUntilClick = (e: React.MouseEvent<HTMLDivElement>) => {
+	onTimeUntilClick = (_e: React.MouseEvent<HTMLDivElement>) => {
 		this.setState(
 			(state) => ({
 				useTimeOfDayCountdowns: !state.useTimeOfDayCountdowns,
@@ -629,7 +637,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	getSegmentContext = (props) => {
+	getSegmentContext = (_props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
 			part: this.props.parts.find((p) => p.instance.part.isPlayable()) || null,
@@ -648,8 +656,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	timelineStyle() {
 		return {
-			transform:
-				'translate3d(-' + Math.floor(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
+			transform: 'translate3d(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px, 0, 0.1px)',
 			willChange: 'transform',
 		}
 	}
@@ -660,11 +667,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		if (this.props.isLiveSegment) {
 			const historyTimeDuration = this.props.liveLineHistorySize / this.props.timeScale
 
-			let pixelPostion = Math.floor(
-				this.props.livePosition * this.props.timeScale -
-					(!this.props.followLiveLine ? this.props.scrollLeft * this.props.timeScale : 0)
+			const pixelPostion = Math.floor(
+				this.convertTimeToPixels(this.props.livePosition) -
+					(!this.props.followLiveLine ? this.convertTimeToPixels(this.props.scrollLeft) : 0)
 			)
-			let lineStyle = {
+			const lineStyle = {
 				left:
 					(this.props.followLiveLine
 						? // if the livePostion is greater than historyTimeDuration and followLiveLine is on
@@ -719,7 +726,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		let partIsLive = false
 		let smallPartsAccumulator: [PartUi, number][] = []
 		return this.props.parts.map((part, index) => {
-			let previousPartIsLive = partIsLive
+			const previousPartIsLive = partIsLive
 			partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
 			let emitSmallPartsInFlag: [PartUi, number][] | undefined = undefined
 			let emitSmallPartsInFlagAtEnd: boolean = false
@@ -887,7 +894,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	render() {
-		let notes: Array<SegmentNote> = this.props.segmentNotes
+		const notes: Array<SegmentNote> = this.props.segmentNotes
 
 		const { t } = this.props
 
@@ -969,7 +976,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							{criticalNotes > 0 && (
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
-									onClick={(e) =>
+									onClick={() =>
 										this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(this.props.segment._id, NoteType.ERROR)
 									}
 								>
@@ -980,7 +987,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							{warningNotes > 0 && (
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
-									onClick={(e) =>
+									onClick={() =>
 										this.props.onHeaderNoteClick &&
 										this.props.onHeaderNoteClick(this.props.segment._id, NoteType.WARNING)
 									}
@@ -1022,6 +1029,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							partId={countdownToPartId}
 							hideOnZero={!useTimeOfDayCountdowns}
 							useWallClock={useTimeOfDayCountdowns}
+							playlist={this.props.playlist}
 							label={
 								useTimeOfDayCountdowns ? (
 									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>

@@ -22,7 +22,7 @@ window['Session'] = Session
 
 function setDebugData() {
 	Tracker.autorun(() => {
-		let stats: any = {}
+		const stats: any = {}
 		_.each(Collections, (collection: any, name: string) => {
 			stats[name] = collection.find().count()
 		})
@@ -49,7 +49,7 @@ export function expectToRunWithin(name, time: number = 1000) {
 			expectToRunWithinCache[name] = true
 		}
 	}
-	let timeout = Meteor.setTimeout(() => {
+	const timeout = Meteor.setTimeout(() => {
 		console.error('Expected to run within ' + time + 'ms: ' + name)
 	}, time)
 	expectToRunWithinCache[name] = timeout

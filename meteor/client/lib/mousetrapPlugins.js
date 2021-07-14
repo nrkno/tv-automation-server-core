@@ -38,7 +38,7 @@ import Mousetrap from 'mousetrap'
 	var _originalHandleKey = Mousetrap.prototype.handleKey
 
 	let _shouldAbortNextCombo = false
-	let _isEscapePressed = false
+	// let _isEscapePressed = false
 
 	const _downKeys = []
 
@@ -56,7 +56,7 @@ import Mousetrap from 'mousetrap'
 		return _originalHandleKey.apply(self, arguments)
 	}
 
-	Mousetrap.prototype.stopCallback = function (e, element, combo, sequence) {
+	Mousetrap.prototype.stopCallback = function (e, element, combo, _sequence) {
 		var self = this
 
 		if (self.paused) {
@@ -71,24 +71,24 @@ import Mousetrap from 'mousetrap'
 		return _originalStopCallback.call(self, e, element, combo)
 	}
 
-	const escDown = function (e) {
-		_isEscapePressed = true
+	// const escDown = function (e) {
+	// 	_isEscapePressed = true
 
-		if (!e.repeat) {
-			_shouldAbortNextCombo = _downKeys.length > 1
-		}
+	// 	if (!e.repeat) {
+	// 		_shouldAbortNextCombo = _downKeys.length > 1
+	// 	}
 
-		e.preventDefault()
-		e.stopPropagation()
-	}
+	// 	e.preventDefault()
+	// 	e.stopPropagation()
+	// }
 
-	const escUp = function (e) {
-		_isEscapePressed = false
+	// const escUp = function (e) {
+	// 	_isEscapePressed = false
 
-		if (_downKeys.length === 0) {
-			_shouldAbortNextCombo = false
-		}
-	}
+	// 	if (_downKeys.length === 0) {
+	// 		_shouldAbortNextCombo = false
+	// 	}
+	// }
 
 	Mousetrap.init()
 

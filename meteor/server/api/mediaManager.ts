@@ -33,11 +33,11 @@ export namespace MediaManagerAPI {
 		}, [] as PeripheralDeviceId[])
 		waitForPromise(
 			Promise.all(
-				deviceIds.map((deviceId) => {
+				deviceIds.map(async (deviceId) => {
 					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,
-							(err, res) => {
+							(err, _res) => {
 								if (err) reject(err)
 								else resolve()
 							},
@@ -69,11 +69,11 @@ export namespace MediaManagerAPI {
 		}, [] as PeripheralDeviceId[])
 		waitForPromise(
 			Promise.all(
-				deviceIds.map((deviceId) => {
+				deviceIds.map(async (deviceId) => {
 					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,
-							(err, res) => {
+							(err, _res) => {
 								if (err) reject(err)
 								else resolve()
 							},
@@ -96,7 +96,7 @@ export namespace MediaManagerAPI {
 			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
-					(err, res) => {
+					(err, _res) => {
 						if (err) reject(err)
 						else resolve()
 					},
@@ -117,7 +117,7 @@ export namespace MediaManagerAPI {
 			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
-					(err, res) => {
+					(err, _res) => {
 						if (err) reject(err)
 						else resolve()
 					},
@@ -138,7 +138,7 @@ export namespace MediaManagerAPI {
 			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
-					(err, res) => {
+					(err, _res) => {
 						if (err) reject(err)
 						else resolve()
 					},

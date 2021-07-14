@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import * as _ from 'underscore'
 import { WithTranslation, withTranslation } from 'react-i18next'
 import { unprotectString } from '../../lib/lib'
 import { doModalDialog } from '../lib/ModalDialog'
@@ -49,7 +48,7 @@ interface ISettingsMenuTrackedProps {
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps>(
-	(props: ISettingsMenuProps) => {
+	(_props: ISettingsMenuProps) => {
 		// TODO: add organizationId:
 
 		meteorSubscribe(PubSub.studios, {})
@@ -83,7 +82,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 
 		statusCodeString(statusCode: PeripheralDeviceAPI.StatusCode) {
-			let t = this.props.t
+			const t = this.props.t
 
 			switch (statusCode) {
 				case PeripheralDeviceAPI.StatusCode.UNKNOWN:
@@ -132,7 +131,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 
 		connectedString(connected: boolean) {
-			let t = this.props.t
+			const t = this.props.t
 
 			if (connected) {
 				return t('Connected')
@@ -142,7 +141,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 
 		deviceTypeString(type: PeripheralDeviceAPI.DeviceType) {
-			let t = this.props.t
+			const t = this.props.t
 
 			switch (type) {
 				case PeripheralDeviceAPI.DeviceType.MOS:

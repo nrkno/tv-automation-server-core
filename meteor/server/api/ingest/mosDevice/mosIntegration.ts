@@ -24,12 +24,12 @@ import { profiler } from '../../profiler'
 const apmNamespace = 'mosIntegration'
 
 export namespace MosIntegration {
-	export function mosRoCreate(
+	export async function mosRoCreate(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		rundown: MOS.IMOSRunningOrder
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoCreate', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
@@ -37,17 +37,17 @@ export namespace MosIntegration {
 		logger.info(`mosRoCreate "${rundown.ID}"`)
 		logger.debug(rundown)
 
-		handleMosRundownData(peripheralDevice, rundown, true)
+		await handleMosRundownData(peripheralDevice, rundown, true)
 
 		transaction?.end()
 	}
 
-	export function mosRoReplace(
+	export async function mosRoReplace(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		rundown: MOS.IMOSRunningOrder
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoReplace', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
@@ -55,34 +55,33 @@ export namespace MosIntegration {
 		logger.info(`mosRoReplace "${rundown.ID}"`)
 		// @ts-ignore
 		logger.debug(rundown)
-		handleMosRundownData(peripheralDevice, rundown, true)
+		await handleMosRundownData(peripheralDevice, rundown, true)
 
 		transaction?.end()
 	}
 
-	export function mosRoDelete(
+	export async function mosRoDelete(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
-		rundownId: MOS.MosString128,
-		force?: boolean
-	) {
+		rundownId: MOS.MosString128
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoDelete', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.info(`mosRoDelete "${rundownId}"`)
-		handleRemovedRundown(peripheralDevice, parseMosString(rundownId))
+		await handleRemovedRundown(peripheralDevice, parseMosString(rundownId))
 
 		transaction?.end()
 	}
 
-	export function mosRoMetadata(
+	export async function mosRoMetadata(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		rundownData: MOS.IMOSRunningOrderBase
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoMetadata', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
@@ -90,17 +89,17 @@ export namespace MosIntegration {
 		logger.info(`mosRoMetadata "${rundownData.ID}"`)
 		logger.debug(rundownData)
 
-		handleMosRundownMetadata(peripheralDevice, rundownData)
+		await handleMosRundownMetadata(peripheralDevice, rundownData)
 
 		transaction?.end()
 	}
 
-	export function mosRoStatus(
+	export async function mosRoStatus(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		status: MOS.IMOSRunningOrderStatus
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStatus', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
@@ -112,7 +111,7 @@ export namespace MosIntegration {
 		const rundown = getRundownFromMosRO(studio, status.ID)
 		if (!canRundownBeUpdated(rundown, false)) return
 
-		Rundowns.update(rundown._id, {
+		await Rundowns.updateAsync(rundown._id, {
 			$set: {
 				status: status.Status,
 			},
@@ -121,12 +120,12 @@ export namespace MosIntegration {
 		transaction?.end()
 	}
 
-	export function mosRoStoryStatus(
+	export async function mosRoStoryStatus(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		status: MOS.IMOSStoryStatus
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryStatus', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
@@ -140,29 +139,31 @@ export namespace MosIntegration {
 		// TODO ORPHAN include segment in check
 
 		// Save Stories (aka Part ) status into database:
-		const part = Parts.findOne({
+		const part = await Parts.findOneAsync({
 			_id: getPartIdFromMosStory(rundown._id, status.ID),
 			rundownId: rundown._id,
 		})
 		if (part) {
-			Parts.update(part._id, {
-				$set: {
-					status: status.Status,
-				},
-			})
-			// TODO-PartInstance - pending new data flow
-			PartInstances.update(
-				{
-					'part._id': part._id,
-					reset: { $ne: true },
-				},
-				{
+			await Promise.all([
+				Parts.updateAsync(part._id, {
 					$set: {
 						status: status.Status,
 					},
-				},
-				{ multi: true }
-			)
+				}),
+				// TODO-PartInstance - pending new data flow
+				PartInstances.updateAsync(
+					{
+						'part._id': part._id,
+						reset: { $ne: true },
+					},
+					{
+						$set: {
+							status: status.Status,
+						},
+					},
+					{ multi: true }
+				),
+			])
 		} else {
 			throw new Meteor.Error(404, `Part ${status.ID} in rundown ${status.RunningOrderId} not found`)
 		}
@@ -170,13 +171,13 @@ export namespace MosIntegration {
 		transaction?.end()
 	}
 
-	export function mosRoStoryInsert(
+	export async function mosRoStoryInsert(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSStoryAction,
 		Stories: Array<MOS.IMOSROStory>
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryInsert', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
@@ -185,17 +186,17 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		handleMosInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, false, Stories)
+		await handleMosInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, false, Stories)
 
 		transaction?.end()
 	}
-	export function mosRoStoryReplace(
+	export async function mosRoStoryReplace(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSStoryAction,
 		Stories: Array<MOS.IMOSROStory>
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryReplace', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
@@ -204,71 +205,71 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		handleMosInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
+		await handleMosInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
 
 		transaction?.end()
 	}
-	export function mosRoStoryMove(
+	export async function mosRoStoryMove(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSStoryAction,
 		Stories: Array<MOS.MosString128>
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryMove', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.info(`mosRoStoryMove "${Action.StoryID}" Stories: ${Stories}`)
 
-		handleMosMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
+		await handleMosMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
 
 		transaction?.end()
 	}
 
-	export function mosRoStoryDelete(
+	export async function mosRoStoryDelete(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSROAction,
 		Stories: Array<MOS.MosString128>
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryDelete', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.info(`mosRoStoryDelete "${Action.RunningOrderID}" Stories: ${Stories}`)
 
-		handleMosDeleteStory(peripheralDevice, Action.RunningOrderID, Stories)
+		await handleMosDeleteStory(peripheralDevice, Action.RunningOrderID, Stories)
 
 		transaction?.end()
 	}
 
-	export function mosRoStorySwap(
+	export async function mosRoStorySwap(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSROAction,
 		StoryID0: MOS.MosString128,
 		StoryID1: MOS.MosString128
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStorySwap', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.info(`mosRoStorySwap "${StoryID0}", "${StoryID1}"`)
 
-		handleMosSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
+		await handleMosSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
 
 		transaction?.end()
 	}
 
-	export function mosRoReadyToAir(
+	export async function mosRoReadyToAir(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSROReadyToAir
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoReadyToAir', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
@@ -282,30 +283,30 @@ export namespace MosIntegration {
 
 		// Set the ready to air status of a Rundown
 		if (rundown.airStatus !== Action.Status) {
-			Rundowns.update(rundown._id, {
+			await Rundowns.updateAsync(rundown._id, {
 				$set: {
 					airStatus: Action.Status,
 				},
 			})
-			regenerateRundown(studio, rundown.externalId, peripheralDevice)
+			await regenerateRundown(studio, rundown.externalId, peripheralDevice)
 		}
 
 		transaction?.end()
 	}
 
-	export function mosRoFullStory(
+	export async function mosRoFullStory(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		story: MOS.IMOSROFullStory
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoFullStory', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.info(`mosRoFullStory "${story.ID}"`)
 
-		handleMosFullStory(peripheralDevice, story)
+		await handleMosFullStory(peripheralDevice, story)
 
 		transaction?.end()
 	}
@@ -314,13 +315,13 @@ export namespace MosIntegration {
 	 * Unimplemented item methods.
 	 * An item is an object within a Part. These do not directly map to a Piece
 	 */
-	export function mosRoItemDelete(
+	export async function mosRoItemDelete(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSStoryAction,
 		Items: Array<MOS.MosString128>
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemDelete', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
@@ -332,12 +333,12 @@ export namespace MosIntegration {
 		transaction?.end()
 	}
 
-	export function mosRoItemStatus(
+	export async function mosRoItemStatus(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		status: MOS.IMOSItemStatus
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemStatus', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
@@ -349,13 +350,13 @@ export namespace MosIntegration {
 		transaction?.end()
 	}
 
-	export function mosRoItemInsert(
+	export async function mosRoItemInsert(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.IMOSItem>
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemInsert', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
@@ -367,13 +368,13 @@ export namespace MosIntegration {
 		transaction?.end()
 	}
 
-	export function mosRoItemReplace(
+	export async function mosRoItemReplace(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.IMOSItem>
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemReplace', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
@@ -385,13 +386,13 @@ export namespace MosIntegration {
 		transaction?.end()
 	}
 
-	export function mosRoItemMove(
+	export async function mosRoItemMove(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.MosString128>
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemMove', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
@@ -403,14 +404,14 @@ export namespace MosIntegration {
 		transaction?.end()
 	}
 
-	export function mosRoItemSwap(
+	export async function mosRoItemSwap(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSStoryAction,
 		ItemID0: MOS.MosString128,
 		ItemID1: MOS.MosString128
-	) {
+	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemSwap', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)

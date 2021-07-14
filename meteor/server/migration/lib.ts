@@ -5,12 +5,9 @@ import {
 	MigrationStepInputFilteredResult,
 	MigrationStepBase,
 } from '@sofie-automation/blueprints-integration'
-import { Collections, objectPathGet, DBObj, ProtectedString } from '../../lib/lib'
+import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
-import * as semver from 'semver'
 import { TransformedCollection } from '../../lib/typings/meteor'
 
 /**
@@ -23,17 +20,17 @@ export function ensureCollectionProperty<T = any>(
 	defaultValue: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
-	let collection: TransformedCollection<T, any> = Collections[collectionName]
+	const collection: TransformedCollection<T, any> = Collections[collectionName]
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {
 		id: `${collectionName}.${property}`,
 		canBeRunAutomatically: true,
 		validate: () => {
-			let objects = collection.find(selector).fetch()
+			const objects = collection.find(selector).fetch()
 			let propertyMissing: string | boolean = false
 			_.each(objects, (obj: any) => {
-				let objValue = objectPathGet(obj, property)
+				const objValue = objectPathGet(obj, property)
 				if (!objValue && objValue !== defaultValue) {
 					propertyMissing = `${property} is missing on ${obj._id}`
 				}
@@ -41,17 +38,16 @@ export function ensureCollectionProperty<T = any>(
 			// logger.info('')
 			return propertyMissing
 		},
-		migrate: (input: MigrationStepInputFilteredResult) => {
-			let objects = collection.find(selector).fetch()
+		migrate: () => {
+			const objects = collection.find(selector).fetch()
 			_.each(objects, (obj: any) => {
 				if (obj && objectPathGet(obj, property) !== defaultValue) {
-					let m = {}
+					const m = {}
 					m[property] = defaultValue
 					logger.info(
 						`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${defaultValue}`
 					)
 					collection.update(obj._id, { $set: m })
-				} else {
 				}
 			})
 		},
@@ -71,17 +67,17 @@ export function ensureCollectionPropertyManual<T = any>(
 	defaultValue?: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
-	let collection: TransformedCollection<T, any> = Collections[collectionName]
+	const collection: TransformedCollection<T, any> = Collections[collectionName]
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {
 		id: `${collectionName}.${property}`,
 		canBeRunAutomatically: false,
 		validate: () => {
-			let objects = collection.find(selector).fetch()
+			const objects = collection.find(selector).fetch()
 			let propertyMissing: string | boolean = false
 			_.each(objects, (obj: any) => {
-				let objValue = objectPathGet(obj, property)
+				const objValue = objectPathGet(obj, property)
 				if (objValue === undefined) {
 					propertyMissing = `${property} is missing on ${obj._id}`
 				}
@@ -89,12 +85,12 @@ export function ensureCollectionPropertyManual<T = any>(
 			return propertyMissing
 		},
 		input: () => {
-			let objects = collection.find(selector).fetch()
+			const objects = collection.find(selector).fetch()
 
-			let inputs: Array<MigrationStepInput> = []
+			const inputs: Array<MigrationStepInput> = []
 			_.each(objects, (obj: any) => {
-				let localLabel = (label + '').replace(/\$id/g, obj._id)
-				let localDescription = (description + '').replace(/\$id/g, obj._id)
+				const localLabel = (label + '').replace(/\$id/g, obj._id)
+				const localDescription = (description + '').replace(/\$id/g, obj._id)
 				if (inputType && !obj[property]) {
 					inputs.push({
 						label: localLabel,
@@ -110,9 +106,9 @@ export function ensureCollectionPropertyManual<T = any>(
 		migrate: (input: MigrationStepInputFilteredResult) => {
 			_.each(input, (value, objectId: string) => {
 				if (!_.isUndefined(value)) {
-					let obj = collection.findOne(objectId)
+					const obj = collection.findOne(objectId)
 					if (obj && objectPathGet(obj, property) !== value) {
-						let m = {}
+						const m = {}
 						m[property] = value
 						logger.info(`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`)
 						collection.update(objectId, { $set: m })
@@ -129,17 +125,17 @@ export function removeCollectionProperty<T = any>(
 	property: string,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
-	let collection: TransformedCollection<T, any> = Collections[collectionName]
+	const collection: TransformedCollection<T, any> = Collections[collectionName]
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {
 		id: `${collectionName}.${property}`,
 		canBeRunAutomatically: true,
 		validate: () => {
-			let objects = collection.find(selector).fetch()
+			const objects = collection.find(selector).fetch()
 			let propertySet: string | boolean = false
 			_.each(objects, (obj: any) => {
-				let objValue = objectPathGet(obj, property)
+				const objValue = objectPathGet(obj, property)
 				if (objValue !== undefined) {
 					propertySet = `${property} is set ${obj._id}`
 				}
@@ -151,7 +147,7 @@ export function removeCollectionProperty<T = any>(
 			const objects = collection.find(selector).fetch()
 			_.each(objects, (obj: any) => {
 				if (obj && objectPathGet(obj, property) !== undefined) {
-					let m = {}
+					const m = {}
 					m[property] = 1
 					logger.info(`Migration: Removing property ${collectionName}."${obj._id}".${property}`)
 					collection.update(obj._id, { $unset: m })
@@ -159,69 +155,6 @@ export function removeCollectionProperty<T = any>(
 			})
 		},
 		dependOnResultFrom: dependOnResultFrom,
-	}
-}
-function getMinVersion(versionStr: string | undefined): string {
-	return (semver.minVersion(versionStr || '0.0.0') || { version: '0.0.0' }).version
-}
-
-export function setExpectedVersion(
-	id: string,
-	deviceType: PeripheralDeviceAPI.DeviceType,
-	libraryName: string,
-	versionStr: string
-): MigrationStepBase {
-	return {
-		id: id,
-		canBeRunAutomatically: true,
-		validate: () => {
-			const minVersion = getMinVersion(versionStr)
-
-			let devices = PeripheralDevices.find({
-				type: deviceType,
-				subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
-			}).fetch()
-
-			for (let i in devices) {
-				let device = devices[i]
-				if (!device.expectedVersions) device.expectedVersions = {}
-
-				const expectedVersion = device.expectedVersions[libraryName] || '0.0.0'
-				const minExpectedVersion = getMinVersion(expectedVersion)
-
-				if (expectedVersion) {
-					try {
-						if (semver.lt(minExpectedVersion, minVersion)) {
-							return `Expected version ${libraryName}: ${expectedVersion} should be at least ${versionStr}`
-						}
-					} catch (e) {
-						return 'Error: ' + e.toString()
-					}
-				} else return `Expected version ${libraryName}: not set`
-			}
-			return false
-		},
-		migrate: () => {
-			let devices = PeripheralDevices.find({ type: deviceType }).fetch()
-			const minVersion = getMinVersion(versionStr)
-
-			_.each(devices, (device) => {
-				if (!device.expectedVersions) device.expectedVersions = {}
-
-				const expectedVersion = device.expectedVersions[libraryName] || '0.0.0'
-				const minExpectedVersion = getMinVersion(expectedVersion)
-
-				if (!expectedVersion || semver.lt(minExpectedVersion, minVersion)) {
-					let m = {}
-					m['expectedVersions.' + libraryName] = versionStr
-					logger.info(
-						`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${versionStr}"`
-					)
-					PeripheralDevices.update(device._id, { $set: m })
-				}
-			})
-		},
-		overrideSteps: [id],
 	}
 }
 

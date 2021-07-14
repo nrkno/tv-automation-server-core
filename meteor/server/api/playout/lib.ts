@@ -9,7 +9,6 @@ import {
 	Time,
 	clone,
 	literal,
-	waitForPromise,
 	protectString,
 	applyToArray,
 	getRandomId,
@@ -43,7 +42,7 @@ export const LOW_PRIO_DEFER_TIME = 40 // ms
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
  * Remove all dynamically inserted/updated pieces, parts, timings etc..
  */
-export function resetRundownPlaylist(cache: CacheForPlayout): void {
+export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void> {
 	logger.info('resetRundownPlaylist ' + cache.Playlist.doc._id)
 	// Remove all dunamically inserted pieces (adlibs etc)
 	// const rundownIds = new Set(getRundownIDsFromCache(cache))
@@ -86,9 +85,9 @@ export function resetRundownPlaylist(cache: CacheForPlayout): void {
 
 		// put the first on queue:
 		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
-		setNextPart(cache, firstPart)
+		await setNextPart(cache, firstPart)
 	} else {
-		setNextPart(cache, null)
+		await setNextPart(cache, null)
 	}
 }
 
@@ -207,19 +206,19 @@ export function selectNextPart(
 	if (span) span.end()
 	return nextPart ?? null
 }
-export function setNextPart(
+export async function setNextPart(
 	cache: CacheForPlayout,
 	rawNextPart: Omit<SelectNextPartResult, 'index'> | DBPartInstance | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
-) {
+): Promise<void> {
 	const span = profiler.startSpan('setNextPart')
 
 	const rundownIds = getRundownIDsFromCache(cache)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	const newNextPartInstance = rawNextPart && 'playlistActivationId' in rawNextPart ? rawNextPart : null
-	let newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
+	const newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
 
 	if (newNextPart || newNextPartInstance) {
 		if (!cache.Playlist.doc.activationId)
@@ -246,11 +245,11 @@ export function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (newNextPartInstance) {
 			newInstanceId = newNextPartInstance._id
-			waitForPromise(syncPlayheadInfinitesForNextPartInstance(cache))
+			await syncPlayheadInfinitesForNextPartInstance(cache)
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
-			waitForPromise(syncPlayheadInfinitesForNextPartInstance(cache))
+			await syncPlayheadInfinitesForNextPartInstance(cache)
 		} else {
 			// Create new isntance
 			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${Random.id()}`)
@@ -278,7 +277,7 @@ export function setNextPart(
 				throw new Meteor.Error(400, `Could not find rundown ${nextPart.rundownId}`)
 			}
 
-			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, undefined, nextPart))
+			const possiblePieces = await fetchPiecesThatMayBeActiveForPart(cache, undefined, nextPart)
 			const newPieceInstances = getPieceInstancesForPart(
 				cache,
 				currentPartInstance,
@@ -486,31 +485,35 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 			// This is not valid as the rundownId won't match the externalId, so ingest will fail
 			// For now do nothing
 		} else if (rundown) {
-			Meteor.defer(() => {
-				runIngestOperationWithCache(
-					'cleanupOrphanedItems:defer',
-					rundown.studioId,
-					rundown.externalId,
-					(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
-					async (ingestCache) => {
-						// Find the segments that are still orphaned (in case they have resynced before this executes)
-						// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
-						const stillOrphanedSegments = ingestCache.Segments.findFetch(
-							(s) => s.orphaned === 'deleted' && candidateSegmentIds.includes(s._id)
-						)
+			Meteor.defer(async () => {
+				try {
+					await runIngestOperationWithCache(
+						'cleanupOrphanedItems:defer',
+						rundown.studioId,
+						rundown.externalId,
+						(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
+						async (ingestCache) => {
+							// Find the segments that are still orphaned (in case they have resynced before this executes)
+							// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
+							const stillOrphanedSegments = ingestCache.Segments.findFetch(
+								(s) => s.orphaned === 'deleted' && candidateSegmentIds.includes(s._id)
+							)
 
-						return {
-							changedSegmentIds: [],
-							removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
-							renamedSegments: new Map(),
+							return {
+								changedSegmentIds: [],
+								removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
+								renamedSegments: new Map(),
 
-							removeRundown: false,
+								removeRundown: false,
 
-							showStyle: undefined,
-							blueprint: undefined,
+								showStyle: undefined,
+								blueprint: undefined,
+							}
 						}
-					}
-				)
+					)
+				} catch (e) {
+					logger.error('cleanupOrphanedItems:defer error', e)
+				}
 			})
 		}
 	}

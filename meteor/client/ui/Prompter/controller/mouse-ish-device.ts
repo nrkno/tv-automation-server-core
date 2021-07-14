@@ -71,7 +71,7 @@ export class MouseIshController extends ControllerAbstract {
 			e.preventDefault() // Prevent reload of page
 		}
 	}
-	public onKeyUp(e: KeyboardEvent) {
+	public onKeyUp(_e: KeyboardEvent) {
 		// Nothing
 	}
 	public onMouseKeyDown(e: MouseEvent) {

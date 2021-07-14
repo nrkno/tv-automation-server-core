@@ -34,7 +34,7 @@ export const PieceIcon = (props: {
 				return <GraphicsInputIcon abbreviation={props.sourceLayer.abbreviation} />
 			case SourceLayerType.LIVE_SPEAK:
 				return <LiveSpeakInputIcon abbreviation={props.sourceLayer.abbreviation} />
-			case SourceLayerType.REMOTE:
+			case SourceLayerType.REMOTE: {
 				const rmContent = piece ? (piece.content as RemoteContent | undefined) : undefined
 				return (
 					<RemoteInputIcon
@@ -42,11 +42,12 @@ export const PieceIcon = (props: {
 						abbreviation={props.sourceLayer.abbreviation}
 					/>
 				)
+			}
 			case SourceLayerType.SPLITS:
 				return <SplitInputIcon abbreviation={props.sourceLayer.abbreviation} piece={piece} />
 			case SourceLayerType.VT:
 				return <VTInputIcon abbreviation={props.sourceLayer.abbreviation} />
-			case SourceLayerType.CAMERA:
+			case SourceLayerType.CAMERA: {
 				const camContent = piece ? (piece.content as CameraContent | undefined) : undefined
 				return (
 					<CamInputIcon
@@ -54,6 +55,7 @@ export const PieceIcon = (props: {
 						abbreviation={props.sourceLayer.abbreviation}
 					/>
 				)
+			}
 		}
 	}
 

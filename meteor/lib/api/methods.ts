@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { MeteorPromiseCall, ProtectedStringProperties } from '../lib'
+import { MeteorPromiseCall } from '../lib'
 import { NewBlueprintAPI, BlueprintAPIMethods } from './blueprint'
 import { NewClientAPI, ClientAPIMethods } from './client'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from './ExternalMessageQueue'
@@ -65,7 +65,7 @@ export const MeteorCall: IMeteorCall = {
 function makeMethods(methods: object): any {
 	const o = {}
 	_.each(methods, (value: any, methodName: string) => {
-		o[methodName] = (...args) => MeteorPromiseCall(value, ...args)
+		o[methodName] = async (...args) => MeteorPromiseCall(value, ...args)
 	})
 	return o
 }
@@ -77,7 +77,7 @@ export interface MethodContext extends Omit<Meteor.MethodThisType, 'userId'> {
 export abstract class MethodContextAPI implements MethodContext {
 	public userId: UserId | null
 	public isSimulation: boolean
-	public setUserId(userId: string): void {
+	public setUserId(_userId: string): void {
 		throw new Meteor.Error(
 			500,
 			`This shoulc never be called, there's something wrong in with 'this' in the calling method`

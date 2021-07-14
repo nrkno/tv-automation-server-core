@@ -25,8 +25,8 @@ function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPl
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment
-	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeEach(async () => {
+		env = await setupDefaultStudioEnvironment()
 		setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 			PeripheralDeviceAPI.DeviceType.PLAYOUT,
@@ -34,7 +34,7 @@ describe('Timeline', () => {
 			env.studio
 		)
 	})
-	testInFiber('Basic rundown', () => {
+	testInFiber('Basic rundown', async () => {
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
 		expect(rundownId0).toBeTruthy()
 		expect(playlistId0).toBeTruthy()
@@ -59,7 +59,7 @@ describe('Timeline', () => {
 
 		{
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
+			await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
@@ -74,7 +74,7 @@ describe('Timeline', () => {
 
 		{
 			// Take the first Part:
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
@@ -86,28 +86,28 @@ describe('Timeline', () => {
 			// })
 		}
 
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'updateTimeline',
 			getRundown0().playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => {
-				updateTimeline(cache)
+			async (cache) => {
+				await updateTimeline(cache)
 			}
 		)
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'updateTimeline',
 			getRundown0().playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => {
+			async (cache) => {
 				const currentTime = 100 * 1000
-				updateTimeline(cache, currentTime)
+				await updateTimeline(cache, currentTime)
 			}
 		)
 
@@ -115,7 +115,7 @@ describe('Timeline', () => {
 
 		{
 			// Deactivate rundown:
-			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
+			await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
 			expect(getPlaylist0()).toMatchObject({
 				activationId: undefined,
 				currentPartInstanceId: null,

@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
@@ -32,9 +31,7 @@ export interface MediaWorkFlow {
 	success: boolean
 }
 
-export const MediaWorkFlows: TransformedCollection<MediaWorkFlow, MediaWorkFlow> = createMongoCollection<MediaWorkFlow>(
-	'mediaWorkFlows'
-)
+export const MediaWorkFlows = createMongoCollection<MediaWorkFlow, MediaWorkFlow>('mediaWorkFlows')
 registerCollection('MediaWorkFlows', MediaWorkFlows)
 registerIndex(MediaWorkFlows, {
 	// TODO: add deviceId: 1,

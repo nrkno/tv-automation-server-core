@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'

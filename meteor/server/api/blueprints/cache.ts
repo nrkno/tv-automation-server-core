@@ -32,10 +32,10 @@ export interface WrappedShowStyleBlueprint {
 	blueprint: ShowStyleBlueprintManifest
 }
 
-export function loadSystemBlueprints(system: ICoreSystem): WrappedSystemBlueprint | undefined {
+export async function loadSystemBlueprints(system: ICoreSystem): Promise<WrappedSystemBlueprint | undefined> {
 	if (!system.blueprintId) return undefined
 
-	const blueprintManifest = loadBlueprintById(system.blueprintId)
+	const blueprintManifest = await loadBlueprintById(system.blueprintId)
 	if (!blueprintManifest)
 		throw new Meteor.Error(404, `Blueprint "${system.blueprintId}" not found! (referenced by CoreSystem)`)
 
@@ -52,10 +52,10 @@ export function loadSystemBlueprints(system: ICoreSystem): WrappedSystemBlueprin
 	}
 }
 
-export function loadStudioBlueprint(studio: ReadonlyDeep<Studio>): WrappedStudioBlueprint | undefined {
+export async function loadStudioBlueprint(studio: ReadonlyDeep<Studio>): Promise<WrappedStudioBlueprint | undefined> {
 	if (!studio.blueprintId) return undefined
 
-	const blueprintManifest = loadBlueprintById(studio.blueprintId)
+	const blueprintManifest = await loadBlueprintById(studio.blueprintId)
 	if (!blueprintManifest) {
 		throw new Meteor.Error(
 			404,
@@ -76,12 +76,14 @@ export function loadStudioBlueprint(studio: ReadonlyDeep<Studio>): WrappedStudio
 	}
 }
 
-export function loadShowStyleBlueprint(showStyleBase: ReadonlyDeep<ShowStyleBase>): WrappedShowStyleBlueprint {
+export async function loadShowStyleBlueprint(
+	showStyleBase: ReadonlyDeep<ShowStyleBase>
+): Promise<WrappedShowStyleBlueprint> {
 	if (!showStyleBase.blueprintId) {
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
 	}
 
-	const blueprintManifest = loadBlueprintById(showStyleBase.blueprintId)
+	const blueprintManifest = await loadBlueprintById(showStyleBase.blueprintId)
 	if (!blueprintManifest) {
 		throw new Meteor.Error(
 			404,
@@ -103,10 +105,10 @@ export function loadShowStyleBlueprint(showStyleBase: ReadonlyDeep<ShowStyleBase
 }
 
 const blueprintDocCache: { [blueprintId: string]: Blueprint } = {}
-export function loadBlueprintById(blueprintId: BlueprintId): SomeBlueprintManifest | undefined {
+export async function loadBlueprintById(blueprintId: BlueprintId): Promise<SomeBlueprintManifest | undefined> {
 	let blueprint: Blueprint | undefined = blueprintDocCache[unprotectString(blueprintId)]
 	if (!blueprint || BLUEPRINT_CACHE_CONTROL.disable) {
-		blueprint = Blueprints.findOne(blueprintId)
+		blueprint = await Blueprints.findOneAsync(blueprintId)
 
 		if (blueprint && !BLUEPRINT_CACHE_CONTROL.disable) blueprintDocCache[unprotectString(blueprintId)] = blueprint
 	}
@@ -164,7 +166,7 @@ export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 
 		// Wrap the functions, to emit better errors
 		_.each(_.keys(manifest), (key) => {
-			let value = manifest[key]
+			const value = manifest[key]
 			if (_.isFunction(value)) {
 				manifest[key] = (...args: any[]) => {
 					try {

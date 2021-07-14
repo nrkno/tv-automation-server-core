@@ -1,17 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../__mocks__/helpers/database'
-import { getHash, waitForPromise, protectString, literal, unprotectString } from '../../../lib/lib'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
+import { literal, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
-import { StatusCode, status2ExternalStatus, setSystemStatus } from '../systemStatus'
-import { StatusResponse } from '../../../lib/api/systemStatus'
+import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
+import { StatusCode, StatusResponse } from '../../../lib/api/systemStatus'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { stripVersion } from '../../../lib/collections/CoreSystem'
+import semver from 'semver'
 
 require('../api')
 const PackageInfo = require('../../../package.json')
@@ -32,8 +30,8 @@ describe('systemStatus', () => {
 		})
 		expect(result0.checks).toHaveLength(0)
 	})
-	testInFiber('getSystemStatus: after startup', () => {
-		env = setupDefaultStudioEnvironment()
+	testInFiber('getSystemStatus: after startup', async () => {
+		env = await setupDefaultStudioEnvironment()
 		MeteorMock.mockRunMeteorStartup()
 
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
@@ -143,7 +141,7 @@ describe('systemStatus', () => {
 
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 
-		// Expected status is GOOD, because the the device is GOOD, check that the system is reset
+		// Expected status is GOOD, because the device is GOOD, check that the system is reset
 		const expectedStatus0 = StatusCode.GOOD
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
@@ -156,84 +154,105 @@ describe('systemStatus', () => {
 			status: status2ExternalStatus(expectedStatus0),
 		})
 
-		// Change expectedVersions, simulate a major version mismatch
+		{
+			const coreVersion = semver.parse(stripVersion(PackageInfo.version)) as semver.SemVer
+			expect(coreVersion).toBeTruthy()
+			coreVersion.major = 99
+
+			// Change integration lib versions, simulate a major version mismatch
+			PeripheralDevices.update(env.ingestDevice._id, {
+				$set: {
+					versions: {
+						'@sofie-automation/server-core-integration': coreVersion.format(),
+					},
+				},
+			})
+			const result1: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+
+			// Expected status is BAD, because the device expects a different major version
+			const expectedStatus1 = StatusCode.BAD
+			expect(result1).toMatchObject({
+				status: status2ExternalStatus(expectedStatus1),
+				_status: expectedStatus1,
+			})
+		}
+
+		{
+			const coreVersion = semver.parse(stripVersion(PackageInfo.version)) as semver.SemVer
+			expect(coreVersion).toBeTruthy()
+			coreVersion.minor = 999
+
+			// Change integration lib versions, simulate a minor version mismatch
+			PeripheralDevices.update(env.ingestDevice._id, {
+				$set: {
+					versions: {
+						'@sofie-automation/server-core-integration': coreVersion.format(),
+					},
+				},
+			})
+			const result2: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+
+			// Expected status is BAD, because the device expects a different minor version
+			const expectedStatus2 = StatusCode.BAD
+			expect(result2).toMatchObject({
+				status: status2ExternalStatus(expectedStatus2),
+				_status: expectedStatus2,
+			})
+		}
+
+		{
+			const coreVersion = semver.parse(stripVersion(PackageInfo.version)) as semver.SemVer
+			expect(coreVersion).toBeTruthy()
+			coreVersion.patch = 999
+
+			// Change integration lib versions, simulate a patch version mismatch
+			PeripheralDevices.update(env.ingestDevice._id, {
+				$set: {
+					versions: {
+						'@sofie-automation/server-core-integration': coreVersion.format(),
+					},
+				},
+			})
+			const result3: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+
+			// Expected status is GOOD, because this should have no effect
+			const expectedStatus3 = StatusCode.GOOD
+			expect(result3).toMatchObject({
+				status: status2ExternalStatus(expectedStatus3),
+				_status: expectedStatus3,
+			})
+		}
+
+		// Try some silly version
 		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
 				versions: {
-					test: '1.0.0',
-				},
-				expectedVersions: {
-					test: '2.0.0',
-				},
-			},
-		})
-		const result1: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
-
-		// Expected status is BAD, because the the device expects a different major version
-		const expectedStatus1 = StatusCode.BAD
-		expect(result1).toMatchObject({
-			status: status2ExternalStatus(expectedStatus1),
-			_status: expectedStatus1,
-		})
-
-		// Change expectedVersions, simulate a minor version mismatch
-		PeripheralDevices.update(env.ingestDevice._id, {
-			$set: {
-				versions: {
-					test: '1.0.0',
-				},
-				expectedVersions: {
-					test: '1.1.0',
-				},
-			},
-		})
-		const result2: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
-
-		// Expected status is WARNING_MAJOR, because the the device expects a different minor version
-		const expectedStatus2 = StatusCode.WARNING_MAJOR
-		expect(result2).toMatchObject({
-			status: status2ExternalStatus(expectedStatus2),
-			_status: expectedStatus2,
-		})
-
-		// Change expectedVersions, simulate a minor version mismatch
-		PeripheralDevices.update(env.ingestDevice._id, {
-			$set: {
-				versions: {
-					test: '1.0.0',
-				},
-				expectedVersions: {
-					test: '1.0.1',
-				},
-			},
-		})
-		const result3: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
-
-		// Expected status is WARNING_MINOR, because the the device expects a different patch
-		const expectedStatus3 = StatusCode.WARNING_MINOR
-		expect(result3).toMatchObject({
-			status: status2ExternalStatus(expectedStatus3),
-			_status: expectedStatus3,
-		})
-
-		// Change expectedVersions, simulate a version match
-		PeripheralDevices.update(env.ingestDevice._id, {
-			$set: {
-				versions: {
-					test: '1.0.0',
-				},
-				expectedVersions: {
-					test: '1.0.0',
+					test: '0.1.2',
 				},
 			},
 		})
 		const result4: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 
-		// Expected status is WARNING_MINOR, because the the device expects a different patch
-		const expectedStatus4 = StatusCode.GOOD
+		// Expected status is BAD, because the device expects a different version
+		const expectedStatus4 = StatusCode.BAD
 		expect(result4).toMatchObject({
 			status: status2ExternalStatus(expectedStatus4),
 			_status: expectedStatus4,
+		})
+
+		// disableVersion check
+		PeripheralDevices.update(env.ingestDevice._id, {
+			$set: {
+				disableVersionChecks: true,
+			},
+		})
+		const result5: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+
+		// Expected status is GOOD, as the check has been skipped
+		const expectedStatus5 = StatusCode.GOOD
+		expect(result5).toMatchObject({
+			status: status2ExternalStatus(expectedStatus5),
+			_status: expectedStatus5,
 		})
 	})
 })
